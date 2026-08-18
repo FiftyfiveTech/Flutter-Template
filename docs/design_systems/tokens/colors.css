@@ -1,0 +1,17 @@
+:root {
+  /* Brand colors */
+  --color-primary: #0056B3;
+  --color-primary-light: #E6F0FA;
+  --color-secondary: #6C757D;
+  
+  /* Semantic colors */
+  --color-success: #28A745;
+  --color-warning: #FFC107;
+  --color-danger: #DC3545;
+  
+  /* Neutral surfaces */
+  --color-background: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #212529;
+  --color-text-secondary: #6C757D;
+}

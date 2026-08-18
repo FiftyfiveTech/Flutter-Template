@@ -1,0 +1,45 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate.sh
+
+# IntelliJ-based IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# Visual Studio Code
+.vscode/
+.mcp.json
+
+# Packages
+.packages
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Generated Files
+*.g.dart
+*.freezed.dart
+
+# Symbol files
+*.pdb
+*.dsp
+*.dsw
+*.opt
+*.ncb
+*.suo
+*.plg
+*.clw
