@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:meta/meta.dart';
 
 class NetworkException implements Exception {
   NetworkException(this.message);
@@ -8,6 +9,11 @@ class NetworkException implements Exception {
 class BaseApiClient {
   BaseApiClient(this._dio);
   final Dio _dio;
+
+  /// Exposed for tests that need to swap [Dio.httpClientAdapter] to assert on outgoing
+  /// requests (e.g. interceptor behavior) without making a real network call.
+  @visibleForTesting
+  Dio get dio => _dio;
 
   Future<Response<T>> get<T>(
     String path, {
