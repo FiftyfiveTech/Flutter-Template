@@ -1,13 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/di/sync_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // If your project uses the Firebase/Firestore backend path (see
@@ -16,15 +13,13 @@ Future<void> main() async {
   //   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Not required for the default REST/Dio path.
 
-  final container = ProviderContainer();
-  // Drain any sync-queue entries left over from the last session (Strategy C, outbox sync).
-  // Wire this to also run on connectivity-restored/app-resumed events in a real project.
-  unawaited(container.read(syncQueueProcessorProvider).processPending());
+  // Nothing here drains the sync queue (Strategy C, outbox sync) — that module stays zero-cost
+  // for projects using the default Strategy A. See core/di/sync_providers.dart for where to wire
+  // it in once a feature actually opts into Strategy C.
 
   runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const AppTemplate(),
+    const ProviderScope(
+      child: AppTemplate(),
     ),
   );
 }
