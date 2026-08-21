@@ -31,6 +31,8 @@ Detail state structures:
 ## 5. Local Storage & Cache Strategy
 * Specify tables in Drift database (`lib/core/database/app_database.dart`).
 * Detail caching rules: direct network writes, optimistic updates, or local outbox background synchronization.
+* See `docs/local_storage.md` for where the database is initialized, which files own which part
+  of it, and what's involved in swapping Drift for a different local storage plugin.
 
 ## 6. Networking & API Integration
 * **REST APIs**: Configure base URL, timeouts, token interceptors, and error mapping in `lib/core/network/base_api_client.dart`.

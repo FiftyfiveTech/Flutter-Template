@@ -35,6 +35,10 @@ coding assistant instead of skipping straight to code. New to the template? Star
 Once those docs reflect your actual project, the `.claude/commands/` and `.claude/skills/` in this
 repo will read them (not just infer from code) when scaffolding new features.
 
+Reference doc, read as needed rather than up front: **`docs/local_storage.md`** — where the local
+Drift database is initialized, which files own which part of it, and what's involved in swapping
+it for a different local storage plugin.
+
 ---
 
 ## Getting Started
