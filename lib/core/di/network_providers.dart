@@ -12,5 +12,17 @@ BaseApiClient baseApiClient(Ref ref) {
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
   ));
+  
+  // Example Bearer Token interceptor:
+  // dio.interceptors.add(InterceptorsWrapper(
+  //   onRequest: (options, handler) async {
+  //     final token = await ref.read(authRepositoryProvider).getToken();
+  //     if (token != null) {
+  //       options.headers['Authorization'] = 'Bearer $token';
+  //     }
+  //     return handler.next(options);
+  //   },
+  // ));
+
   return BaseApiClient(dio);
 }
