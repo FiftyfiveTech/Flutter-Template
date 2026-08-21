@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/error/failures.dart';
 import '../../../../core/di/database_providers.dart';
 import '../../../../core/di/network_providers.dart';
 import '../../data/datasources/counter_local_datasource.dart';
@@ -46,7 +47,7 @@ class CounterController extends _$CounterController {
     final result = await ref.read(counterRepositoryProvider).getCounter();
     return result.when(
       ok: (record) => record,
-      err: (failure) => throw Exception(failure.message),
+      err: (failure) => throw failure,
     );
   }
 
@@ -61,10 +62,7 @@ class CounterController extends _$CounterController {
     
     result.when(
       ok: (record) => state = AsyncData(record),
-      err: (failure) => state = AsyncError(
-        Exception(failure.message),
-        StackTrace.current,
-      ),
+      err: (Failure failure) => state = AsyncError(failure, StackTrace.current),
     );
   }
 }

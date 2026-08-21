@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/error/failures.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -44,7 +45,7 @@ class CounterPage extends ConsumerWidget {
                   color: AppColors.primary,
                 ),
                 error: (error, _) => Text(
-                  'Error: ${error.toString().replaceAll('Exception: ', '')}',
+                  'Error: ${error is Failure ? error.message : error}',
                   style: typography.bodyMd.copyWith(color: AppColors.danger),
                   textAlign: TextAlign.center,
                 ),

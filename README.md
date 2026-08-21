@@ -14,6 +14,14 @@ A production-grade, highly structured, and swap-friendly Flutter starter templat
 
 ## Getting Started
 
+### 0. Generate Platform Folders
+This template ships as `lib/`/`test/` only — no `android/`, `ios/`, etc. are committed. Before the
+first run, generate them from inside this directory:
+```bash
+flutter create .
+```
+This scaffolds the platform runners around the existing `lib/` without touching your source.
+
 ### 1. Rename the Package
 Run a search and replace across the workspace for `flutter_app_template` to rename it to your preferred Dart package name.
 Additionally, rename the bundle identifiers/application IDs in the platform folders (Android `build.gradle`, iOS `Info.plist`).
@@ -30,7 +38,16 @@ Generate Drift databases and Riverpod notifier codes:
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-### 4. Run the App
+### 4. Configure Firebase (only if using the Firestore backend)
+If you plan to use the Firebase datasource path (see "Swapping Backends" below), run
+`flutterfire configure` to generate `lib/firebase_options.dart`, then initialize it in `main.dart`
+before `runApp`:
+```dart
+await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+```
+Skip this step entirely if you're only using the REST/Dio path.
+
+### 5. Run the App
 ```bash
 flutter run
 ```

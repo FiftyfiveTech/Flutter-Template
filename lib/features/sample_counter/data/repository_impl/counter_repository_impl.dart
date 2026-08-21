@@ -2,6 +2,7 @@
 import 'dart:convert';
 // ignore: unused_import
 import 'package:drift/drift.dart' as drift;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/error/failures.dart';
@@ -40,6 +41,8 @@ class CounterRepositoryImpl implements CounterRepository {
       return Ok(remoteDto.toEntity());
     } on NetworkException catch (e) {
       return Err(NetworkFailure(message: e.message));
+    } on FirebaseException catch (e) {
+      return Err(ServerFailure(message: e.message ?? e.code));
     } catch (_) {
       return const Err(UnexpectedFailure());
     }
@@ -66,6 +69,8 @@ class CounterRepositoryImpl implements CounterRepository {
       return Ok(dto.toEntity());
     } on NetworkException catch (e) {
       return Err(NetworkFailure(message: e.message));
+    } on FirebaseException catch (e) {
+      return Err(ServerFailure(message: e.message ?? e.code));
     } catch (_) {
       return const Err(UnexpectedFailure());
     }
