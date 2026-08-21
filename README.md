@@ -12,6 +12,31 @@ A production-grade, highly structured, and swap-friendly Flutter starter templat
 
 ---
 
+## Documentation-First Workflow (Read This Before You Start Building)
+
+This template ships with **fill-in-the-blank docs, not finished ones** — `docs/architecture.md`,
+`docs/features/`, and `docs/screen_flow.md` are scaffolds for *your* project's specifics, and
+`docs/ai_workflow.md` is the playbook (with copy-paste prompts) for filling them in with an AI
+coding assistant instead of skipping straight to code. New to the template? Start here, in order:
+
+1. **`docs/ai_workflow.md`** — the full 8-step loop (design tokens → PRD/feature breakdown →
+   screens → architecture docs → `CLAUDE.md` rules → equip skills → flow-by-flow build → audit),
+   with a reusable prompt for each step. Read this first.
+2. **`docs/architecture.md`** — fill in §1 (Project Overview) and §2 (Technology Stack — e.g.
+   which backend: REST, Firebase, or both) for your project. §3 onward already describes this
+   template's conventions (folder structure, error handling, testing, Definition of Done).
+3. **`docs/features/`** — add one spec file per feature area, following the shape in
+   `00-sample-feature.md`, and list each one in `index.md`.
+4. **`docs/screen_flow.md`** — keep a running index of every screen: its ID, route, and which
+   feature it belongs to (see the two sample rows already there).
+5. **`CLAUDE.md`** — already encodes this template's non-negotiable architecture rules; update it
+   as your project's own rules solidify, and every time you add a `.claude/skills/` entry.
+
+Once those docs reflect your actual project, the `.claude/commands/` and `.claude/skills/` in this
+repo will read them (not just infer from code) when scaffolding new features.
+
+---
+
 ## Getting Started
 
 ### 0. Generate Platform Folders
@@ -85,8 +110,3 @@ Three data strategies are documented in `counter_repository_impl.dart`:
 * **Strategy C (Outbox Sync)**: Writes instantly to local Drift (optimistic update), queues a task in `syncQueueEntries`, and processes it in the background when connectivity returns.
 
 The outbox sync components reside in `lib/core/sync/` and are fully modular—delete them if your project only requires direct reads and writes.
-
----
-
-## Tooling & Prompt playbooks
-Check the `docs/ai_workflow.md` playbook for the complete 8-step playbook on using Claude/Antigravity design tools, prompts, and skills to build screens and features.
