@@ -43,3 +43,15 @@ migrate.sh
 *.suo
 *.plg
 *.clw
+
+# Platform runners — this template ships as lib/test only, generated via `flutter create .`
+.metadata
+/android/
+/ios/
+/linux/
+/macos/
+/windows/
+/web/
+
+# Claude Code scheduled-task lock files
+.claude/scheduled_tasks.lock
