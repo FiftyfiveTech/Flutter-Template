@@ -21,16 +21,20 @@ coding assistant instead of skipping straight to code. New to the template? Star
 
 1. **`docs/ai_workflow.md`** — the full 8-step loop (design tokens → PRD/feature breakdown →
    screens → architecture docs → `CLAUDE.md` rules → equip skills → flow-by-flow build → audit),
-   with a reusable prompt for each step. Read this first.
-2. **`docs/architecture.md`** — fill in §1 (Project Overview) and §2 (Technology Stack — e.g.
-   which backend: REST, Firebase, or both) for your project. §3 onward already describes this
-   template's conventions (folder structure, error handling, testing, Definition of Done).
+   with a reusable prompt for each step. Read this first — the order below follows that loop.
+2. **`docs/design_systems/tokens/`** — generate or import your color/typography/spacing tokens
+   before creating any screens (loop step 1).
 3. **`docs/features/`** — add one spec file per feature area, following the shape in
-   `00-sample-feature.md`, and list each one in `index.md`.
+   `00-sample-feature.md`, and list each one in `index.md` (loop step 2).
 4. **`docs/screen_flow.md`** — keep a running index of every screen: its ID, route, and which
-   feature it belongs to (see the two sample rows already there).
-5. **`CLAUDE.md`** — already encodes this template's non-negotiable architecture rules; update it
-   as your project's own rules solidify, and every time you add a `.claude/skills/` entry.
+   feature it belongs to (see the two sample rows already there) (loop step 3).
+5. **`docs/architecture.md`** — fill in §1 (Project Overview) and §2 (Technology Stack — e.g.
+   which backend: REST, Firebase, or both), then detail schemas/network paths now that your
+   features and screens exist (loop step 4). §3 onward already describes this template's
+   conventions (folder structure, error handling, testing, Definition of Done).
+6. **`CLAUDE.md`** — already encodes this template's non-negotiable architecture rules; update it
+   as your project's own rules solidify, and every time you add a `.claude/skills/` entry (loop
+   step 5).
 
 Once those docs reflect your actual project, the `.claude/commands/` and `.claude/skills/` in this
 repo will read them (not just infer from code) when scaffolding new features.

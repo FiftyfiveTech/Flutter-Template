@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Getting Started · Flutter Clean Architecture Starter Template</title>
+
+  <link rel="stylesheet" href="site-assets/styles.css" />
+</head>
+
+<body>
+
+  <div class="app">
+
+    <aside class="sidebar">
+      <div id="sidebar-root"></div>
+    </aside>
+
+    <main class="main">
+
+      <div class="content">
+
+        <!-- GETTING STARTED -->
+
+        <section id="getting-started">
+
+          <div class="section-heading">
+            <span class="section-label">05 / Installation</span>
+            <h2>Get started in minutes.</h2>
+          </div>
+
+
+          <div class="steps">
+
+            <article class="step">
+              <div class="step-number">STEP 01</div>
+
+              <h3>Clone the template</h3>
+
+              <p>
+                Clone this repository (or use it as a template) and
+                open the project root in your editor.
+              </p>
+
+              <code>git clone &lt;repo-url&gt; your_app</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 02</div>
+
+              <h3>Generate platforms</h3>
+
+              <p>
+                Generate Android, iOS, Web, and other platform
+                runners around the existing Flutter source.
+              </p>
+
+              <code>flutter create .</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 03</div>
+
+              <h3>Rename the package</h3>
+
+              <p>
+                Replace the default package name and update
+                platform application identifiers.
+              </p>
+
+              <code>flutter_app_template → your_app</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 04</div>
+
+              <h3>Install dependencies</h3>
+
+              <p>
+                Fetch all Flutter and Dart dependencies from
+                the project root.
+              </p>
+
+              <code>flutter pub get</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 05</div>
+
+              <h3>Generate code</h3>
+
+              <p>
+                Generate Drift database and Riverpod notifier
+                source files.
+              </p>
+
+              <code>dart run build_runner build --delete-conflicting-outputs</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 06</div>
+
+              <h3>Configure Firebase</h3>
+
+              <p>
+                Only required when using the Firestore datasource.
+              </p>
+
+              <code>flutterfire configure</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 07</div>
+
+              <h3>Run the app</h3>
+
+              <p>
+                Launch the application using Flutter's standard
+                development runner.
+              </p>
+
+              <code>flutter run</code>
+            </article>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="site-assets/nav.js"></script>
+  <script>renderSidebar('getting-started');</script>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Check Your Understanding · Flutter Clean Architecture Starter Template</title>
+
+  <link rel="stylesheet" href="site-assets/styles.css" />
+</head>
+
+<body>
+
+  <div class="app">
+
+    <aside class="sidebar">
+      <div id="sidebar-root"></div>
+    </aside>
+
+    <main class="main">
+
+      <div class="content">
+
+        <section id="understanding">
+
+          <div class="section-heading">
+            <span class="section-label">10 / Reference</span>
+            <h2>Check your understanding.</h2>
+          </div>
+
+          <span class="doc-source">docs/ai_workflow.md — Check Your Understanding</span>
+
+          <div class="callout">
+            <div class="callout-icon">💡</div>
+            <p>Tap a question to reveal the answer.</p>
+          </div>
+
+          <div class="workflow">
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">Q1</div>
+                <div>
+                  <strong>Why break the PRD into per-feature spec files (Step 2) before generating any screens?</strong>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+              <div class="workflow-detail">
+                <p>☐ It is required by Flutter's build system.</p>
+                <p>☑ <strong>It gives the design tool a stable feature vocabulary to tag every subsequent screen with, which later lets you say "implement the X flow" and have it resolve unambiguously.</strong></p>
+                <p>☐ It automatically generates the Firestore schema.</p>
+              </div>
+            </details>
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">Q2</div>
+                <div>
+                  <strong>Why should the responsiveness/audit skills run at the end of each flow in Step 7, rather than in one pass at the end?</strong>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+              <div class="workflow-detail">
+                <p>☐ Skills can only be invoked once per project.</p>
+                <p>☑ <strong>Catching a layer-boundary violation or overflow bug right after generating a flow is far cheaper than finding it several features later, once other code depends on the mistake.</strong></p>
+                <p>☐ It has no effect on cost or quality — it's purely a style preference.</p>
+              </div>
+            </details>
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">Q3</div>
+                <div>
+                  <strong>What's the difference between what graphify (Step 8) and a memory/decision-log practice each give you?</strong>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+              <div class="workflow-detail">
+                <p>☐ They are redundant — only one is needed.</p>
+                <p>☑ <strong>Graphify answers "how is the code connected" (structure); a memory practice answers "what did we decide and why across sessions" (decision history) — a long project needs both.</strong></p>
+                <p>☐ Graphify replaces the need for architecture docs entirely.</p>
+              </div>
+            </details>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="site-assets/nav.js"></script>
+  <script>renderSidebar('understanding');</script>
+
+</body>
+</html>

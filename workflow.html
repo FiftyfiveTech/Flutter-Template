@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Documentation Workflow · Flutter Clean Architecture Starter Template</title>
+
+  <link rel="stylesheet" href="site-assets/styles.css" />
+</head>
+
+<body>
+
+  <div class="app">
+
+    <aside class="sidebar">
+      <div id="sidebar-root"></div>
+    </aside>
+
+    <main class="main">
+
+      <div class="content">
+
+        <!-- WORKFLOW -->
+
+        <section id="workflow">
+
+          <div class="section-heading">
+            <span class="section-label">02 / Documentation</span>
+            <h2>The 8-step AI development loop.</h2>
+          </div>
+
+          <div class="callout">
+
+            <div class="callout-icon">💡</div>
+
+            <p>
+              <strong>Build the documentation before the code.</strong>
+              Define your design tokens, features, screens, architecture, and
+              development rules first. Then let your AI assistant
+              implement against those decisions, one flow at a time.
+              Tap a step to expand it.
+            </p>
+
+          </div>
+
+
+          <div class="workflow">
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">01</div>
+                <div>
+                  <strong>Design Tokens + PRD</strong>
+                  <span>Generate colors, typography, and spacing from your PRD into docs/design_systems/tokens/, before any screens exist.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Paste your PRD into an AI design tool and generate design tokens (colors,
+                  typography, spacing, radii) as CSS variables or JSON before any screens exist.
+                  Save them under <code>docs/design_systems/tokens/</code>, mirrored into
+                  Flutter's <code>ThemeExtension</code> — never hardcode a value in feature code.
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> also ask for the rules of usage alongside the
+                  tokens (when to use semantic vs. brand color, contrast minimums, spacing
+                  increments) in the same pass — backfilling this later costs more than asking
+                  for it up front.
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 1 — Design Tokens + PRD</span>
+                  </div>
+<pre>We are building a production-grade Flutter application. Here is our PRD:
+[Paste PRD here]
+
+Based on this PRD, create a tokenized design system. Include:
+1. Color palette (primary, secondary, semantic accents, neutrals, surfaces).
+2. Typographic scale (sizes, line heights, weights).
+3. Spacing grid, radius scale, shadow scale, and motion/easing tokens.
+4. A short usage-rules note per category.
+Output as CSS custom properties (or a token JSON) plus a one-page rationale.
+Do not write Dart code yet.</pre>
+                </div>
+              </div>
+            </details>
+
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">02</div>
+                <div>
+                  <strong>Feature Breakdown</strong>
+                  <span>Parse the PRD into a numbered list of features. One spec file per feature under docs/features/, plus an index.md.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Ask the AI to parse the PRD into a numbered list of independent feature areas.
+                  Create one spec file per feature under <code>docs/features/</code> plus an
+                  <code>index.md</code>, capturing user stories, data entities, and dependencies
+                  on other features.
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> do this before any screen mockups, not
+                  interleaved with them. Doing it first gives the design tool a stable feature
+                  vocabulary to tag every screen with — which pays off in Step 7 when you ask
+                  for "the X flow."
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 2 — Feature Spec Breakdown</span>
+                  </div>
+<pre>Here is our PRD: [reference or paste it].
+
+Break it into a numbered list of feature areas. For each feature, produce a
+spec file containing:
+1. User stories / jobs-to-be-done.
+2. Data entities and screens touched.
+3. Dependencies on other features (call out cross-feature imports).
+4. Safety, security, or regulatory constraints specific to this feature.
+Also produce an index.md listing every feature file.</pre>
+                </div>
+              </div>
+            </details>
+
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">03</div>
+                <div>
+                  <strong>Screen Generation</strong>
+                  <span>Outline every screen state — loaded, loading, empty, error, offline — and index each one in docs/screen_flow.md.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Develop detailed screen outlines feature-by-feature. Identify empty states,
+                  loading indicators, offline layouts, and validation error designs. Keep a
+                  running screen index under <code>docs/screen_flow.md</code>.
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> from day one, also produce a master screen index
+                  (screen ID → composing widgets → which feature/flow it belongs to) plus a
+                  dedicated cross-cutting states file (offline banner, skeleton loaders, empty
+                  states, generic error) shared across all screens — building these now saves a
+                  rework pass once you notice states being reinvented per-screen.
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 3 — Feature-by-Feature Screens</span>
+                  </div>
+<pre>Using our design tokens and the feature spec for [Feature Name], generate
+the screen layout guidelines. Include:
+1. Every state per screen: loaded, loading/skeleton, empty, error, offline.
+2. A screen ID for each screen (e.g., ONB-01, SET-02).
+Add each new screen ID to docs/screen_flow.md. Do not write Flutter widgets yet.</pre>
+                </div>
+              </div>
+            </details>
+
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">04</div>
+                <div>
+                  <strong>Architecture Docs</strong>
+                  <span>Detail database schemas, network paths, and the source of truth for every computed value in docs/architecture.md.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Detail the database schemas, network paths, and local caching decisions.
+                  Document which system acts as the source of truth for each computed value in
+                  <code>docs/architecture.md</code>.
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> write down known conflicts between the design
+                  mockups and the PRD as you find them, in a living doc, rather than resolving
+                  them silently in code — a future session needs to know a decision was made and
+                  why, not just see the resulting code.
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 4 — Technical Architecture</span>
+                  </div>
+<pre>Based on the PRD and the feature specs, write the technical architecture docs
+for this Flutter app:
+1. architecture.md — tech stack, folder structure (Clean Architecture per
+   feature), state management, local database schema, networking strategy,
+   error handling, testing strategy, Definition of Done.
+2. A data-flow doc — local schema, remote schema, sync direction, and source
+   of truth rules.
+3. Explicitly note anywhere this doc supersedes or conflicts with the PRD.</pre>
+                </div>
+              </div>
+            </details>
+
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">05</div>
+                <div>
+                  <strong>CLAUDE.md Rules</strong>
+                  <span>Encode feature boundaries, state-management rules, and caching/theme expectations as non-negotiable rules.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Update <code>CLAUDE.md</code> with strict boundaries: feature isolation, the
+                  chosen state-management rules, local-first cache expectations, and test
+                  coverage targets.
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> link out to the docs from Step 4 rather than
+                  duplicating them — <code>CLAUDE.md</code> should be the index of rules, not a
+                  copy of the architecture doc. Treat it as living: every skill added in Step 6,
+                  or drift Step 8 surfaces, gets written back in here.
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 5 — Rules Index (CLAUDE.md)</span>
+                  </div>
+<pre>Based on architecture.md and the data-flow doc, generate CLAUDE.md for this
+repository:
+1. Feature-boundary rules (what a feature may/may not import).
+2. State management constraints (Riverpod code-gen rules, no inline widget
+   logic).
+3. Data caching rules (local-first vs remote-first).
+4. Theme rules (no hardcoded color/spacing/typography).
+5. Lint/test gates.
+Link out to the docs rather than duplicating their content.</pre>
+                </div>
+              </div>
+            </details>
+
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">06</div>
+                <div>
+                  <strong>Equip AI Skills</strong>
+                  <span>Package durable checklists (architecture audits, design-token checks, overflow tests) as skills under .claude/skills/.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Equip the AI coding assistant with durable skills at
+                  <code>.claude/skills/</code> (e.g. Clean Architecture scaffolding checklists,
+                  design-token check validations, widget overflow tests).
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> add feature-scaffolding, data-sync, and
+                  state-management skills at the same time as your first audit/testing skills,
+                  rather than one at a time once you notice you're re-explaining the same
+                  constraints every session.
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 6 — Equip Skills</span>
+                  </div>
+<pre>Create a Claude Code skill at .claude/skills/[skill-name]/SKILL.md for:
+[Choose: clean architecture auditing | design-token compliance | responsive
+layout audits | test generation | feature scaffolding | data-sync wiring].
+The skill should act as a checklist for the AI to verify before finishing
+feature work, with concrete trigger phrases for when it should auto-fire.
+Then add one line to CLAUDE.md's skills section pointing to it.</pre>
+                </div>
+              </div>
+            </details>
+
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">07</div>
+                <div>
+                  <strong>Flow-by-Flow Build</strong>
+                  <span>Build one logical flow at a time: Domain Entity → Repository Interface → Use Case → Riverpod Controller → Presentation UI.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Build one logical flow at a time (e.g., onboarding, settings) rather than
+                  screen-by-screen. Generate code in order: Domain Entity → Repository Interface
+                  → Use Case → Riverpod Controller → Presentation UI.
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> run the responsiveness and audit skills from
+                  Step 6 at the end of each flow, not in a separate later pass — catching a
+                  boundary violation or overflow bug right after generating a flow is far
+                  cheaper than finding it three features later.
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 7 — Flow-by-Flow Implementation</span>
+                  </div>
+<pre>We are ready to implement the [Feature Name] flow (screens: [screen IDs],
+flow doc: docs/screen_flow.md).
+Generate the code in this exact order:
+1. Domain entity + Repository interface contract.
+2. Domain use case (encodes business rules).
+3. Riverpod controller/notifier.
+4. Presentation widgets using ThemeExtension design tokens.
+When finished, run the responsiveness and boundary audit skills against
+this flow before moving to the next one.</pre>
+                </div>
+              </div>
+            </details>
+
+
+            <details class="workflow-item">
+              <summary>
+                <div class="workflow-number">08</div>
+                <div>
+                  <strong>Knowledge Graph Audit</strong>
+                  <span>Run context-auditing tools like graphify to catch circular imports and boundary violations, feeding fixes back into CLAUDE.md.</span>
+                </div>
+                <span class="workflow-arrow">⌄</span>
+              </summary>
+
+              <div class="workflow-detail">
+                <p>
+                  Run context auditing tools (like <code>graphify</code>) to detect circular
+                  imports, feature-boundary violations, or missing abstractions, and feed
+                  corrections back into <code>CLAUDE.md</code>.
+                </p>
+
+                <div class="improvement">
+                  <strong>Improvement:</strong> don't run this once at the end — re-run it after
+                  every few flows in Step 7 and feed drift back into Step 5, so the graph stays
+                  a live health check. Pair it with a lightweight memory practice: the graph
+                  answers "how is the code connected"; memory answers "what did we decide and
+                  why, across sessions" — a long project needs both.
+                </div>
+
+                <div class="code-card">
+                  <div class="code-header">
+                    <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                    <span>Prompt 8 — Knowledge Graph Audit</span>
+                  </div>
+<pre>/graphify
+Build/refresh the knowledge graph for this workspace. Then report:
+1. Any import that crosses a feature boundary CLAUDE.md prohibits.
+2. Circular dependencies or orphaned modules.
+3. Community hubs large enough to suggest a missing abstraction.
+Feed anything found back as a fix task, and flag any rule it exposes that
+CLAUDE.md doesn't document yet.</pre>
+                </div>
+              </div>
+            </details>
+
+          </div>
+
+
+          <div class="callout">
+
+            <div class="callout-icon">↺</div>
+
+            <p>
+              <strong>The loop is cyclical, not linear.</strong>
+              Findings from Step 8's audit feed back into Step 5 — every
+              circular-import or boundary violation becomes a new rule in
+              CLAUDE.md, not just a one-off fix.
+            </p>
+
+          </div>
+
+
+          <div class="callout">
+
+            <div class="callout-icon">📚</div>
+
+            <p>
+              <strong>Reference doc, read as needed:</strong>
+              <code>docs/local_storage.md</code> covers where the local Drift database is
+              initialized, which files own which part of it, and what's involved in swapping
+              it for a different local storage plugin.
+            </p>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="site-assets/nav.js"></script>
+  <script>renderSidebar('workflow');</script>
+
+</body>
+</html>

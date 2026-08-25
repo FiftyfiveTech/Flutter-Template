@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Sync Strategy · Flutter Clean Architecture Starter Template</title>
+
+  <link rel="stylesheet" href="site-assets/styles.css" />
+</head>
+
+<body>
+
+  <div class="app">
+
+    <aside class="sidebar">
+      <div id="sidebar-root"></div>
+    </aside>
+
+    <main class="main">
+
+      <div class="content">
+
+        <!-- SYNC -->
+
+        <section id="sync">
+
+          <div class="section-heading">
+            <span class="section-label">07 / Data</span>
+            <h2>Choose your synchronization strategy.</h2>
+          </div>
+
+
+          <article class="strategy">
+
+            <div class="strategy-header">
+              <div class="strategy-number">A</div>
+              <h3>Direct Remote</h3>
+            </div>
+
+            <p>
+              Writes directly to the server and updates the local
+              cache after a successful response. Recommended for
+              standard CRUD applications. Active by default.
+            </p>
+
+          </article>
+
+
+          <article class="strategy">
+
+            <div class="strategy-header">
+              <div class="strategy-number">B</div>
+              <h3>Offline-Only</h3>
+            </div>
+
+            <p>
+              Stores data exclusively in local SQLite/Drift.
+              Useful when remote synchronization is not required.
+            </p>
+
+          </article>
+
+
+          <article class="strategy">
+
+            <div class="strategy-header">
+              <div class="strategy-number">C</div>
+              <h3>Outbox Sync</h3>
+            </div>
+
+            <p>
+              Writes immediately to local Drift, updates the UI
+              optimistically, queues a synchronization task, and
+              processes it in the background when connectivity returns.
+            </p>
+
+          </article>
+
+
+          <div class="code-card">
+
+            <div class="code-header">
+              <div class="dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+
+              <span>sync architecture</span>
+            </div>
+
+<pre>UI
+ │
+ ▼
+Local Drift Database
+ │
+ ▼
+syncQueueEntries
+ │
+ ▼
+Background Worker
+ │
+ ▼
+Remote Backend
+ │
+ └── REST / Firebase</pre>
+
+          </div>
+
+
+          <div class="callout">
+
+            <div class="callout-icon">🔧</div>
+
+            <p>
+              <strong>How to switch strategies:</strong>
+              there's no config flag — edit <code>updateCounter()</code> in
+              <code>counter_repository_impl.dart</code>. Strategy A is the live code block;
+              Strategy C sits directly below it, commented out. Comment out A and uncomment C
+              to switch. Strategy B means skipping the remote datasource call entirely and
+              writing to <code>_localDatasource</code> only.
+            </p>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="site-assets/nav.js"></script>
+  <script>renderSidebar('sync');</script>
+
+</body>
+</html>
