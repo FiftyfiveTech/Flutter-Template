@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Flutter Clean Architecture Starter Template</title>
+
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface: #111114;
+      --surface-2: #18181b;
+      --surface-3: #202023;
+
+      --border: #27272a;
+      --border-light: #333338;
+
+      --text: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+
+      --primary: #7c3aed;
+      --primary-light: #a78bfa;
+      --primary-dark: #5b21b6;
+
+      --blue: #38bdf8;
+      --green: #34d399;
+      --orange: #fb923c;
+      --pink: #f472b6;
+
+      --radius: 14px;
+      --radius-lg: 20px;
+
+      --sidebar-width: 270px;
+      --content-width: 1180px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
+
+    body {
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background:
+        radial-gradient(
+          circle at 70% 0%,
+          rgba(124, 58, 237, 0.12),
+          transparent 30%
+        ),
+        var(--bg);
+
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    code,
+    pre {
+      font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        Menlo,
+        monospace;
+    }
+
+    /* =========================
+       Layout
+    ========================= */
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* =========================
+       Sidebar
+    ========================= */
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: var(--sidebar-width);
+
+      padding: 28px 18px;
+
+      background: rgba(9, 9, 11, 0.82);
+      backdrop-filter: blur(18px);
+
+      border-right: 1px solid var(--border);
+
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      padding: 4px 10px 28px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 11px;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary),
+          #2563eb
+        );
+
+      box-shadow:
+        0 8px 25px rgba(124, 58, 237, 0.3);
+    }
+
+    .brand-icon span {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-text strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .brand-text small {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .nav-title {
+      padding: 20px 10px 8px;
+
+      color: var(--text-muted);
+
+      font-size: 10px;
+      font-weight: 700;
+
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      padding: 9px 10px;
+
+      margin: 2px 0;
+
+      border-radius: 9px;
+
+      color: var(--text-secondary);
+
+      font-size: 13px;
+
+      transition: 0.2s ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    .nav a.active {
+      color: white;
+      background: rgba(124, 58, 237, 0.14);
+      box-shadow: inset 2px 0 var(--primary);
+    }
+
+    .nav-icon {
+      width: 18px;
+      text-align: center;
+      opacity: 0.8;
+    }
+
+    /* =========================
+       Main
+    ========================= */
+
+    .main {
+      width: calc(100% - var(--sidebar-width));
+      margin-left: var(--sidebar-width);
+    }
+
+    .content {
+      max-width: var(--content-width);
+      margin: 0 auto;
+
+      padding: 90px 48px 120px;
+    }
+
+    /* =========================
+       Hero
+    ========================= */
+
+    .hero {
+      position: relative;
+
+      padding: 48px;
+
+      margin-bottom: 80px;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+
+      overflow: hidden;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(124, 58, 237, 0.13),
+          rgba(37, 99, 235, 0.05) 50%,
+          rgba(17, 17, 20, 0.8)
+        );
+    }
+
+    .hero::before {
+      content: "";
+
+      position: absolute;
+
+      width: 320px;
+      height: 320px;
+
+      top: -160px;
+      right: -100px;
+
+      background: var(--primary);
+
+      opacity: 0.12;
+
+      filter: blur(80px);
+
+      border-radius: 50%;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 6px 10px;
+
+      margin-bottom: 22px;
+
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      border-radius: 999px;
+
+      color: var(--primary-light);
+
+      background: rgba(124, 58, 237, 0.1);
+
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+
+      background: var(--green);
+
+      border-radius: 50%;
+
+      box-shadow: 0 0 10px var(--green);
+    }
+
+    h1 {
+      max-width: 800px;
+
+      font-size: clamp(38px, 5vw, 64px);
+
+      line-height: 1.05;
+
+      letter-spacing: -0.045em;
+
+      margin-bottom: 24px;
+    }
+
+    .gradient-text {
+      background:
+        linear-gradient(
+          90deg,
+          #a78bfa,
+          #60a5fa,
+          #38bdf8
+        );
+
+      -webkit-background-clip: text;
+      background-clip: text;
+
+      color: transparent;
+    }
+
+    .hero-description {
+      max-width: 720px;
+
+      color: var(--text-secondary);
+
+      font-size: 17px;
+      line-height: 1.8;
+
+      margin-bottom: 30px;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 6px 10px;
+
+      border: 1px solid var(--border);
+      border-radius: 7px;
+
+      background: rgba(255, 255, 255, 0.025);
+
+      color: var(--text-secondary);
+
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    /* =========================
+       Sections
+    ========================= */
+
+    section {
+      margin-bottom: 90px;
+    }
+
+    .section-heading {
+      margin-bottom: 35px;
+    }
+
+    .section-label {
+      display: block;
+
+      margin-bottom: 8px;
+
+      color: var(--primary-light);
+
+      font-size: 11px;
+      font-weight: 800;
+
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: 32px;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+    }
+
+    h3 {
+      font-size: 17px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--text-secondary);
+    }
+
+    /* =========================
+       Feature Cards
+    ========================= */
+
+    .feature-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 14px;
+    }
+
+    .feature-card {
+      padding: 24px;
+
+      min-height: 190px;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.025),
+          rgba(255, 255, 255, 0.01)
+        );
+
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+
+      border-color: var(--border-light);
+    }
+
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+
+      display: grid;
+      place-items: center;
+
+      margin-bottom: 20px;
+
+      border-radius: 10px;
+
+      background: rgba(124, 58, 237, 0.12);
+
+      font-size: 20px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* =========================
+       Documentation Workflow
+    ========================= */
+
+    .workflow {
+      display: grid;
+      gap: 10px;
+    }
+
+    .workflow-item {
+      display: grid;
+
+      grid-template-columns: 48px 1fr auto;
+
+      align-items: center;
+
+      gap: 18px;
+
+      padding: 18px;
+
+      border: 1px solid var(--border);
+      border-radius: 12px;
+
+      background: var(--surface);
+
+      transition: 0.2s ease;
+    }
+
+    .workflow-item:hover {
+      border-color: rgba(124, 58, 237, 0.4);
+      background: var(--surface-2);
+    }
+
+    .workflow-number {
+      width: 36px;
+      height: 36px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 10px;
+
+      background: rgba(124, 58, 237, 0.13);
+
+      color: var(--primary-light);
+
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .workflow-item strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .workflow-item span {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .workflow-arrow {
+      color: var(--text-muted);
+    }
+
+    /* =========================
+       Code
+    ========================= */
+
+    .code-card {
+      overflow: hidden;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+
+      background: #0c0c0f;
+
+      margin: 20px 0;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 11px 15px;
+
+      border-bottom: 1px solid var(--border);
+
+      background: #111114;
+
+      color: var(--text-muted);
+
+      font-size: 11px;
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .dot.red {
+      background: #ef4444;
+    }
+
+    .dot.yellow {
+      background: #eab308;
+    }
+
+    .dot.green {
+      background: #22c55e;
+    }
+
+    pre {
+      padding: 22px;
+
+      overflow-x: auto;
+
+      color: #d4d4d8;
+
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .keyword {
+      color: #c084fc;
+    }
+
+    .type {
+      color: #60a5fa;
+    }
+
+    .string {
+      color: #86efac;
+    }
+
+    .comment {
+      color: #52525b;
+    }
+
+    /* =========================
+       Steps
+    ========================= */
+
+    .steps {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 14px;
+    }
+
+    .step {
+      padding: 24px;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+
+      background: var(--surface);
+    }
+
+    .step-number {
+      color: var(--primary-light);
+
+      font-family: monospace;
+      font-size: 12px;
+      font-weight: 800;
+
+      margin-bottom: 12px;
+    }
+
+    .step h3 {
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 13px;
+    }
+
+    .step code {
+      display: inline-block;
+
+      margin-top: 14px;
+      padding: 8px 10px;
+
+      border-radius: 7px;
+
+      background: #09090b;
+
+      color: var(--green);
+
+      font-size: 11px;
+    }
+
+    /* =========================
+       Backend
+    ========================= */
+
+    .backend-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 14px;
+    }
+
+    .backend-card {
+      padding: 28px;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+
+      background: var(--surface);
+    }
+
+    .backend-card.rest {
+      border-top: 2px solid var(--blue);
+    }
+
+    .backend-card.firebase {
+      border-top: 2px solid var(--orange);
+    }
+
+    .backend-label {
+      display: inline-block;
+
+      margin-bottom: 18px;
+
+      padding: 5px 9px;
+
+      border-radius: 6px;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .rest .backend-label {
+      color: var(--blue);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .firebase .backend-label {
+      color: var(--orange);
+      background: rgba(251, 146, 60, 0.1);
+    }
+
+    .backend-card p {
+      font-size: 13px;
+    }
+
+    /* =========================
+       Sync Strategies
+    ========================= */
+
+    .strategy {
+      padding: 25px;
+
+      margin-bottom: 12px;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+
+      background: var(--surface);
+    }
+
+    .strategy-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      margin-bottom: 10px;
+    }
+
+    .strategy-number {
+      width: 30px;
+      height: 30px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 8px;
+
+      background: rgba(124, 58, 237, 0.12);
+
+      color: var(--primary-light);
+
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .strategy p {
+      font-size: 13px;
+    }
+
+    /* =========================
+       Architecture Diagram
+    ========================= */
+
+    .architecture {
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      flex-wrap: wrap;
+
+      gap: 12px;
+
+      padding: 35px 20px;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(124, 58, 237, 0.08),
+          transparent 65%
+        );
+    }
+
+    .arch-box {
+      min-width: 130px;
+
+      padding: 18px 20px;
+
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+
+      background: var(--surface-2);
+
+      text-align: center;
+    }
+
+    .arch-box strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .arch-box small {
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+
+    .arch-arrow {
+      color: var(--primary-light);
+      font-size: 18px;
+    }
+
+    /* =========================
+       Callout
+    ========================= */
+
+    .callout {
+      display: flex;
+
+      gap: 15px;
+
+      padding: 20px;
+
+      margin: 25px 0;
+
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      border-radius: 12px;
+
+      background: rgba(124, 58, 237, 0.07);
+    }
+
+    .callout-icon {
+      font-size: 18px;
+    }
+
+    .callout p {
+      font-size: 13px;
+    }
+
+    .callout strong {
+      color: var(--text);
+    }
+
+    /* =========================
+       Footer
+    ========================= */
+
+    footer {
+      padding-top: 40px;
+
+      border-top: 1px solid var(--border);
+
+      color: var(--text-muted);
+
+      font-size: 12px;
+
+      text-align: center;
+    }
+
+    /* =========================
+       Mobile
+    ========================= */
+
+    @media (max-width: 1000px) {
+      .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 800px) {
+      :root {
+        --sidebar-width: 0px;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .content {
+        padding: 40px 20px 80px;
+      }
+
+      .hero {
+        padding: 30px 22px;
+      }
+
+      .feature-grid,
+      .steps,
+      .backend-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .workflow-item {
+        grid-template-columns: 40px 1fr;
+      }
+
+      .workflow-arrow {
+        display: none;
+      }
+
+      h1 {
+        font-size: 42px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 34px;
+      }
+
+      h2 {
+        font-size: 27px;
+      }
+
+      .hero-description {
+        font-size: 15px;
+      }
+
+      .architecture {
+        flex-direction: column;
+      }
+
+      .arch-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <aside class="sidebar">
+
+      <div class="brand">
+        <div class="brand-icon">
+          <span>F</span>
+        </div>
+
+        <div class="brand-text">
+          <strong>Flutter Starter</strong>
+          <small>Clean Architecture</small>
+        </div>
+      </div>
+
+      <nav class="nav">
+
+        <div class="nav-title">Overview</div>
+
+        <a href="#overview" class="active">
+          <span class="nav-icon">◈</span>
+          Overview
+        </a>
+
+        <a href="#features">
+          <span class="nav-icon">✦</span>
+          Features
+        </a>
+
+        <div class="nav-title">Documentation</div>
+
+        <a href="#workflow">
+          <span class="nav-icon">01</span>
+          Workflow
+        </a>
+
+        <a href="#architecture">
+          <span class="nav-icon">02</span>
+          Architecture
+        </a>
+
+        <a href="#project-structure">
+          <span class="nav-icon">03</span>
+          Project Structure
+        </a>
+
+        <div class="nav-title">Development</div>
+
+        <a href="#getting-started">
+          <span class="nav-icon">→</span>
+          Getting Started
+        </a>
+
+        <a href="#backends">
+          <span class="nav-icon">◇</span>
+          Backends
+        </a>
+
+        <a href="#sync">
+          <span class="nav-icon">↻</span>
+          Sync Strategy
+        </a>
+
+      </nav>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <main class="main">
+
+      <div class="content">
+
+        <!-- HERO -->
+
+        <section id="overview" class="hero">
+
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Production Ready
+          </div>
+
+          <h1>
+            Flutter
+            <span class="gradient-text">
+              Clean Architecture
+            </span>
+            Starter Template
+          </h1>
+
+          <p class="hero-description">
+            A highly structured, production-grade, and swap-friendly
+            Flutter foundation designed for modern development and
+            AI-assisted engineering.
+          </p>
+
+          <div class="hero-tags">
+            <span class="tag">Flutter</span>
+            <span class="tag">Riverpod</span>
+            <span class="tag">Drift</span>
+            <span class="tag">Dio</span>
+            <span class="tag">Firebase</span>
+            <span class="tag">Clean Architecture</span>
+            <span class="tag">AI Ready</span>
+          </div>
+
+        </section>
+
+
+        <!-- FEATURES -->
+
+        <section id="features">
+
+          <div class="section-heading">
+            <span class="section-label">01 / Capabilities</span>
+            <h2>Everything you need to start right.</h2>
+          </div>
+
+          <div class="feature-grid">
+
+            <article class="feature-card">
+              <div class="feature-icon">🏗️</div>
+
+              <h3>Clean Architecture</h3>
+
+              <p>
+                Presentation, Domain, and Data layers are cleanly
+                isolated on a per-feature basis.
+              </p>
+            </article>
+
+
+            <article class="feature-card">
+              <div class="feature-icon">⚡</div>
+
+              <h3>Riverpod</h3>
+
+              <p>
+                Code-generated Riverpod providers deliver reactive
+                state management and clean dependency injection.
+              </p>
+            </article>
+
+
+            <article class="feature-card">
+              <div class="feature-icon">💾</div>
+
+              <h3>Drift Database</h3>
+
+              <p>
+                SQLite-powered local persistence for caching,
+                offline storage, and reliable local data access.
+              </p>
+            </article>
+
+
+            <article class="feature-card">
+              <div class="feature-icon">🌐</div>
+
+              <h3>REST + Firebase</h3>
+
+              <p>
+                Switch between Dio-based REST APIs and Cloud
+                Firestore without changing your domain layer.
+              </p>
+            </article>
+
+
+            <article class="feature-card">
+              <div class="feature-icon">🔄</div>
+
+              <h3>Sync Queue</h3>
+
+              <p>
+                Optional outbox-pattern synchronization for
+                offline-first and eventually consistent applications.
+              </p>
+            </article>
+
+
+            <article class="feature-card">
+              <div class="feature-icon">🤖</div>
+
+              <h3>AI-Assisted</h3>
+
+              <p>
+                Pre-built Claude commands and skills help generate
+                features, models, screens, and tests.
+              </p>
+            </article>
+
+          </div>
+
+        </section>
+
+
+        <!-- WORKFLOW -->
+
+        <section id="workflow">
+
+          <div class="section-heading">
+            <span class="section-label">02 / Documentation</span>
+            <h2>Documentation-first workflow.</h2>
+          </div>
+
+          <div class="callout">
+
+            <div class="callout-icon">💡</div>
+
+            <p>
+              <strong>Build the documentation before the code.</strong>
+              Define your architecture, features, screens, and
+              development rules first. Then let your AI assistant
+              implement against those decisions.
+            </p>
+
+          </div>
+
+
+          <div class="workflow">
+
+            <div class="workflow-item">
+              <div class="workflow-number">01</div>
+
+              <div>
+                <strong>AI Workflow</strong>
+                <span>Start with the complete 8-step development loop.</span>
+              </div>
+
+              <span class="workflow-arrow">→</span>
+            </div>
+
+
+            <div class="workflow-item">
+              <div class="workflow-number">02</div>
+
+              <div>
+                <strong>Design Tokens</strong>
+                <span>Generate colors, typography, and spacing into docs/design_systems/tokens/.</span>
+              </div>
+
+              <span class="workflow-arrow">→</span>
+            </div>
+
+
+            <div class="workflow-item">
+              <div class="workflow-number">03</div>
+
+              <div>
+                <strong>Architecture</strong>
+                <span>Define the project overview and technology stack.</span>
+              </div>
+
+              <span class="workflow-arrow">→</span>
+            </div>
+
+
+            <div class="workflow-item">
+              <div class="workflow-number">04</div>
+
+              <div>
+                <strong>Features</strong>
+                <span>Create one specification file for every feature.</span>
+              </div>
+
+              <span class="workflow-arrow">→</span>
+            </div>
+
+
+            <div class="workflow-item">
+              <div class="workflow-number">05</div>
+
+              <div>
+                <strong>Screen Flow</strong>
+                <span>Maintain a single index of every application screen.</span>
+              </div>
+
+              <span class="workflow-arrow">→</span>
+            </div>
+
+
+            <div class="workflow-item">
+              <div class="workflow-number">06</div>
+
+              <div>
+                <strong>CLAUDE.md</strong>
+                <span>Keep architecture and AI development rules centralized.</span>
+              </div>
+
+              <span class="workflow-arrow">→</span>
+            </div>
+
+          </div>
+
+
+          <div class="callout">
+
+            <div class="callout-icon">📚</div>
+
+            <p>
+              <strong>Reference doc, read as needed:</strong>
+              <code>docs/local_storage.md</code> covers where the local Drift database is
+              initialized, which files own which part of it, and what's involved in swapping
+              it for a different local storage plugin.
+            </p>
+
+          </div>
+
+        </section>
+
+
+        <!-- ARCHITECTURE -->
+
+        <section id="architecture">
+
+          <div class="section-heading">
+            <span class="section-label">03 / Architecture</span>
+            <h2>Separation that scales.</h2>
+          </div>
+
+
+          <div class="architecture">
+
+            <div class="arch-box">
+              <strong>Presentation</strong>
+              <small>UI · Controllers</small>
+            </div>
+
+            <div class="arch-arrow">→</div>
+
+            <div class="arch-box">
+              <strong>Domain</strong>
+              <small>Entities · Contracts</small>
+            </div>
+
+            <div class="arch-arrow">→</div>
+
+            <div class="arch-box">
+              <strong>Data</strong>
+              <small>Repositories · Sources</small>
+            </div>
+
+            <div class="arch-arrow">→</div>
+
+            <div class="arch-box">
+              <strong>Infrastructure</strong>
+              <small>REST · Firebase · Drift</small>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- PROJECT STRUCTURE -->
+
+        <section id="project-structure">
+
+          <div class="section-heading">
+            <span class="section-label">04 / Structure</span>
+            <h2>Predictable project organization.</h2>
+          </div>
+
+
+          <div class="code-card">
+
+            <div class="code-header">
+              <div class="dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+
+              <span>project structure</span>
+            </div>
+
+<pre><span class="comment"># Flutter Clean Architecture</span>
+
+lib/
+├── core/
+│   ├── network/
+│   ├── database/
+│   ├── sync/
+│   └── ...
+│
+├── features/
+│   └── sample_counter/
+│       ├── data/
+│       ├── domain/
+│       └── presentation/
+│
+└── main.dart
+
+docs/
+├── ai_workflow.md
+├── architecture.md
+├── screen_flow.md
+├── local_storage.md
+├── design_systems/
+│   └── tokens/
+│       ├── colors.css
+│       ├── spacing.css
+│       └── typography.css
+└── features/
+    ├── index.md
+    └── 00-sample-feature.md
+
+.claude/
+├── commands/
+└── skills/
+
+CLAUDE.md</pre>
+
+          </div>
+
+        </section>
+
+
+        <!-- GETTING STARTED -->
+
+        <section id="getting-started">
+
+          <div class="section-heading">
+            <span class="section-label">05 / Installation</span>
+            <h2>Get started in minutes.</h2>
+          </div>
+
+
+          <div class="steps">
+
+            <article class="step">
+              <div class="step-number">STEP 01</div>
+
+              <h3>Clone the template</h3>
+
+              <p>
+                Clone this repository (or use it as a template) and
+                open the project root in your editor.
+              </p>
+
+              <code>git clone &lt;repo-url&gt; your_app</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 02</div>
+
+              <h3>Generate platforms</h3>
+
+              <p>
+                Generate Android, iOS, Web, and other platform
+                runners around the existing Flutter source.
+              </p>
+
+              <code>flutter create .</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 03</div>
+
+              <h3>Rename the package</h3>
+
+              <p>
+                Replace the default package name and update
+                platform application identifiers.
+              </p>
+
+              <code>flutter_app_template → your_app</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 04</div>
+
+              <h3>Install dependencies</h3>
+
+              <p>
+                Fetch all Flutter and Dart dependencies from
+                the project root.
+              </p>
+
+              <code>flutter pub get</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 05</div>
+
+              <h3>Generate code</h3>
+
+              <p>
+                Generate Drift database and Riverpod notifier
+                source files.
+              </p>
+
+              <code>dart run build_runner build --delete-conflicting-outputs</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 06</div>
+
+              <h3>Configure Firebase</h3>
+
+              <p>
+                Only required when using the Firestore datasource.
+              </p>
+
+              <code>flutterfire configure</code>
+            </article>
+
+
+            <article class="step">
+              <div class="step-number">STEP 07</div>
+
+              <h3>Run the app</h3>
+
+              <p>
+                Launch the application using Flutter's standard
+                development runner.
+              </p>
+
+              <code>flutter run</code>
+            </article>
+
+          </div>
+
+        </section>
+
+
+        <!-- BACKENDS -->
+
+        <section id="backends">
+
+          <div class="section-heading">
+            <span class="section-label">06 / Infrastructure</span>
+            <h2>Swap your backend without rewriting your app.</h2>
+          </div>
+
+
+          <div class="backend-grid">
+
+            <article class="backend-card rest">
+
+              <span class="backend-label">
+                REST / Dio
+              </span>
+
+              <h3>Dio Client Datasource</h3>
+
+              <p>
+                Handles standard JSON communication with
+                REST endpoints through a reusable HTTP client.
+              </p>
+
+            </article>
+
+
+            <article class="backend-card firebase">
+
+              <span class="backend-label">
+                Firebase
+              </span>
+
+              <h3>Cloud Firestore Datasource</h3>
+
+              <p>
+                Provides direct Firestore collection access
+                while keeping backend details outside the domain.
+              </p>
+
+            </article>
+
+          </div>
+
+
+          <div class="code-card">
+
+            <div class="code-header">
+              <div class="dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+
+              <span>counter_controller.dart</span>
+            </div>
+
+<pre><span class="keyword">@riverpod</span>
+<span class="type">CounterRemoteDatasource</span> counterRemoteDatasource(
+  <span class="type">Ref</span> ref,
+) {
+  <span class="comment">// REST / Dio</span>
+  <span class="keyword">return</span> CounterRestDatasource(
+    ref.watch(baseApiClientProvider),
+  );
+
+  <span class="comment">// Firebase / Firestore</span>
+  <span class="comment">// return CounterFirebaseDatasource(</span>
+  <span class="comment">//   FirebaseFirestore.instance,</span>
+  <span class="comment">// );</span>
+}</pre>
+
+          </div>
+
+
+          <div class="callout">
+
+            <div class="callout-icon">✓</div>
+
+            <p>
+              <strong>No domain changes required.</strong>
+              Entities, repository contracts, and UI pages remain
+              completely independent of the selected backend.
+            </p>
+
+          </div>
+
+        </section>
+
+
+        <!-- SYNC -->
+
+        <section id="sync">
+
+          <div class="section-heading">
+            <span class="section-label">07 / Data</span>
+            <h2>Choose your synchronization strategy.</h2>
+          </div>
+
+
+          <article class="strategy">
+
+            <div class="strategy-header">
+              <div class="strategy-number">A</div>
+              <h3>Direct Remote</h3>
+            </div>
+
+            <p>
+              Writes directly to the server and updates the local
+              cache after a successful response. Recommended for
+              standard CRUD applications.
+            </p>
+
+          </article>
+
+
+          <article class="strategy">
+
+            <div class="strategy-header">
+              <div class="strategy-number">B</div>
+              <h3>Offline-Only</h3>
+            </div>
+
+            <p>
+              Stores data exclusively in local SQLite/Drift.
+              Useful when remote synchronization is not required.
+            </p>
+
+          </article>
+
+
+          <article class="strategy">
+
+            <div class="strategy-header">
+              <div class="strategy-number">C</div>
+              <h3>Outbox Sync</h3>
+            </div>
+
+            <p>
+              Writes immediately to local Drift, updates the UI
+              optimistically, queues a synchronization task, and
+              processes it in the background when connectivity returns.
+            </p>
+
+          </article>
+
+
+          <div class="code-card">
+
+            <div class="code-header">
+              <div class="dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+
+              <span>sync architecture</span>
+            </div>
+
+<pre>UI
+ │
+ ▼
+Local Drift Database
+ │
+ ▼
+syncQueueEntries
+ │
+ ▼
+Background Worker
+ │
+ ▼
+Remote Backend
+ │
+ └── REST / Firebase</pre>
+
+          </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer>
+
+          <p>
+            Flutter Clean Architecture Starter Template
+          </p>
+
+          <p>
+            Built for scalable apps, clean code, and AI-assisted development.
+          </p>
+
+        </footer>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

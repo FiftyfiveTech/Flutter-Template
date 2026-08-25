@@ -21,6 +21,13 @@ graph TD
 ### Step 1: Design Tokens + PRD
 Paste your product requirements document (PRD) into the AI design tool. Generate design tokens (colors, typography, spacing, border radii) as CSS variables or JSON before creating any screens. Save these under `docs/design_systems/tokens/`.
 
+**Design Token Sources** — pick whichever fits your project, they all converge on the same output:
+- **Prompt-generated**: paste the PRD (Prompt 1 below) and have the AI derive a palette/scale from scratch. No external tooling required.
+- **Design-tool MCP** (e.g. a Figma MCP server): if one is connected, pull the token values directly from an existing design file instead of describing them in prose. Only use this path if the MCP is already configured — don't add it as a hard dependency for consumers of this template who don't have it.
+- **Hand-authored**: write the CSS files directly under `docs/design_systems/tokens/` if the design system already exists elsewhere (a brand guide, an existing app) and just needs transcribing.
+
+Whichever source you use, the deliverable is the same: `colors.css`, `spacing.css`, and `typography.css` (or equivalent) under `docs/design_systems/tokens/`, mirrored into Flutter's `ThemeExtension`/`ThemeData` in `lib/core/theme` — never hardcode a color/spacing/type value in feature code.
+
 ### Step 2: Break the PRD into Features
 Ask the AI to parse the PRD and map it into a numbered list of independent feature areas. Create one spec file per feature under `docs/features/` along with an `index.md`. Each file should specify user stories, data models, and feature dependencies.
 
