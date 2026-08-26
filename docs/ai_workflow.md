@@ -181,18 +181,28 @@ Feed anything found back as a fix task, and flag any rule it exposes that CLAUDE
 | `/dod-check` | Performs a Definition of Done audit. |
 | `/audit-architecture` | Runs a repo-wide architecture/compliance audit. |
 
-### General-purpose, worth adding to any AI-assisted Flutter project
+### Prebuilt Claude Code skills — already available, nothing to add
+These ship with Claude Code itself, not with this repo's `.claude/skills/`. If you're using Claude
+Code, they just work — there's no setup step for this template.
+
 | Skill | Why it earns a slot |
 |---|---|
 | `security-review` | Pre-merge pass for injection/secrets/OWASP-class issues — cheap insurance on any app handling user data. |
 | `code-review` / `simplify` | Independent second pass for correctness and over-engineering before merging a flow. |
 | `dataviz` | If the product has any charts/progress graphs, gives consistent, accessible chart styling instead of ad hoc plotting choices. |
-| `a11y-compliance` *(build this one)* | Screen-reader labels, contrast, touch-target size — not covered by the overflow-audit skill above, which is layout-only. |
-| `performance-audit` *(build this one)* | const-constructor discipline, rebuild-tree checks, memory leaks — worth adding once the app has enough screens that jank becomes possible. |
-| `l10n` *(build this one, if multi-language is planned)* | Standardizes ARB-based localization instead of ad hoc string tables. |
 | `fewer-permission-prompts` | Run once the workflow stabilizes — scans your own transcript history and pre-allowlists the read-only commands you approve every time anyway. |
 | `loop` | Useful for making Step 8's graphify re-check (see the Step 8 Improvement note above) actually recurring instead of manual. |
-| A domain-specific compliance skill *(build this one if applicable)* | If your product has a regulated or safety-critical domain, bake its rules (thresholds, consent, required disclosures) into a skill rather than relying on remembering to ask for them every time. |
+
+### Not bundled anywhere — build these yourself if your project needs them
+Unlike the table above, these don't exist yet in Claude Code or this repo — they're gaps worth
+writing a `.claude/skills/[name]/SKILL.md` for once your project needs them (see Prompt 6).
+
+| Skill | Why it earns a slot |
+|---|---|
+| `a11y-compliance` | Screen-reader labels, contrast, touch-target size — not covered by the overflow-audit skill above, which is layout-only. |
+| `performance-audit` | const-constructor discipline, rebuild-tree checks, memory leaks — worth adding once the app has enough screens that jank becomes possible. |
+| `l10n` *(if multi-language is planned)* | Standardizes ARB-based localization instead of ad hoc string tables. |
+| A domain-specific compliance skill *(if applicable)* | If your product has a regulated or safety-critical domain, bake its rules (thresholds, consent, required disclosures) into a skill rather than relying on remembering to ask for them every time. |
 
 Update `CLAUDE.md`'s skills section every time a skill is added, so the rule and the automation that enforces it stay next to each other.
 
