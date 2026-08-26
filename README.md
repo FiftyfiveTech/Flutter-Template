@@ -2,6 +2,11 @@
 
 A production-grade, highly structured, and swap-friendly Flutter starter template. It is designed to work seamlessly with AI coding assistants (like Claude Code and Antigravity) to enable fast, clean, and error-free development.
 
+> **Prefer a visual walkthrough?** Open [`site/index.html`](site/index.html) in a browser — it
+> covers everything in this README (setup, architecture, backend swapping, sync strategies) plus
+> the full 8-step AI workflow with copy-paste prompts, as an interactive guide instead of a wall
+> of Markdown.
+
 ## Key Features
 * **Clean Architecture**: Out-of-the-box Presentation, Domain, and Data layer isolation per feature.
 * **State Management**: Riverpod (code-generation flavor) for clean dependency injection and reactive state.
