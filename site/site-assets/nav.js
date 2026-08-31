@@ -26,6 +26,7 @@
       items: [
         { id: "skills", label: "Skills & Commands", icon: "★", href: "skills.html" },
         { id: "challenges", label: "Challenges", icon: "⚠", href: "challenges.html" },
+        { id: "dos-donts", label: "Dos & Don'ts", icon: "✓", href: "dos-donts.html" },
         { id: "understanding", label: "Check Yourself", icon: "?", href: "understanding.html" },
       ],
     },

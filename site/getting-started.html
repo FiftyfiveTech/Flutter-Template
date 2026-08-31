@@ -53,8 +53,8 @@
               <h3>Generate platforms</h3>
 
               <p>
-                Generate Android, iOS, Web, and other platform
-                runners around the existing Flutter source.
+                Creates the Android, iOS, Web, and other platform
+                folders needed to actually run the app.
               </p>
 
               <code>flutter create .</code>
@@ -67,8 +67,8 @@
               <h3>Rename the package</h3>
 
               <p>
-                Replace the default package name and update
-                platform application identifiers.
+                Change the default project name to your own, both in
+                the code and in the Android/iOS app settings.
               </p>
 
               <code>flutter_app_template → your_app</code>
@@ -81,8 +81,7 @@
               <h3>Install dependencies</h3>
 
               <p>
-                Fetch all Flutter and Dart dependencies from
-                the project root.
+                Downloads all the packages this project needs.
               </p>
 
               <code>flutter pub get</code>
@@ -95,8 +94,8 @@
               <h3>Generate code</h3>
 
               <p>
-                Generate Drift database and Riverpod notifier
-                source files.
+                Creates the auto-generated files needed by the
+                database (Drift) and state management (Riverpod).
               </p>
 
               <code>dart run build_runner build --delete-conflicting-outputs</code>
@@ -122,8 +121,8 @@
               <h3>Run the app</h3>
 
               <p>
-                Launch the application using Flutter's standard
-                development runner.
+                Starts the app on your emulator, simulator, or a
+                connected device.
               </p>
 
               <code>flutter run</code>

@@ -39,9 +39,9 @@
             </div>
 
             <p>
-              Writes directly to the server and updates the local
-              cache after a successful response. Recommended for
-              standard CRUD applications. Active by default.
+              Saves data to the server first, then updates the copy on the
+              device once that succeeds. The default option — good for
+              most apps.
             </p>
 
           </article>
@@ -55,8 +55,8 @@
             </div>
 
             <p>
-              Stores data exclusively in local SQLite/Drift.
-              Useful when remote synchronization is not required.
+              Only saves data on the device — nothing is sent to a server.
+              Use this if the app doesn't need to sync at all.
             </p>
 
           </article>
@@ -70,9 +70,9 @@
             </div>
 
             <p>
-              Writes immediately to local Drift, updates the UI
-              optimistically, queues a synchronization task, and
-              processes it in the background when connectivity returns.
+              Saves data on the device right away, so the screen updates
+              instantly, then sends it to the server in the background
+              once the device is back online.
             </p>
 
           </article>
@@ -115,11 +115,11 @@ Remote Backend
 
             <p>
               <strong>How to switch strategies:</strong>
-              there's no config flag — edit <code>updateCounter()</code> in
-              <code>counter_repository_impl.dart</code>. Strategy A is the live code block;
-              Strategy C sits directly below it, commented out. Comment out A and uncomment C
-              to switch. Strategy B means skipping the remote datasource call entirely and
-              writing to <code>_localDatasource</code> only.
+              there's no setting to flip — you edit the code directly. Open
+              <code>updateCounter()</code> in <code>counter_repository_impl.dart</code>:
+              Strategy A is the active code, and Strategy C sits right below it, commented out.
+              To switch, comment out A and uncomment C. For Strategy B, just skip the server
+              call and save to <code>_localDatasource</code> only.
             </p>
 
           </div>

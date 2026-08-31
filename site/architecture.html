@@ -67,11 +67,10 @@
             <div class="callout-icon">🔒</div>
 
             <p>
-              <strong>Domain has zero framework dependencies.</strong>
-              Entities, repository interfaces, and use cases never import
-              Drift, Dio, or Firestore directly — only the Data layer does,
-              which is what makes use cases unit-testable without a database
-              or network.
+              <strong>The business logic layer (Domain) doesn't depend on any tool.</strong>
+              It never talks to Drift, Dio, or Firestore directly — only the Data layer does that.
+              This means you can test your business rules without needing a real database or an
+              internet connection.
             </p>
 
           </div>
@@ -146,9 +145,9 @@ CLAUDE.md</pre>
             <div class="callout-icon">🚫</div>
 
             <p>
-              <strong>android/, ios/, and .metadata are not committed.</strong>
-              This template ships as <code>lib/</code>/<code>test/</code> only — generate the
-              platform runners yourself with <code>flutter create .</code> (see Getting Started).
+              <strong>The android/, ios/, and .metadata folders aren't included.</strong>
+              This template only ships the <code>lib/</code> and <code>test/</code> folders — run
+              <code>flutter create .</code> yourself to generate the rest (see Getting Started).
             </p>
 
           </div>

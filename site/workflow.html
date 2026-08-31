@@ -35,11 +35,10 @@
             <div class="callout-icon">💡</div>
 
             <p>
-              <strong>Build the documentation before the code.</strong>
-              Define your design tokens, features, screens, architecture, and
-              development rules first. Then let your AI assistant
-              implement against those decisions, one flow at a time.
-              Tap a step to expand it.
+              <strong>Write the docs before you write the code.</strong>
+              First decide on your design system, features, screens, architecture, and rules.
+              Then let your AI assistant build the app based on those decisions, one feature
+              at a time. Tap a step below to see more.
             </p>
 
           </div>
@@ -52,24 +51,25 @@
                 <div class="workflow-number">01</div>
                 <div>
                   <strong>Design Tokens + PRD</strong>
-                  <span>Generate colors, typography, and spacing from your PRD into docs/design_systems/tokens/, before any screens exist.</span>
+                  <span>Turn your product requirements into a color, font, and spacing system — before designing any screens.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Paste your PRD into an AI design tool and generate design tokens (colors,
-                  typography, spacing, radii) as CSS variables or JSON before any screens exist.
-                  Save them under <code>docs/design_systems/tokens/</code>, mirrored into
-                  Flutter's <code>ThemeExtension</code> — never hardcode a value in feature code.
+                  Give your product requirements doc (PRD) to an AI design tool and ask it to
+                  create a design system: colors, fonts, spacing, and corner radius — saved as
+                  CSS variables or JSON. Save these files under
+                  <code>docs/design_systems/tokens/</code>. Later, these same values feed into
+                  Flutter's <code>ThemeExtension</code>, so you never type a color or spacing
+                  value directly into a screen.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> also ask for the rules of usage alongside the
-                  tokens (when to use semantic vs. brand color, contrast minimums, spacing
-                  increments) in the same pass — backfilling this later costs more than asking
-                  for it up front.
+                  <strong>Improvement:</strong> also ask for simple usage rules at the same
+                  time — for example, when to use which color, or how much space to leave
+                  between elements. Adding this later takes more work than asking for it now.
                 </div>
 
                 <div class="code-card">
@@ -97,24 +97,23 @@ Do not write Dart code yet.</pre>
                 <div class="workflow-number">02</div>
                 <div>
                   <strong>Feature Breakdown</strong>
-                  <span>Parse the PRD into a numbered list of features. One spec file per feature under docs/features/, plus an index.md.</span>
+                  <span>Split the PRD into a numbered list of features, one file per feature, plus an index.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Ask the AI to parse the PRD into a numbered list of independent feature areas.
-                  Create one spec file per feature under <code>docs/features/</code> plus an
-                  <code>index.md</code>, capturing user stories, data entities, and dependencies
-                  on other features.
+                  Ask the AI to read the PRD and split it into a numbered list of features.
+                  Create one file per feature in <code>docs/features/</code>, plus an
+                  <code>index.md</code> that lists them all. Each file should describe what the
+                  feature does, what data it needs, and which other features it depends on.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> do this before any screen mockups, not
-                  interleaved with them. Doing it first gives the design tool a stable feature
-                  vocabulary to tag every screen with — which pays off in Step 7 when you ask
-                  for "the X flow."
+                  <strong>Improvement:</strong> do this before designing any screens, not at
+                  the same time. This gives you clear feature names to use later — so in Step 7
+                  you can just say "build the onboarding flow" and it's obvious what that means.
                 </div>
 
                 <div class="code-card">
@@ -141,24 +140,25 @@ Also produce an index.md listing every feature file.</pre>
                 <div class="workflow-number">03</div>
                 <div>
                   <strong>Screen Generation</strong>
-                  <span>Outline every screen state — loaded, loading, empty, error, offline — and index each one in docs/screen_flow.md.</span>
+                  <span>List every screen and its different states (loading, empty, error, offline), tracked in docs/screen_flow.md.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Develop detailed screen outlines feature-by-feature. Identify empty states,
-                  loading indicators, offline layouts, and validation error designs. Keep a
-                  running screen index under <code>docs/screen_flow.md</code>.
+                  Design each screen one feature at a time. For every screen, think through
+                  what it looks like when it's loading, empty, showing an error, or the device
+                  is offline. Keep a running list of every screen in
+                  <code>docs/screen_flow.md</code>.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> from day one, also produce a master screen index
-                  (screen ID → composing widgets → which feature/flow it belongs to) plus a
-                  dedicated cross-cutting states file (offline banner, skeleton loaders, empty
-                  states, generic error) shared across all screens — building these now saves a
-                  rework pass once you notice states being reinvented per-screen.
+                  <strong>Improvement:</strong> from the start, also keep one master list of
+                  every screen (its ID, what it's made of, and which feature it belongs to),
+                  plus a separate file for things shared across all screens — like the offline
+                  banner, loading skeletons, and the generic error message. Building these
+                  early saves you from redoing the same work screen by screen later.
                 </div>
 
                 <div class="code-card">
@@ -181,23 +181,24 @@ Add each new screen ID to docs/screen_flow.md. Do not write Flutter widgets yet.
                 <div class="workflow-number">04</div>
                 <div>
                   <strong>Architecture Docs</strong>
-                  <span>Detail database schemas, network paths, and the source of truth for every computed value in docs/architecture.md.</span>
+                  <span>Write down your database structure, how data flows over the network, and what's the final source of truth, in docs/architecture.md.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Detail the database schemas, network paths, and local caching decisions.
-                  Document which system acts as the source of truth for each computed value in
+                  Describe your database tables, how the app talks to the server, and how
+                  caching works. For anything the app calculates rather than just stores, write
+                  down which side — the app or the server — has the final say, in
                   <code>docs/architecture.md</code>.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> write down known conflicts between the design
-                  mockups and the PRD as you find them, in a living doc, rather than resolving
-                  them silently in code — a future session needs to know a decision was made and
-                  why, not just see the resulting code.
+                  <strong>Improvement:</strong> if you notice the design and the PRD don't
+                  agree on something, write it down instead of quietly picking one in the code.
+                  That way, anyone looking at this later — including future you — knows a
+                  decision was made, and why.
                 </div>
 
                 <div class="code-card">
@@ -223,23 +224,23 @@ for this Flutter app:
                 <div class="workflow-number">05</div>
                 <div>
                   <strong>CLAUDE.md Rules</strong>
-                  <span>Encode feature boundaries, state-management rules, and caching/theme expectations as non-negotiable rules.</span>
+                  <span>Write the non-negotiable rules — how features stay separate, how state is managed, how caching/theming work.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Update <code>CLAUDE.md</code> with strict boundaries: feature isolation, the
-                  chosen state-management rules, local-first cache expectations, and test
-                  coverage targets.
+                  Update <code>CLAUDE.md</code> with clear rules: what a feature is and isn't
+                  allowed to touch, which state-management approach to use, how caching should
+                  work, and how much test coverage is expected.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> link out to the docs from Step 4 rather than
-                  duplicating them — <code>CLAUDE.md</code> should be the index of rules, not a
-                  copy of the architecture doc. Treat it as living: every skill added in Step 6,
-                  or drift Step 8 surfaces, gets written back in here.
+                  <strong>Improvement:</strong> link to the docs from Step 4 instead of copying
+                  them — <code>CLAUDE.md</code> should point to the rules, not repeat them.
+                  Keep updating it: every time you add a skill in Step 6, or find a problem in
+                  Step 8, write the fix here too.
                 </div>
 
                 <div class="code-card">
@@ -266,23 +267,24 @@ Link out to the docs rather than duplicating their content.</pre>
                 <div class="workflow-number">06</div>
                 <div>
                   <strong>Equip AI Skills</strong>
-                  <span>Package durable checklists (architecture audits, design-token checks, overflow tests) as skills under .claude/skills/.</span>
+                  <span>Turn repeatable checks (architecture rules, design tokens, layout tests) into skills your AI assistant can reuse.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Equip the AI coding assistant with durable skills at
-                  <code>.claude/skills/</code> (e.g. Clean Architecture scaffolding checklists,
-                  design-token check validations, widget overflow tests).
+                  Give your AI assistant reusable checklists, saved as skills in
+                  <code>.claude/skills/</code>. For example: a checklist for scaffolding a new
+                  feature correctly, a check for hardcoded design values, or a check for
+                  layout/overflow bugs.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> add feature-scaffolding, data-sync, and
-                  state-management skills at the same time as your first audit/testing skills,
-                  rather than one at a time once you notice you're re-explaining the same
-                  constraints every session.
+                  <strong>Improvement:</strong> add skills for feature scaffolding, data
+                  syncing, and state management at the same time as your first audit/testing
+                  skills — not one by one, only after you notice you're repeating the same
+                  instructions every session.
                 </div>
 
                 <div class="code-card">
@@ -306,23 +308,24 @@ Then add one line to CLAUDE.md's skills section pointing to it.</pre>
                 <div class="workflow-number">07</div>
                 <div>
                   <strong>Flow-by-Flow Build</strong>
-                  <span>Build one logical flow at a time: Domain Entity → Repository Interface → Use Case → Riverpod Controller → Presentation UI.</span>
+                  <span>Build one full feature at a time, in this order: data model → repository → business logic → state → screen.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Build one logical flow at a time (e.g., onboarding, settings) rather than
-                  screen-by-screen. Generate code in order: Domain Entity → Repository Interface
-                  → Use Case → Riverpod Controller → Presentation UI.
+                  Build one full feature flow at a time (like onboarding or settings), instead
+                  of one screen at a time. Write the code in this order: data model →
+                  repository → business logic (use case) → state management (Riverpod) → the
+                  screen itself.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> run the responsiveness and audit skills from
-                  Step 6 at the end of each flow, not in a separate later pass — catching a
-                  boundary violation or overflow bug right after generating a flow is far
-                  cheaper than finding it three features later.
+                  <strong>Improvement:</strong> run the audit and layout-check skills from
+                  Step 6 right after finishing each feature, not later in a separate pass.
+                  Catching a mistake immediately is much cheaper than finding it several
+                  features later.
                 </div>
 
                 <div class="code-card">
@@ -349,24 +352,25 @@ this flow before moving to the next one.</pre>
                 <div class="workflow-number">08</div>
                 <div>
                   <strong>Knowledge Graph Audit</strong>
-                  <span>Run context-auditing tools like graphify to catch circular imports and boundary violations, feeding fixes back into CLAUDE.md.</span>
+                  <span>Use a tool like graphify to scan the whole codebase for problems, then update CLAUDE.md with what you find.</span>
                 </div>
                 <span class="workflow-arrow">⌄</span>
               </summary>
 
               <div class="workflow-detail">
                 <p>
-                  Run context auditing tools (like <code>graphify</code>) to detect circular
-                  imports, feature-boundary violations, or missing abstractions, and feed
-                  corrections back into <code>CLAUDE.md</code>.
+                  Run a code-scanning tool (like <code>graphify</code>) to find circular
+                  imports, features that break the rules, or code that's missing a proper
+                  structure. Fix what you find, and update <code>CLAUDE.md</code> so the same
+                  mistake doesn't happen again.
                 </p>
 
                 <div class="improvement">
-                  <strong>Improvement:</strong> don't run this once at the end — re-run it after
-                  every few flows in Step 7 and feed drift back into Step 5, so the graph stays
-                  a live health check. Pair it with a lightweight memory practice: the graph
-                  answers "how is the code connected"; memory answers "what did we decide and
-                  why, across sessions" — a long project needs both.
+                  <strong>Improvement:</strong> don't just run this once at the end — run it
+                  again every few features from Step 7, and feed anything you find back into
+                  Step 5. Also keep a simple written log of decisions alongside this. The scan
+                  tells you how the code is connected; the decision log tells you why things
+                  were built that way. A long project needs both.
                 </div>
 
                 <div class="code-card">
@@ -393,10 +397,9 @@ CLAUDE.md doesn't document yet.</pre>
             <div class="callout-icon">↺</div>
 
             <p>
-              <strong>The loop is cyclical, not linear.</strong>
-              Findings from Step 8's audit feed back into Step 5 — every
-              circular-import or boundary violation becomes a new rule in
-              CLAUDE.md, not just a one-off fix.
+              <strong>This isn't a one-way list — it's a loop.</strong>
+              Whatever Step 8's scan finds should turn into a new rule in
+              CLAUDE.md, not just a quick, one-time fix.
             </p>
 
           </div>
@@ -407,10 +410,10 @@ CLAUDE.md doesn't document yet.</pre>
             <div class="callout-icon">📚</div>
 
             <p>
-              <strong>Reference doc, read as needed:</strong>
-              <code>docs/local_storage.md</code> covers where the local Drift database is
-              initialized, which files own which part of it, and what's involved in swapping
-              it for a different local storage plugin.
+              <strong>One more doc worth knowing about:</strong>
+              <code>docs/local_storage.md</code> explains where the local database is set up,
+              which files are responsible for which part of it, and what to change if you ever
+              want to use a different local storage tool instead of Drift.
             </p>
 
           </div>
