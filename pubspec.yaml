@@ -1,4 +1,4 @@
-name: after_hours
+name: host_mobile_app
 description: "A generic, production-ready Flutter Clean Architecture Starter Template with Riverpod and Drift."
 publish_to: 'none'
 

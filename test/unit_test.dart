@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:after_hours/core/error/failures.dart';
-import 'package:after_hours/core/error/result.dart';
-import 'package:after_hours/features/sample_counter/domain/entities/counter_record.dart';
-import 'package:after_hours/features/sample_counter/domain/repositories/counter_repository.dart';
-import 'package:after_hours/features/sample_counter/domain/usecases/increment_counter.dart';
-import 'package:after_hours/features/sample_counter/data/models/counter_dto.dart';
+import 'package:host_mobile_app/core/error/failures.dart';
+import 'package:host_mobile_app/core/error/result.dart';
+import 'package:host_mobile_app/features/sample_counter/domain/entities/counter_record.dart';
+import 'package:host_mobile_app/features/sample_counter/domain/repositories/counter_repository.dart';
+import 'package:host_mobile_app/features/sample_counter/domain/usecases/increment_counter.dart';
+import 'package:host_mobile_app/features/sample_counter/data/models/counter_dto.dart';
 
 class MockCounterRepository implements CounterRepository {
   int? lastUpdatedValue;

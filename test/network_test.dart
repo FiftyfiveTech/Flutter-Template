@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:after_hours/core/di/network_providers.dart';
+import 'package:host_mobile_app/core/di/network_providers.dart';
 
 /// Captures the [RequestOptions] Dio would have sent, without making a real network call.
 class _CapturingHttpClientAdapter implements HttpClientAdapter {

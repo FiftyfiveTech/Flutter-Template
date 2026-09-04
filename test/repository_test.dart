@@ -1,9 +1,9 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:after_hours/core/database/app_database.dart';
-import 'package:after_hours/features/sample_counter/data/datasources/counter_local_datasource.dart';
-import 'package:after_hours/features/sample_counter/data/models/counter_dto.dart';
+import 'package:host_mobile_app/core/database/app_database.dart';
+import 'package:host_mobile_app/features/sample_counter/data/datasources/counter_local_datasource.dart';
+import 'package:host_mobile_app/features/sample_counter/data/models/counter_dto.dart';
 
 void main() {
   late AppDatabase database;
