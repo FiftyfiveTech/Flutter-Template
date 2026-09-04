@@ -1,4 +1,4 @@
-name: flutter_app_template
+name: after_hours
 description: "A generic, production-ready Flutter Clean Architecture Starter Template with Riverpod and Drift."
 publish_to: 'none'
 
