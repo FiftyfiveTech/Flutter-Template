@@ -26,9 +26,15 @@ new tokens there first, then reference them from widgets, never hardcode the raw
   inline `TextStyle` in a feature widget. If the project has a specific brand font, wire it into
   `AppTheme` once, not per-widget.
 - **Spacing**: use `AppSpacing` constants/spacers, no magic-number `EdgeInsets`/`SizedBox` values.
-- **Component reuse**: a widget used by exactly one feature stays in that feature's
-  `presentation/widgets/`. Promote it to a shared location (create `lib/shared/widgets/` if it
-  doesn't exist yet) only once a second feature genuinely needs it — avoid premature promotion.
+- **Component reuse**: core primitives — buttons, text fields, dropdowns/search fields, cards, and
+  any other control that mirrors a component in the project's design system (e.g. a `Button`,
+  `TextField`, `SelectField`, `Card` in a `_ds_bundle.js`/Figma kit) — belong in `lib/shared/widgets/`
+  from the first screen that needs them, named `Ah<Thing>` (e.g. `AhButton`, `AhTextField`,
+  `AhCard`). Build the shared version instead of a one-off styled `ElevatedButton`/`TextField` even
+  on the very first usage, so the second and third screens reuse it rather than re-implementing the
+  same styling. Only keep a widget feature-local when it's genuinely specific to that feature's flow
+  (e.g. a step-progress-dots indicator for one feature's wizard) rather than a general-purpose
+  control.
 - **Responsive**: mobile-first single column by default; use `LayoutBuilder`/`MediaQuery`
   breakpoints if/when tablet support is added.
 - **Dark mode**: this template ships `AppTheme.light` only. If a project needs dark mode, add the

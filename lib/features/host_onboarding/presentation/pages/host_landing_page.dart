@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/ah_button.dart';
 import '../widgets/host_landing_feature_row.dart';
 
 /// H-00 · Landing — the first screen a prospective host sees, before signup.
@@ -119,34 +121,17 @@ class HostLandingPage extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: AppSpacing.touchTargetComfortable,
-                    child: ElevatedButton(
-                      onPressed: () => _showComingSoon(context, 'Host signup'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.actionPrimary,
-                        foregroundColor: AppColors.actionPrimaryFg,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.radiusMd,
-                          ),
-                        ),
-                      ),
-                      child: const Text('Become a host'),
-                    ),
+                  AhButton(
+                    label: 'Become a host',
+                    fullWidth: true,
+                    onPressed: () => context.go('/host/signup'),
                   ),
                   AppSpacing.spacerSm,
-                  SizedBox(
-                    width: double.infinity,
-                    height: AppSpacing.touchTargetComfortable,
-                    child: TextButton(
-                      onPressed: () => _showComingSoon(context, 'Log in'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.actionTertiaryFg,
-                      ),
-                      child: const Text('I already have an account'),
-                    ),
+                  AhButton(
+                    label: 'I already have an account',
+                    variant: AhButtonVariant.tertiary,
+                    fullWidth: true,
+                    onPressed: () => _showComingSoon(context, 'Log in'),
                   ),
                 ],
               ),
