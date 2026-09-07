@@ -1,14 +1,14 @@
 import 'package:go_router/go_router.dart';
 
-import '../../features/sample_counter/presentation/pages/counter_page.dart';
+import '../../features/host_onboarding/presentation/pages/host_landing_page.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/host/landing',
   routes: [
     GoRoute(
-      path: '/',
-      name: 'counter',
-      builder: (context, state) => const CounterPage(),
+      path: '/host/landing',
+      name: 'hostLanding',
+      builder: (context, state) => const HostLandingPage(),
     ),
   ],
 );

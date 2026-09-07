@@ -19,16 +19,22 @@ class SyncQueueProcessor {
       try {
         final adapter = _adapters.firstWhere(
           (a) => a.entityType == entry.entityType,
-          orElse: () => throw StateError('No adapter found for entity type: ${entry.entityType}'),
+          orElse: () => throw StateError(
+            'No adapter found for entity type: ${entry.entityType}',
+          ),
         );
-        
+
         await adapter.push(entry);
-        
+
         // Remove from queue on success
-        await (_db.delete(_db.syncQueueEntries)..where((t) => t.id.equals(entry.id))).go();
+        await (_db.delete(
+          _db.syncQueueEntries,
+        )..where((t) => t.id.equals(entry.id))).go();
       } catch (error) {
         // Increment attempts and update last error on failure
-        await (_db.update(_db.syncQueueEntries)..where((t) => t.id.equals(entry.id))).write(
+        await (_db.update(
+          _db.syncQueueEntries,
+        )..where((t) => t.id.equals(entry.id))).write(
           SyncQueueEntriesCompanion(
             attempts: Value(entry.attempts + 1),
             lastError: Value(error.toString()),

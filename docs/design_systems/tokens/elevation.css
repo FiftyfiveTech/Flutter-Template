@@ -1,0 +1,29 @@
+/* Elevation.
+   BOTH themes carry depth by SURFACE VALUE, not by outline: a card is one step
+   lighter than the page it sits on and has no border. That is the single elevation
+   mechanism now, and it is why light and dark read as the same system.
+   Shadow is secondary and reserved for things that genuinely float free of content
+   (sheets, popovers, the swipe stack) — never on a resting card. Never more than
+   three levels on one screen.
+   LIGHT: low-opacity neutral-ink shadows. DARK: shadows barely register on #151514,
+   so the surface step does nearly all the work and shadow only separates overlays. */
+:root,.theme-dark{
+  --elevation-0:none;
+  --elevation-1:0 1px 2px rgba(0,0,0,.4);
+  --elevation-2:0 4px 12px rgba(0,0,0,.45);
+  --elevation-3:0 10px 28px rgba(0,0,0,.5);
+  --elevation-4:0 20px 48px rgba(0,0,0,.55);
+  --elevation-focus:0 0 0 3px rgba(139,151,238,.4);
+  --elevation-match:0 0 40px var(--color-match-glow);
+  --elevation-border-1:inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.theme-light{
+  --elevation-0:none;
+  --elevation-1:0 1px 2px rgba(36,28,46,.06);
+  --elevation-2:0 4px 14px rgba(36,28,46,.08),0 1px 2px rgba(36,28,46,.05);
+  --elevation-3:0 12px 28px rgba(36,28,46,.1),0 2px 6px rgba(36,28,46,.05);
+  --elevation-4:0 22px 48px rgba(36,28,46,.14),0 4px 10px rgba(36,28,46,.06);
+  --elevation-focus:0 0 0 3px rgba(179,84,10,.25);
+  --elevation-match:0 0 40px var(--color-match-glow);
+  --elevation-border-1:inset 0 0 0 1px rgba(36,28,46,.04);
+}

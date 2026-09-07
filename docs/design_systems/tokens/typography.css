@@ -1,19 +1,87 @@
-:root {
-  /* Font Family */
-  --font-family-primary: 'Arial', sans-serif;
-  --font-family-code: 'Courier New', monospace;
-  
-  /* Font Sizes */
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 24px;
-  --font-size-xxl: 32px;
-  
-  /* Font Weights */
-  --font-weight-light: 300;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-bold: 700;
+/* Type scale. Two families:
+   display (Bricolage Grotesque) for event titles, screen titles and emotional peaks;
+   body (Be Vietnam Pro) for everything a user has to read or tap.
+   Sizes are in rem so Dynamic Type / Android font-scale multiply them for free.
+   Nothing in the product UI goes below 12px (0.75rem) rendered. */
+:root{
+  --font-weight-light:300;
+  --font-weight-regular:400;
+  --font-weight-medium:500;
+  --font-weight-semibold:600;
+  --font-weight-bold:700;
+  --font-weight-display:800;
+
+  /* Display / hero — match moment, onboarding, empty-state headlines */
+  --type-display-family:var(--font-display);
+  --type-display-size:2.25rem;   /* 36 */
+  --type-display-weight:600;
+  --type-display-line:1.08;
+  --type-display-tracking:-0.03em;
+
+  --type-h1-family:var(--font-display);
+  --type-h1-size:1.75rem;        /* 28 */
+  --type-h1-weight:600;
+  --type-h1-line:1.15;
+  --type-h1-tracking:-0.03em;
+
+  --type-h2-family:var(--font-display);
+  --type-h2-size:1.3125rem;      /* 21 */
+  --type-h2-weight:600;
+  --type-h2-line:1.2;
+  --type-h2-tracking:-0.02em;
+
+  --type-h3-family:var(--font-body);
+  --type-h3-size:1.0625rem;      /* 17 */
+  --type-h3-weight:600;
+  --type-h3-line:1.3;
+  --type-h3-tracking:-0.01em;
+
+  --type-body-lg-family:var(--font-body);
+  --type-body-lg-size:1.0625rem; /* 17 */
+  --type-body-lg-weight:400;
+  --type-body-lg-line:1.5;
+  --type-body-lg-tracking:0;
+
+  --type-body-family:var(--font-body);
+  --type-body-size:0.9375rem;    /* 15 */
+  --type-body-weight:400;
+  --type-body-line:1.5;
+  --type-body-tracking:0;
+
+  --type-body-sm-family:var(--font-body);
+  --type-body-sm-size:0.8125rem; /* 13 */
+  --type-body-sm-weight:400;
+  --type-body-sm-line:1.45;
+  --type-body-sm-tracking:0.005em;
+
+  --type-caption-family:var(--font-body);
+  --type-caption-size:0.75rem;   /* 12 */
+  --type-caption-weight:400;
+  --type-caption-line:1.35;
+  --type-caption-tracking:0.01em;
+
+  --type-label-family:var(--font-body);
+  --type-label-size:0.6875rem;   /* 11 — uppercase eyebrows only, never prose */
+  --type-label-weight:700;
+  --type-label-line:1.2;
+  --type-label-tracking:0.1em;
+
+  --type-button-family:var(--font-body);
+  --type-button-size:0.9375rem;  /* 15 */
+  --type-button-weight:600;
+  --type-button-line:1;
+  --type-button-tracking:0.005em;
+
+  --type-nav-family:var(--font-body);
+  --type-nav-size:0.625rem;      /* 10 — tab bar labels, paired with a 24px icon */
+  --type-nav-weight:500;
+  --type-nav-line:1.1;
+  --type-nav-tracking:0.02em;
+
+  --type-numeric-family:var(--font-display);
+  --type-numeric-size:1.5rem;
+  --type-numeric-weight:600;
+  --type-numeric-line:1;
+  --type-numeric-tracking:-0.02em;
+  --type-numeric-feature:"tnum" 1;
 }

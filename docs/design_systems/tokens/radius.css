@@ -1,0 +1,15 @@
+/* Radius philosophy: soft but not bubbly. The product's shapes step up in
+   proportion to the element's size — chips are pills, cards are 16, sheets are 24 —
+   so the corner arc stays visually constant relative to the element. */
+:root{
+  --radius-none:0;
+  --radius-xs:6px;
+  --radius-sm:8px;
+  --radius-md:10px;
+  --radius-lg:14px;
+  --radius-card:16px;
+  --radius-xl:20px;
+  --radius-sheet:24px;
+  --radius-pill:999px;
+  --radius-avatar:999px;
+}

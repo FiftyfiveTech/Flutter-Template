@@ -1,0 +1,110 @@
+/* Raw palette. Never reference these directly in product UI — use the semantic
+   tokens in colors.css.
+
+   Structure is NEUTRAL: coal (dark) and paper (light), the same hue discipline in
+   both directions, plus ink for light-theme type. Colour does one job each:
+   cobalt = action, teal = verified. Status hues (sun / rose) are tuned to sit
+   beside cobalt without competing with it.
+
+   DEPRECATED: --plum-* and --amber-* are the previous "dusk" direction. No semantic
+   token references them any more; they remain only so older specimen cards keep
+   rendering. Do not use them in new work — they will be removed. */
+:root{
+  /* DEPRECATED — Plum. Previous dark structure; replaced by coal. */
+  --plum-950:#0D0A16;
+  --plum-900:#171325;
+  --plum-850:#1C1729;
+  --plum-800:#211C33;
+  --plum-700:#2C2542;
+  --plum-600:#372E4F;
+  --plum-500:#4A4066;
+  --plum-400:#786F92;
+  --plum-300:#A79FBE;
+  --plum-200:#CBC5DA;
+  --plum-100:#E6E2EE;
+  --plum-ink:#241C2E;
+
+  /* Coal — the dark theme. Neutral near-blacks, the mirror of Paper: same hue
+     discipline, so a screen switched between themes changes value, never character.
+     Replaces the plum surface stack, which read purple next to cobalt. */
+  --coal-950:#0E0E0D;
+  --coal-900:#151514;
+  --coal-850:#1A1A19;
+  --coal-800:#1F1F1E;
+  --coal-700:#2A2A28;
+  --coal-600:#363634;
+  --coal-500:#474744;
+  --coal-400:#6E6E6A;
+  --coal-300:#9A9A95;
+  --coal-200:#C4C4BF;
+  --coal-100:#E3E3DF;
+
+  /* Paper — the light theme. Warm-neutral, not cream: cards read as light on it
+     without needing a border, which is what keeps the light theme from feeling heavy. */
+  --paper-050:#FBFBFA;
+  --paper-100:#F2F1EE;
+  --paper-200:#EBEAE6;
+  --paper-300:#E3E2DD;
+  --paper-400:#D8D7D1;
+  --paper-500:#C4C3BC;
+
+  /* Ink — light-theme type. Near-black neutral; grey body text is what read as muddy. */
+  --ink-950:#111110;
+  --ink-900:#1A1A18;
+  --ink-700:#3A3A36;
+  --ink-500:#66655F;
+  --ink-400:#8A8983;
+  --ink-300:#B0AFA8;
+
+  /* Cobalt — the action colour. Replaces amber as primary: one saturated, unmistakably
+     interactive hue that never reads as a discount sticker. */
+  --cobalt-050:#EEF0FD;
+  --cobalt-100:#DDE1FB;
+  --cobalt-200:#B9C1F5;
+  --cobalt-300:#8B97EE;
+  --cobalt-400:#5567E6;
+  --cobalt-500:#2A46E0;
+  --cobalt-600:#1F35B8;
+  --cobalt-700:#182A92;
+
+  /* DEPRECATED — Amber. Previous accent; replaced by cobalt. */
+  --amber-050:#FDF3E7;
+  --amber-100:#FBE3C6;
+  --amber-200:#F7C88E;
+  --amber-300:#F7B267;
+  --amber-400:#F0913A;
+  --amber-500:#E07B28;
+  --amber-600:#B3540A;
+  --amber-700:#8F4308;
+  --amber-800:#6B3206;
+
+  /* Teal — verification and trust. Deliberately cool and desaturated next to cobalt
+     so "verified" never reads as a promotion; it is a fact, not a sell. */
+  --teal-200:#A5E8D6;
+  --teal-300:#5BD1B0;
+  --teal-400:#2FB694;
+  --teal-500:#149078;
+  --teal-600:#0F766E;
+  --teal-700:#0B5A55;
+
+  /* Rose — error / destructive. The one warm hue kept from the old direction. */
+  --rose-200:#F9C3CE;
+  --rose-300:#F2637E;
+  --rose-400:#E14464;
+  --rose-500:#C0344E;
+  --rose-600:#93283C;
+
+  /* Sun — warning. Warm and yellow so a warning never reads as the cobalt CTA. */
+  --sun-200:#F6E3AE;
+  --sun-300:#E9C46A;
+  --sun-400:#D9A62F;
+  --sun-600:#A16207;
+  --sun-700:#7C4C05;
+
+  /* DEPRECATED — Periwinkle. Info now uses cobalt directly. */
+  --peri-200:#C7CEFB;
+  --peri-300:#8B9DF7;
+  --peri-400:#6274E8;
+  --peri-500:#4453C4;
+  --peri-600:#333F9B;
+}

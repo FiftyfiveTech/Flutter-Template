@@ -7,9 +7,8 @@ import 'core/theme/app_theme.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // If your project uses the Firebase/Firestore backend path (see
-  // lib/features/sample_counter/data/datasources/counter_remote_datasource.dart), run
-  // `flutterfire configure` and initialize it here before runApp:
+  // If your project uses the Firebase/Firestore backend path, run `flutterfire configure`
+  // and initialize it here before runApp:
   //   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Not required for the default REST/Dio path.
 
@@ -17,11 +16,7 @@ void main() {
   // for projects using the default Strategy A. See core/di/sync_providers.dart for where to wire
   // it in once a feature actually opts into Strategy C.
 
-  runApp(
-    const ProviderScope(
-      child: AppTemplate(),
-    ),
-  );
+  runApp(const ProviderScope(child: AppTemplate()));
 }
 
 class AppTemplate extends StatelessWidget {
@@ -31,7 +26,7 @@ class AppTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Flutter Template',
-      theme: AppTheme.light,
+      theme: AppTheme.dark,
       routerConfig: appRouter,
     );
   }

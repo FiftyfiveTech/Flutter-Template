@@ -15,9 +15,13 @@ class _CapturingHttpClientAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     capturedOptions = options;
-    return ResponseBody.fromString('{}', 200, headers: {
-      Headers.contentTypeHeader: [Headers.jsonContentType],
-    });
+    return ResponseBody.fromString(
+      '{}',
+      200,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
   }
 
   @override
@@ -26,38 +30,48 @@ class _CapturingHttpClientAdapter implements HttpClientAdapter {
 
 void main() {
   group('baseApiClient auth interceptor', () {
-    test('attaches an Authorization header when authTokenProvider returns a token', () async {
-      final container = ProviderContainer(
-        overrides: [
-          authTokenProvider.overrideWith((ref) async => 'fake-token'),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'attaches an Authorization header when authTokenProvider returns a token',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            authTokenProvider.overrideWith((ref) async => 'fake-token'),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final client = container.read(baseApiClientProvider);
-      final adapter = _CapturingHttpClientAdapter();
-      client.dio.httpClientAdapter = adapter;
+        final client = container.read(baseApiClientProvider);
+        final adapter = _CapturingHttpClientAdapter();
+        client.dio.httpClientAdapter = adapter;
 
-      await client.get<Map<String, dynamic>>('/counter');
+        await client.get<Map<String, dynamic>>('/ping');
 
-      expect(adapter.capturedOptions?.headers['Authorization'], 'Bearer fake-token');
-    });
+        expect(
+          adapter.capturedOptions?.headers['Authorization'],
+          'Bearer fake-token',
+        );
+      },
+    );
 
-    test('sends no Authorization header when authTokenProvider returns null', () async {
-      final container = ProviderContainer(
-        overrides: [
-          authTokenProvider.overrideWith((ref) async => null),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'sends no Authorization header when authTokenProvider returns null',
+      () async {
+        final container = ProviderContainer(
+          overrides: [authTokenProvider.overrideWith((ref) async => null)],
+        );
+        addTearDown(container.dispose);
 
-      final client = container.read(baseApiClientProvider);
-      final adapter = _CapturingHttpClientAdapter();
-      client.dio.httpClientAdapter = adapter;
+        final client = container.read(baseApiClientProvider);
+        final adapter = _CapturingHttpClientAdapter();
+        client.dio.httpClientAdapter = adapter;
 
-      await client.get<Map<String, dynamic>>('/counter');
+        await client.get<Map<String, dynamic>>('/ping');
 
-      expect(adapter.capturedOptions?.headers.containsKey('Authorization'), isFalse);
-    });
+        expect(
+          adapter.capturedOptions?.headers.containsKey('Authorization'),
+          isFalse,
+        );
+      },
+    );
   });
 }

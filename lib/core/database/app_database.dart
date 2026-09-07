@@ -5,17 +5,11 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import '../../features/sample_counter/data/local/counter_table.dart';
 import 'sync_queue_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(
-  tables: [
-    SyncQueueEntries,
-    CounterTable,
-  ],
-)
+@DriftDatabase(tables: [SyncQueueEntries])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   AppDatabase.forTesting(super.e);

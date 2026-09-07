@@ -17,21 +17,25 @@ Future<String?> authToken(Ref ref) async => null;
 
 @Riverpod(keepAlive: true)
 BaseApiClient baseApiClient(Ref ref) {
-  final dio = Dio(BaseOptions(
-    baseUrl: 'https://api.example.com',
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-  ));
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: 'https://api.example.com',
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ),
+  );
 
-  dio.interceptors.add(InterceptorsWrapper(
-    onRequest: (options, handler) async {
-      final token = await ref.read(authTokenProvider.future);
-      if (token != null) {
-        options.headers['Authorization'] = 'Bearer $token';
-      }
-      handler.next(options);
-    },
-  ));
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final token = await ref.read(authTokenProvider.future);
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        handler.next(options);
+      },
+    ),
+  );
 
   return BaseApiClient(dio);
 }

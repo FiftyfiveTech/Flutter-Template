@@ -1,15 +1,31 @@
-:root {
-  /* Spacing Grid (8px baseline) */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  --spacing-xxl: 48px;
-  
-  /* Border Radii */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
+/* 4pt base grid with a 2px hairline step for optical nudges only.
+   Layout gutter is 20px, not 16: at 390pt the extra 4pt each side gives event
+   cards room to breathe without shrinking the 44pt touch targets inside them. */
+:root{
+  --spacing-0:0;
+  --spacing-1:2px;
+  --spacing-2:4px;
+  --spacing-3:8px;
+  --spacing-4:12px;
+  --spacing-5:16px;
+  --spacing-6:20px;
+  --spacing-7:24px;
+  --spacing-8:32px;
+  --spacing-9:40px;
+  --spacing-10:48px;
+  --spacing-11:64px;
+  --spacing-12:80px;
+
+  --layout-gutter:20px;
+  --layout-section-gap:32px;
+  --layout-card-gap:12px;
+  --layout-max-content:520px;
+
+  --touch-target-min:44px;
+  --touch-target-comfortable:48px;
+
+  --nav-bottom-height:56px;   /* + safe-area inset */
+  --nav-top-height:52px;
+  --safe-area-bottom:env(safe-area-inset-bottom,0px);
+  --safe-area-top:env(safe-area-inset-top,0px);
 }

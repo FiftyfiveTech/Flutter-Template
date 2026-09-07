@@ -1,17 +1,196 @@
-:root {
-  /* Brand colors */
-  --color-primary: #0056B3;
-  --color-primary-light: #E6F0FA;
-  --color-secondary: #6C757D;
-  
-  /* Semantic colors */
-  --color-success: #28A745;
-  --color-warning: #FFC107;
-  --color-danger: #DC3545;
-  
-  /* Neutral surfaces */
-  --color-background: #F8F9FA;
-  --color-surface: #FFFFFF;
-  --color-text-primary: #212529;
-  --color-text-secondary: #6C757D;
+/* Semantic colour tokens.
+   ONE contract, TWO themes. Components only ever reference the names in this file,
+   so switching themes is a class swap on <html> and nothing else.
+
+   Scoping model:
+     :root                       -> dark theme values (the canonical "coal" theme)
+     .theme-light                -> warm-paper overrides
+     @media (prefers-color-scheme: light) on .theme-system -> follows the OS
+   Recommended product model: Light / Dark / System default, System as the shipped
+   default (matches both HIG and Material expectations and respects the OS-level
+   accessibility settings a user has already made). */
+
+:root,.theme-dark{
+  color-scheme:dark;
+
+  --color-background-primary:var(--coal-900);
+  --color-background-secondary:var(--coal-950);
+  --color-background-inverse:var(--paper-100);
+
+  /* Same rule as light: the card is one step LIGHTER than the page and carries no
+     border. Elevation is value, not outline — in both themes. */
+  --color-surface-primary:var(--coal-800);
+  --color-surface-secondary:var(--coal-850);
+  --color-surface-raised:var(--coal-700);
+  --color-surface-sunken:var(--coal-950);
+  --color-surface-card:var(--coal-800);
+  --color-surface-overlay:var(--coal-700);
+  --color-surface-scrim:rgba(8,8,7,.72);
+  --color-surface-translucent:rgba(31,31,30,.84);
+
+  --color-border-default:rgba(255,255,255,.07);
+  --color-border-strong:rgba(255,255,255,.16);
+  --color-border-subtle:rgba(255,255,255,.05);
+  --color-divider:rgba(255,255,255,.08);
+  --color-border-focus:var(--cobalt-300);
+
+  --color-text-primary:#F5F5F2;
+  --color-text-secondary:var(--coal-300);
+  --color-text-tertiary:var(--coal-400);
+  --color-text-disabled:var(--coal-500);
+  --color-text-inverse:var(--ink-900);
+  --color-text-on-action:#FFFFFF;
+  --color-text-link:var(--cobalt-300);
+
+  --color-action-primary:var(--cobalt-400);
+  --color-action-primary-hover:var(--cobalt-300);
+  --color-action-primary-pressed:var(--cobalt-500);
+  --color-action-primary-fg:#FFFFFF;
+  --color-action-secondary:var(--coal-700);
+  --color-action-secondary-hover:var(--coal-600);
+  --color-action-secondary-pressed:var(--coal-500);
+  --color-action-secondary-fg:#F5F5F2;
+  --color-action-tertiary-fg:var(--cobalt-300);
+  --color-action-tertiary-hover:rgba(85,103,230,.16);
+  --color-action-destructive:var(--rose-300);
+  --color-action-destructive-fg:var(--coal-950);
+  --color-action-disabled:rgba(255,255,255,.07);
+  --color-action-disabled-fg:var(--coal-500);
+
+  --color-status-success:var(--teal-300);
+  --color-status-success-surface:rgba(91,209,176,.12);
+  --color-status-success-border:rgba(91,209,176,.28);
+  --color-status-warning:var(--sun-300);
+  --color-status-warning-surface:rgba(233,196,106,.12);
+  --color-status-warning-border:rgba(233,196,106,.28);
+  --color-status-error:var(--rose-300);
+  --color-status-error-surface:rgba(242,99,126,.12);
+  --color-status-error-border:rgba(242,99,126,.3);
+  --color-status-info:var(--cobalt-300);
+  --color-status-info-surface:rgba(139,151,238,.14);
+  --color-status-info-border:rgba(139,151,238,.3);
+
+  /* Teal is the ONLY second hue: it means verified, and nothing else. */
+  --color-trust-verified:var(--teal-300);
+  --color-trust-verified-surface:rgba(91,209,176,.1);
+  --color-trust-pending:var(--sun-300);
+  --color-trust-rejected:var(--rose-300);
+  --color-countdown-calm:var(--cobalt-300);
+  --color-countdown-track:rgba(255,255,255,.1);
+  --color-countdown-urgent:var(--rose-300);
+  --color-match-glow:rgba(85,103,230,.35);
+  --color-event-upcoming:var(--cobalt-300);
+  --color-event-live:var(--teal-300);
+  --color-event-completed:var(--coal-400);
+  --color-event-cancelled:var(--rose-300);
+  --color-event-full:var(--sun-300);
+  --color-ratio-balanced:var(--teal-300);
+  --color-ratio-skewed:var(--sun-300);
+  --color-ratio-blocked:var(--coal-400);
+  --color-bubble-sent:var(--cobalt-400);
+  --color-bubble-sent-fg:#FFFFFF;
+  --color-bubble-received:var(--coal-700);
+  --color-bubble-received-fg:#F5F5F2;
+  --color-online:var(--teal-300);
+
+  /* Over photography. A cover photo is dark in BOTH themes (the protection gradient
+     guarantees it), so these four are deliberately theme-independent — the one place
+     a fixed value is correct. Components must use these instead of raw hexes. */
+  --color-scrim-media:rgba(8,8,7,.62);
+  --color-scrim-media-strong:rgba(8,8,7,.86);
+  --color-text-on-media:#F5F5F2;
+  --color-accent-on-media:var(--cobalt-200);
+}
+
+.theme-light{
+  color-scheme:light;
+
+  --color-background-primary:var(--paper-100);
+  --color-background-secondary:var(--paper-200);
+  --color-background-inverse:var(--ink-900);
+
+  /* Cards are lighter than the page and carry NO border. That inversion — light card,
+     tinted page, hairline only where a divider is genuinely needed — is what removes
+     the weight the bordered-card light theme had. */
+  --color-surface-primary:var(--paper-050);
+  --color-surface-secondary:var(--paper-200);
+  --color-surface-raised:#FFFFFF;
+  --color-surface-sunken:var(--paper-200);
+  --color-surface-card:var(--paper-050);
+  --color-surface-overlay:#FFFFFF;
+  --color-surface-scrim:rgba(17,17,16,.42);
+  --color-surface-translucent:rgba(242,241,238,.86);
+
+  --color-border-default:rgba(26,26,24,.07);
+  --color-border-strong:rgba(26,26,24,.16);
+  --color-border-subtle:rgba(26,26,24,.05);
+  --color-divider:rgba(26,26,24,.08);
+  --color-border-focus:var(--cobalt-500);
+
+  --color-text-primary:var(--ink-900);
+  --color-text-secondary:var(--ink-500);
+  --color-text-tertiary:var(--ink-400);
+  --color-text-disabled:var(--ink-300);
+  --color-text-inverse:#FBFBFA;
+  --color-text-on-action:#FFFFFF;
+  --color-text-link:var(--cobalt-600);
+
+  --color-action-primary:var(--cobalt-500);
+  --color-action-primary-hover:var(--cobalt-400);
+  --color-action-primary-pressed:var(--cobalt-600);
+  --color-action-primary-fg:#FFFFFF;
+  --color-action-secondary:var(--paper-200);
+  --color-action-secondary-hover:var(--paper-300);
+  --color-action-secondary-pressed:var(--paper-400);
+  --color-action-secondary-fg:var(--ink-900);
+  --color-action-tertiary-fg:var(--cobalt-600);
+  --color-action-tertiary-hover:var(--cobalt-050);
+  --color-action-destructive:var(--rose-500);
+  --color-action-destructive-fg:#FFFFFF;
+  --color-action-disabled:var(--paper-300);
+  --color-action-disabled-fg:var(--ink-300);
+
+  --color-status-success:var(--teal-600);
+  --color-status-success-surface:#E4F2F0;
+  --color-status-success-border:#C3E2DC;
+  --color-status-warning:var(--sun-600);
+  --color-status-warning-surface:#FAF1DE;
+  --color-status-warning-border:#EEDCAE;
+  --color-status-error:var(--rose-500);
+  --color-status-error-surface:#FBEBED;
+  --color-status-error-border:#F3CBD3;
+  --color-status-info:var(--cobalt-500);
+  --color-status-info-surface:var(--cobalt-050);
+  --color-status-info-border:var(--cobalt-100);
+
+  /* Teal is the ONLY second hue: it means verified, and nothing else. */
+  --color-trust-verified:var(--teal-600);
+  --color-trust-verified-surface:#E4F2F0;
+  --color-trust-pending:var(--sun-600);
+  --color-trust-rejected:var(--rose-500);
+  --color-countdown-calm:var(--cobalt-500);
+  --color-countdown-track:var(--paper-300);
+  --color-countdown-urgent:var(--rose-500);
+  --color-match-glow:rgba(42,70,224,.16);
+  --color-event-upcoming:var(--cobalt-600);
+  --color-event-live:var(--teal-600);
+  --color-event-completed:var(--ink-400);
+  --color-event-cancelled:var(--rose-500);
+  --color-event-full:var(--sun-600);
+  --color-ratio-balanced:var(--teal-600);
+  --color-ratio-skewed:var(--sun-600);
+  --color-ratio-blocked:var(--ink-400);
+  --color-bubble-sent:var(--cobalt-500);
+  --color-bubble-sent-fg:#FFFFFF;
+  --color-bubble-received:var(--paper-200);
+  --color-bubble-received-fg:var(--ink-900);
+  --color-online:var(--teal-500);
+
+  /* Over photography. A cover photo is dark in BOTH themes (the protection gradient
+     guarantees it), so these four are deliberately theme-independent — the one place
+     a fixed value is correct. Components must use these instead of raw hexes. */
+  --color-scrim-media:rgba(8,8,7,.62);
+  --color-scrim-media-strong:rgba(8,8,7,.86);
+  --color-text-on-media:#F5F5F2;
+  --color-accent-on-media:var(--cobalt-200);
 }

@@ -23,10 +23,7 @@ class BaseApiClient {
   }) async {
     try {
       final requestOptions = (options ?? Options()).copyWith(
-        headers: {
-          ...?headers,
-          ...?options?.headers,
-        },
+        headers: {...?headers, ...?options?.headers},
       );
       return await _dio.get<T>(
         path,
@@ -47,10 +44,7 @@ class BaseApiClient {
   }) async {
     try {
       final requestOptions = (options ?? Options()).copyWith(
-        headers: {
-          ...?headers,
-          ...?options?.headers,
-        },
+        headers: {...?headers, ...?options?.headers},
       );
       return await _dio.post<T>(
         path,
@@ -72,10 +66,7 @@ class BaseApiClient {
   }) async {
     try {
       final requestOptions = (options ?? Options()).copyWith(
-        headers: {
-          ...?headers,
-          ...?options?.headers,
-        },
+        headers: {...?headers, ...?options?.headers},
       );
       return await _dio.put<T>(
         path,
@@ -97,10 +88,7 @@ class BaseApiClient {
   }) async {
     try {
       final requestOptions = (options ?? Options()).copyWith(
-        headers: {
-          ...?headers,
-          ...?options?.headers,
-        },
+        headers: {...?headers, ...?options?.headers},
       );
       return await _dio.delete<T>(
         path,

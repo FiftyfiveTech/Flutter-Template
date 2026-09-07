@@ -1,0 +1,26 @@
+/* Minimal global base. Consumers get sane defaults; nothing opinionated
+   beyond the brand's own type and colour. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--color-background-primary);
+  color:var(--color-text-primary);
+  font-family:var(--type-body-family);
+  font-size:var(--type-body-size);
+  line-height:var(--type-body-line);
+  -webkit-font-smoothing:antialiased;
+  text-wrap:pretty;
+}
+a{color:var(--color-text-link);text-decoration:none}
+a:hover{color:var(--color-action-primary-hover);text-decoration:underline}
+a:active{color:var(--color-action-primary-pressed)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--color-border-focus);outline-offset:2px}
+.ah-icon{
+  font-family:var(--font-icon);font-weight:normal;font-style:normal;
+  line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;
+  white-space:nowrap;direction:ltr;-webkit-font-feature-settings:"liga";
+  -webkit-font-smoothing:antialiased;font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24;
+}
+.ah-tnum{font-variant-numeric:tabular-nums}
