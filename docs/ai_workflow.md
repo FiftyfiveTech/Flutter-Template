@@ -168,6 +168,7 @@ Feed anything found back as a fix task, and flag any rule it exposes that CLAUDE
 | `flutter-overflow-audit` | Keyboard-open / RenderFlex overflow checks for forms, sheets, modals. |
 | `flutter-testing` | Unit/repository/widget/golden tests matched to the layer being tested. |
 | `performance-audit` | Rebuild-scope, image decode cost, list-builder, and disposal checks — added once the app had its first real screen and jank became possible. |
+| `pre-commit-review` | Domain-specific compliance checklist — the product-safety non-negotiables from `docs/features/*.md` §4 (ratio asymmetry, verification/publish gating, QR single-use, check-in as sole matching gate, no raw ID retention, no F&B rebate leak, audit-log coverage) that a generic architecture check can't know about. Added once the host onboarding flow's first screen made it clear these rules needed to live somewhere the AI checks automatically, not just in prose the human remembers to re-read. |
 
 | Command | Purpose |
 |---|---|
@@ -202,7 +203,6 @@ writing a `.claude/skills/[name]/SKILL.md` for once your project needs them (see
 |---|---|
 | `a11y-compliance` | Screen-reader labels, contrast, touch-target size — not covered by the overflow-audit skill above, which is layout-only. |
 | `l10n` *(if multi-language is planned)* | Standardizes ARB-based localization instead of ad hoc string tables. |
-| A domain-specific compliance skill *(if applicable)* | If your product has a regulated or safety-critical domain, bake its rules (thresholds, consent, required disclosures) into a skill rather than relying on remembering to ask for them every time. |
 
 Update `CLAUDE.md`'s skills section every time a skill is added, so the rule and the automation that enforces it stay next to each other.
 

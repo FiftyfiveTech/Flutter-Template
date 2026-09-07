@@ -44,6 +44,7 @@ A feature must **never** import the `presentation/` or `data/` internals of anot
 * **Typed Failures**: Errors returned from use cases to controllers must be mapping into typed subclasses of `Failure` (from `lib/core/error/failures.dart`).
 * **Zero Warnings**: Ensure `flutter analyze` passes with 0 warnings before commits.
 * **Code Formatting**: Run `dart format .` to format all code.
+* **Before every commit**: run the `pre-commit-review` skill (`.claude/skills/pre-commit-review/SKILL.md`) — it checks a diff against this app's non-negotiable product-safety rules (ratio asymmetry, verification/publish gating, QR single-use, check-in as sole matching gate, no raw ID retention, audit-log coverage) that `flutter analyze`/tests can't catch.
 
 ## Available Tooling commands
 If using an AI coding assistant (like Antigravity / Claude Code):
