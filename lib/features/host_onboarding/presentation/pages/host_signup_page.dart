@@ -113,6 +113,10 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
                       label: 'City',
                       value: formState.draft.city,
                       placeholder: 'Search for a city',
+                      // TODO(host-onboarding): Bangalore-only reflects the current
+                      // pilot config (see docs/features/host-app/01-host-onboarding.md
+                      // §3) — source this list from Platform Foundation config once a
+                      // second city launches, not a literal here.
                       options: const ['Bangalore'],
                       onSelected: notifier.updateCity,
                       errorText: formState.fieldErrors['city'],

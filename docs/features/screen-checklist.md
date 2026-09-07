@@ -44,7 +44,7 @@ Legend: `[ ]` not yet verified · mark `[x]` once confirmed present and correct,
 ## Host App (separate app — `docs/features/host-app/`)
 
 ### 08 — Host Onboarding & Licence Verification
-- [ ] `HOST-ON-01` Host Signup
+- [x] `HOST-ON-01` Host Signup
 - [ ] `HOST-ON-02` host_type Selection
 - [ ] `HOST-ON-03` Document Upload — must render **conditionally** per host_type (venue gets FSSAI/excise fields, others don't)
 - [ ] `HOST-ON-04` Verification Status
