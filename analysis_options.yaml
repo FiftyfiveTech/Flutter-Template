@@ -13,6 +13,7 @@ linter:
   rules:
     prefer_const_constructors: true
     prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
     always_declare_return_types: true
     avoid_empty_else: true
     avoid_print: true

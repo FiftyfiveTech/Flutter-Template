@@ -5,10 +5,10 @@ import 'database_providers.dart';
 
 part 'sync_providers.g.dart';
 
-/// Only relevant if a feature opts into Strategy C (outbox sync) — see
-/// `counter_repository_impl.dart` for what that means. This provider itself has no cost if
-/// nothing ever enqueues a [SyncQueueEntry]: nothing in `main.dart` calls [processPending]
-/// automatically, so projects using the default Strategy A pay nothing for this module.
+/// Only relevant if a feature opts into Strategy C (outbox sync) — see `docs/architecture.md` §5
+/// for what that means. This provider itself has no cost if nothing ever enqueues a
+/// [SyncQueueEntry]: nothing in `main.dart` calls [processPending] automatically, so projects
+/// using the default Strategy A pay nothing for this module.
 ///
 /// Once a feature does use Strategy C, wire draining the queue into your app, e.g. in `main.dart`:
 /// ```dart

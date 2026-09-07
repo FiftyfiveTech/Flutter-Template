@@ -167,6 +167,7 @@ Feed anything found back as a fix task, and flag any rule it exposes that CLAUDE
 | `flutter-ui-design-system` | Keeps widgets on design tokens; catches hardcoded color/spacing/type. |
 | `flutter-overflow-audit` | Keyboard-open / RenderFlex overflow checks for forms, sheets, modals. |
 | `flutter-testing` | Unit/repository/widget/golden tests matched to the layer being tested. |
+| `performance-audit` | Rebuild-scope, image decode cost, list-builder, and disposal checks — added once the app had its first real screen and jank became possible. |
 
 | Command | Purpose |
 |---|---|
@@ -200,7 +201,6 @@ writing a `.claude/skills/[name]/SKILL.md` for once your project needs them (see
 | Skill | Why it earns a slot |
 |---|---|
 | `a11y-compliance` | Screen-reader labels, contrast, touch-target size — not covered by the overflow-audit skill above, which is layout-only. |
-| `performance-audit` | const-constructor discipline, rebuild-tree checks, memory leaks — worth adding once the app has enough screens that jank becomes possible. |
 | `l10n` *(if multi-language is planned)* | Standardizes ARB-based localization instead of ad hoc string tables. |
 | A domain-specific compliance skill *(if applicable)* | If your product has a regulated or safety-critical domain, bake its rules (thresholds, consent, required disclosures) into a skill rather than relying on remembering to ask for them every time. |
 
