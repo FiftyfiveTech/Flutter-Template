@@ -19,7 +19,7 @@ Future<String?> authToken(Ref ref) async => null;
 BaseApiClient baseApiClient(Ref ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://api.example.com',
+      baseUrl: 'https://desmond-smorzando-untamely.ngrok-free.dev',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
     ),

@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
-import '../../../../shared/widgets/ah_search_field.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
+import '../../domain/entities/city.dart';
+import '../controllers/city_search_providers.dart';
 import '../controllers/host_signup_controller.dart';
 import '../widgets/step_progress_dots.dart';
 
@@ -108,16 +110,14 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
                       errorText: formState.fieldErrors['contactEmail'],
                     ),
                     AppSpacing.spacerMd,
-                    AhSearchField(
+                    AhAsyncSearchField<City>(
                       label: 'City',
                       value: formState.draft.city,
                       placeholder: 'Search for a city',
-                      // TODO(host-onboarding): Bangalore-only reflects the current
-                      // pilot config (see docs/features/host-app/01-host-onboarding.md
-                      // §3) — source this list from Platform Foundation config once a
-                      // second city launches, not a literal here.
-                      options: const ['Bangalore'],
-                      onSelected: notifier.updateCity,
+                      search: (query) =>
+                          ref.read(citySearchResultsProvider(query).future),
+                      displayStringForOption: (city) => city.name,
+                      onSelected: (city) => notifier.updateCity(city.name),
                       errorText: formState.fieldErrors['city'],
                     ),
                   ],
