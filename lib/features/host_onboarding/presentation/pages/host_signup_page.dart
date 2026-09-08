@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -37,9 +38,7 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
     final isValid = notifier.submit();
     if (!isValid) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Host type — coming soon')));
+    context.push('/host/signup/host-type');
   }
 
   @override

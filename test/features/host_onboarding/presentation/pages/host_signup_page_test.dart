@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_signup_page.dart';
 
@@ -8,6 +9,23 @@ void main() {
   Widget buildSubject() {
     return ProviderScope(
       child: MaterialApp(theme: AppTheme.dark, home: const HostSignupPage()),
+    );
+  }
+
+  Widget buildRoutedSubject() {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(path: '/', builder: (context, state) => const HostSignupPage()),
+        GoRoute(
+          path: '/host/signup/host-type',
+          builder: (context, state) =>
+              const Scaffold(body: Text('Host type page')),
+        ),
+      ],
+    );
+    return ProviderScope(
+      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
   }
 
@@ -37,31 +55,30 @@ void main() {
     expect(find.text('Enter a valid email address'), findsOneWidget);
   });
 
-  testWidgets(
-    'shows no field errors when Continue is tapped with valid input',
-    (tester) async {
-      await tester.pumpWidget(buildSubject());
+  testWidgets('advances to host type once all fields are valid', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildRoutedSubject());
 
-      await tester.enterText(
-        find.widgetWithText(TextField, 'e.g. Cellar Door Collective'),
-        'Cellar Door Collective',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextField, '+91 98765 43210'),
-        '+919876543210',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextField, 'you@business.com'),
-        'you@business.com',
-      );
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
-      await tester.pump();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'e.g. Cellar Door Collective'),
+      'Cellar Door Collective',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, '+91 98765 43210'),
+      '+919876543210',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'you@business.com'),
+      'you@business.com',
+    );
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Enter a business or organiser name'), findsNothing);
-      expect(find.text('Enter a valid phone number'), findsNothing);
-      expect(find.text('Enter a valid email address'), findsNothing);
-      expect(find.text('Select a city'), findsNothing);
-      expect(find.text('Host type — coming soon'), findsOneWidget);
-    },
-  );
+    expect(find.text('Enter a business or organiser name'), findsNothing);
+    expect(find.text('Enter a valid phone number'), findsNothing);
+    expect(find.text('Enter a valid email address'), findsNothing);
+    expect(find.text('Select a city'), findsNothing);
+    expect(find.text('Host type page'), findsOneWidget);
+  });
 }
