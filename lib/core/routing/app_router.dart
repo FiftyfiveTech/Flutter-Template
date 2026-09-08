@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/host_onboarding/presentation/pages/host_documents_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_landing_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_signup_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_type_page.dart';
@@ -21,6 +22,11 @@ final appRouter = GoRouter(
       path: '/host/signup/host-type',
       name: 'hostType',
       builder: (context, state) => const HostTypePage(),
+    ),
+    GoRoute(
+      path: '/host/signup/host-type/documents',
+      name: 'hostDocuments',
+      builder: (context, state) => const HostDocumentsPage(),
     ),
   ],
 );

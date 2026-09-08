@@ -46,7 +46,7 @@ Legend: `[ ]` not yet verified · mark `[x]` once confirmed present and correct,
 ### 08 — Host Onboarding & Licence Verification
 - [x] `HOST-ON-01` Host Signup
 - [x] `HOST-ON-02` host_type Selection
-- [ ] `HOST-ON-03` Document Upload — must render **conditionally** per host_type (venue gets FSSAI/excise fields, others don't)
+- [x] `HOST-ON-03` Document Upload — must render **conditionally** per host_type (venue gets FSSAI/excise fields, others don't)
 - [ ] `HOST-ON-04` Verification Status
 
 ### 09 — Host Event Creation & Publishing

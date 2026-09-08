@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -11,11 +12,10 @@ import '../controllers/host_type_controller.dart';
 import '../widgets/step_progress_dots.dart';
 
 class _HostTypeOption {
-  const _HostTypeOption(this.type, this.icon, this.label, this.description);
+  const _HostTypeOption(this.type, this.icon, this.description);
 
   final HostType type;
   final IconData icon;
-  final String label;
   final String description;
 }
 
@@ -23,28 +23,24 @@ const _hostTypeOptions = [
   _HostTypeOption(
     HostType.club,
     Icons.nightlife,
-    'Club',
     'Recurring parties and pop-ups. Business registration or organiser '
-        'ID, PAN, and payout details.',
+    'ID, PAN, and payout details.',
   ),
   _HostTypeOption(
     HostType.community,
     Icons.groups_outlined,
-    'Community',
     'Interest groups and collectives. Same document set as clubs — no '
-        'venue paperwork.',
+    'venue paperwork.',
   ),
   _HostTypeOption(
     HostType.venue,
     Icons.storefront_outlined,
-    'Venue',
     'A licensed premises you operate. Adds address proof, FSSAI and '
-        'excise licence on top of the standard set.',
+    'excise licence on top of the standard set.',
   ),
   _HostTypeOption(
     HostType.individualOperator,
     Icons.person_outline,
-    'Individual operator',
     'Hosting solo. Organiser ID, PAN, and payout details only.',
   ),
 ];
@@ -57,9 +53,7 @@ class HostTypePage extends ConsumerWidget {
     final result = ref.read(hostTypeControllerProvider.notifier).submit();
     result.when(
       ok: (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Documents — coming soon')),
-        );
+        context.push('/host/signup/host-type/documents');
       },
       err: (failure) {
         ScaffoldMessenger.of(
@@ -124,7 +118,7 @@ class HostTypePage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    option.label,
+                                    option.type.label,
                                     style: typography.bodyLg.copyWith(
                                       fontWeight: FontWeight.w600,
                                     ),

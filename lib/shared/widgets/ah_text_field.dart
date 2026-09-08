@@ -16,6 +16,7 @@ class AhTextField extends StatelessWidget {
     this.placeholder,
     this.icon,
     this.errorText,
+    this.helperText,
     this.keyboardType,
   });
 
@@ -25,6 +26,7 @@ class AhTextField extends StatelessWidget {
   final String? placeholder;
   final IconData? icon;
   final String? errorText;
+  final String? helperText;
   final TextInputType? keyboardType;
 
   @override
@@ -81,6 +83,12 @@ class AhTextField extends StatelessWidget {
           Text(
             errorText!,
             style: typography.caption.copyWith(color: AppColors.statusError),
+          ),
+        ] else if (helperText != null) ...[
+          AppSpacing.spacerXs,
+          Text(
+            helperText!,
+            style: typography.caption.copyWith(color: AppColors.textTertiary),
           ),
         ],
       ],

@@ -2,3 +2,14 @@
 /// Drives which documents H-03 asks for: venues carry the heavier set
 /// (address proof, FSSAI, excise licence) that the others skip.
 enum HostType { club, community, venue, individualOperator }
+
+/// Display label shared between H-02 (selection) and H-03 (recap badge) so
+/// the two screens can't drift on wording.
+extension HostTypeLabel on HostType {
+  String get label => switch (this) {
+    HostType.club => 'Club',
+    HostType.community => 'Community',
+    HostType.venue => 'Venue',
+    HostType.individualOperator => 'Individual operator',
+  };
+}
