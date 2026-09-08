@@ -238,6 +238,29 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         fieldErrors[HostDocumentType.fssaiRegistration.name],
                       ),
                       AppSpacing.spacerMd,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: AhDateField(
+                              label: 'FSSAI licence valid from',
+                              value: formState.draft.fssaiLicenceValidFrom,
+                              onChanged: notifier.updateFssaiLicenceValidFrom,
+                              errorText: fieldErrors['fssaiLicenceValidFrom'],
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          Expanded(
+                            child: AhDateField(
+                              label: 'FSSAI licence valid to',
+                              value: formState.draft.fssaiLicenceValidTo,
+                              onChanged: notifier.updateFssaiLicenceValidTo,
+                              errorText: fieldErrors['fssaiLicenceValidTo'],
+                            ),
+                          ),
+                        ],
+                      ),
+                      AppSpacing.spacerMd,
                       AhSwitchTile(
                         label: 'We serve alcohol',
                         description: 'Requires the state excise licence.',
@@ -256,19 +279,19 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         children: [
                           Expanded(
                             child: AhDateField(
-                              label: 'Licence valid from',
-                              value: formState.draft.licenceValidFrom,
-                              onChanged: notifier.updateLicenceValidFrom,
-                              errorText: fieldErrors['licenceValidFrom'],
+                              label: 'Excise licence valid from',
+                              value: formState.draft.exciseLicenceValidFrom,
+                              onChanged: notifier.updateExciseLicenceValidFrom,
+                              errorText: fieldErrors['exciseLicenceValidFrom'],
                             ),
                           ),
                           AppSpacing.spacerMd,
                           Expanded(
                             child: AhDateField(
-                              label: 'Licence valid to',
-                              value: formState.draft.licenceValidTo,
-                              onChanged: notifier.updateLicenceValidTo,
-                              errorText: fieldErrors['licenceValidTo'],
+                              label: 'Excise licence valid to',
+                              value: formState.draft.exciseLicenceValidTo,
+                              onChanged: notifier.updateExciseLicenceValidTo,
+                              errorText: fieldErrors['exciseLicenceValidTo'],
                             ),
                           ),
                         ],

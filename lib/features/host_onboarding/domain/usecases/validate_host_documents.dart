@@ -40,15 +40,27 @@ class ValidateHostDocumentsUseCase {
       }
     }
 
-    if (hostType == HostType.venue && draft.servesAlcohol) {
-      if (draft.licenceValidFrom == null) {
-        errors['licenceValidFrom'] = 'Required when serving alcohol';
+    if (hostType == HostType.venue && draft.servesFood) {
+      if (draft.fssaiLicenceValidFrom == null) {
+        errors['fssaiLicenceValidFrom'] = 'Required when serving food';
       }
-      if (draft.licenceValidTo == null) {
-        errors['licenceValidTo'] = 'Required when serving alcohol';
-      } else if (draft.licenceValidFrom != null &&
-          !draft.licenceValidTo!.isAfter(draft.licenceValidFrom!)) {
-        errors['licenceValidTo'] = 'Must be after the start date';
+      if (draft.fssaiLicenceValidTo == null) {
+        errors['fssaiLicenceValidTo'] = 'Required when serving food';
+      } else if (draft.fssaiLicenceValidFrom != null &&
+          !draft.fssaiLicenceValidTo!.isAfter(draft.fssaiLicenceValidFrom!)) {
+        errors['fssaiLicenceValidTo'] = 'Must be after the start date';
+      }
+    }
+
+    if (hostType == HostType.venue && draft.servesAlcohol) {
+      if (draft.exciseLicenceValidFrom == null) {
+        errors['exciseLicenceValidFrom'] = 'Required when serving alcohol';
+      }
+      if (draft.exciseLicenceValidTo == null) {
+        errors['exciseLicenceValidTo'] = 'Required when serving alcohol';
+      } else if (draft.exciseLicenceValidFrom != null &&
+          !draft.exciseLicenceValidTo!.isAfter(draft.exciseLicenceValidFrom!)) {
+        errors['exciseLicenceValidTo'] = 'Must be after the start date';
       }
     }
 

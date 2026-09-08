@@ -135,23 +135,100 @@ void main() {
             fieldErrors,
             containsPair(HostDocumentType.exciseLicence.name, isNotEmpty),
           );
-          expect(fieldErrors, containsPair('licenceValidFrom', isNotEmpty));
-          expect(fieldErrors, containsPair('licenceValidTo', isNotEmpty));
+          expect(
+            fieldErrors,
+            containsPair('exciseLicenceValidFrom', isNotEmpty),
+          );
+          expect(fieldErrors, containsPair('exciseLicenceValidTo', isNotEmpty));
         },
       );
     },
   );
 
-  test('flags a licence valid-to date that is not after valid-from', () {
+  test(
+    'flags an excise licence valid-to date that is not after valid-from',
+    () {
+      final result = useCase(
+        validVenueDraft.copyWith(
+          servesAlcohol: true,
+          documents: {
+            ...validVenueDraft.documents,
+            HostDocumentType.exciseLicence: _picked,
+          },
+          exciseLicenceValidFrom: DateTime(2026, 4, 1),
+          exciseLicenceValidTo: DateTime(2026, 1, 1),
+        ),
+        hostType: HostType.venue,
+      );
+
+      result.when(
+        ok: (_) => fail('expected Err'),
+        err: (failure) {
+          final fieldErrors =
+              (failure as HostDocumentsValidationFailure).fieldErrors;
+          expect(fieldErrors, containsPair('exciseLicenceValidTo', isNotEmpty));
+        },
+      );
+    },
+  );
+
+  test(
+    'accepts a venue serving alcohol with a valid excise licence window',
+    () {
+      final result = useCase(
+        validVenueDraft.copyWith(
+          servesAlcohol: true,
+          documents: {
+            ...validVenueDraft.documents,
+            HostDocumentType.exciseLicence: _picked,
+          },
+          exciseLicenceValidFrom: DateTime(2026, 4, 1),
+          exciseLicenceValidTo: DateTime(2027, 3, 31),
+        ),
+        hostType: HostType.venue,
+      );
+
+      expect(result, isA<Ok<HostDocumentsDraft>>());
+    },
+  );
+
+  test(
+    'requires FSSAI registration and licence dates once a venue serves food',
+    () {
+      final result = useCase(
+        validVenueDraft.copyWith(servesFood: true),
+        hostType: HostType.venue,
+      );
+
+      result.when(
+        ok: (_) => fail('expected Err'),
+        err: (failure) {
+          final fieldErrors =
+              (failure as HostDocumentsValidationFailure).fieldErrors;
+          expect(
+            fieldErrors,
+            containsPair(HostDocumentType.fssaiRegistration.name, isNotEmpty),
+          );
+          expect(
+            fieldErrors,
+            containsPair('fssaiLicenceValidFrom', isNotEmpty),
+          );
+          expect(fieldErrors, containsPair('fssaiLicenceValidTo', isNotEmpty));
+        },
+      );
+    },
+  );
+
+  test('flags an FSSAI licence valid-to date that is not after valid-from', () {
     final result = useCase(
       validVenueDraft.copyWith(
-        servesAlcohol: true,
+        servesFood: true,
         documents: {
           ...validVenueDraft.documents,
-          HostDocumentType.exciseLicence: _picked,
+          HostDocumentType.fssaiRegistration: _picked,
         },
-        licenceValidFrom: DateTime(2026, 4, 1),
-        licenceValidTo: DateTime(2026, 1, 1),
+        fssaiLicenceValidFrom: DateTime(2026, 4, 1),
+        fssaiLicenceValidTo: DateTime(2026, 1, 1),
       ),
       hostType: HostType.venue,
     );
@@ -161,21 +238,21 @@ void main() {
       err: (failure) {
         final fieldErrors =
             (failure as HostDocumentsValidationFailure).fieldErrors;
-        expect(fieldErrors, containsPair('licenceValidTo', isNotEmpty));
+        expect(fieldErrors, containsPair('fssaiLicenceValidTo', isNotEmpty));
       },
     );
   });
 
-  test('accepts a venue serving alcohol with a valid licence window', () {
+  test('accepts a venue serving food with a valid FSSAI licence window', () {
     final result = useCase(
       validVenueDraft.copyWith(
-        servesAlcohol: true,
+        servesFood: true,
         documents: {
           ...validVenueDraft.documents,
-          HostDocumentType.exciseLicence: _picked,
+          HostDocumentType.fssaiRegistration: _picked,
         },
-        licenceValidFrom: DateTime(2026, 4, 1),
-        licenceValidTo: DateTime(2027, 3, 31),
+        fssaiLicenceValidFrom: DateTime(2026, 4, 1),
+        fssaiLicenceValidTo: DateTime(2027, 3, 31),
       ),
       hostType: HostType.venue,
     );

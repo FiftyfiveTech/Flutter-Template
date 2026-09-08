@@ -71,8 +71,10 @@ void main() {
       expect(find.text('We serve alcohol'), findsOneWidget);
       expect(find.text('FSSAI registration'), findsOneWidget);
       expect(find.text('Excise licence'), findsOneWidget);
-      expect(find.text('Licence valid from'), findsOneWidget);
-      expect(find.text('Licence valid to'), findsOneWidget);
+      expect(find.text('FSSAI licence valid from'), findsOneWidget);
+      expect(find.text('FSSAI licence valid to'), findsOneWidget);
+      expect(find.text('Excise licence valid from'), findsOneWidget);
+      expect(find.text('Excise licence valid to'), findsOneWidget);
     },
   );
 

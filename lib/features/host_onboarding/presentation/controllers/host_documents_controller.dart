@@ -50,14 +50,28 @@ class HostDocumentsController extends _$HostDocumentsController {
     state = state.copyWith(draft: state.draft.copyWith(servesAlcohol: value));
   }
 
-  void updateLicenceValidFrom(DateTime value) {
+  void updateFssaiLicenceValidFrom(DateTime value) {
     state = state.copyWith(
-      draft: state.draft.copyWith(licenceValidFrom: value),
+      draft: state.draft.copyWith(fssaiLicenceValidFrom: value),
     );
   }
 
-  void updateLicenceValidTo(DateTime value) {
-    state = state.copyWith(draft: state.draft.copyWith(licenceValidTo: value));
+  void updateFssaiLicenceValidTo(DateTime value) {
+    state = state.copyWith(
+      draft: state.draft.copyWith(fssaiLicenceValidTo: value),
+    );
+  }
+
+  void updateExciseLicenceValidFrom(DateTime value) {
+    state = state.copyWith(
+      draft: state.draft.copyWith(exciseLicenceValidFrom: value),
+    );
+  }
+
+  void updateExciseLicenceValidTo(DateTime value) {
+    state = state.copyWith(
+      draft: state.draft.copyWith(exciseLicenceValidTo: value),
+    );
   }
 
   void selectDocument(HostDocumentType type, HostDocumentSelection selection) {
