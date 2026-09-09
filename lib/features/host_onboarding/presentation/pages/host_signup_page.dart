@@ -35,10 +35,19 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
     super.dispose();
   }
 
-  void _onContinue() {
+  Future<void> _onContinue() async {
     final notifier = ref.read(hostSignupControllerProvider.notifier);
-    final isValid = notifier.submit();
-    if (!isValid) return;
+    final isValid = await notifier.submit();
+    if (!isValid) {
+      final submitError = ref.read(hostSignupControllerProvider).submitError;
+      if (submitError != null && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(submitError)));
+      }
+      return;
+    }
+    if (!mounted) return;
 
     context.push('/host/signup/host-type');
   }
@@ -117,7 +126,7 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
                       search: (query) =>
                           ref.read(citySearchResultsProvider(query).future),
                       displayStringForOption: (city) => city.name,
-                      onSelected: (city) => notifier.updateCity(city.name),
+                      onSelected: notifier.updateCity,
                       errorText: formState.fieldErrors['city'],
                     ),
                   ],
@@ -136,9 +145,9 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
                   AppSpacing.lg,
                 ),
                 child: AhButton(
-                  label: 'Continue',
+                  label: formState.isSubmitting ? 'Please wait…' : 'Continue',
                   fullWidth: true,
-                  onPressed: _onContinue,
+                  onPressed: formState.isSubmitting ? null : _onContinue,
                 ),
               ),
             ),

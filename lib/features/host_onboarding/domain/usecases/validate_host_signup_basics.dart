@@ -36,7 +36,7 @@ class ValidateHostSignupBasicsUseCase {
     if (!_emailPattern.hasMatch(contactEmail)) {
       errors['contactEmail'] = 'Enter a valid email address';
     }
-    if (city.isEmpty) {
+    if (city.isEmpty || draft.cityId.trim().isEmpty) {
       errors['city'] = 'Select a city';
     }
 
@@ -50,6 +50,7 @@ class ValidateHostSignupBasicsUseCase {
         contactPhone: contactPhone,
         contactEmail: contactEmail,
         city: city,
+        cityId: draft.cityId.trim(),
       ),
     );
   }

@@ -1,19 +1,21 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../network/api_logging_interceptor.dart';
 import '../network/base_api_client.dart';
+import 'session_providers.dart';
 
 part 'network_providers.g.dart';
 
 /// Bearer token attached to every REST request via [baseApiClientProvider]'s interceptor.
 ///
 /// Firebase/Firestore attaches its own auth token automatically through the SDK, but a plain
-/// REST/Dio client has no such mechanism — this is the REST-side equivalent. Returns `null` (no
-/// `Authorization` header) by default. Once a project adds an auth feature, override this to read
-/// the current token from that feature's repository/secure storage — no other file needs to
-/// change.
+/// REST/Dio client has no such mechanism — this is the REST-side equivalent. Reads off
+/// [HostSessionController], which H-01 · Signup populates on a successful signup response.
 @Riverpod(keepAlive: true)
-Future<String?> authToken(Ref ref) async => null;
+Future<String?> authToken(Ref ref) async =>
+    ref.watch(hostSessionControllerProvider)?.accessToken;
 
 @Riverpod(keepAlive: true)
 BaseApiClient baseApiClient(Ref ref) {
@@ -36,6 +38,10 @@ BaseApiClient baseApiClient(Ref ref) {
       },
     ),
   );
+
+  if (kDebugMode) {
+    dio.interceptors.add(ApiLoggingInterceptor());
+  }
 
   return BaseApiClient(dio);
 }

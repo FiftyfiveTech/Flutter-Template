@@ -11,6 +11,7 @@ void main() {
     contactPhone: '+919876543210',
     contactEmail: 'you@business.com',
     city: 'Bangalore',
+    cityId: 'city-1',
   );
 
   test('returns Ok with a trimmed draft when all fields are valid', () {
@@ -68,6 +69,19 @@ void main() {
 
   test('flags a missing city', () {
     final result = useCase(validDraft.copyWith(city: ''));
+
+    result.when(
+      ok: (_) => fail('expected Err'),
+      err: (failure) {
+        final fieldErrors =
+            (failure as HostSignupValidationFailure).fieldErrors;
+        expect(fieldErrors, containsPair('city', isNotEmpty));
+      },
+    );
+  });
+
+  test('flags a city name with no backing city id', () {
+    final result = useCase(validDraft.copyWith(cityId: ''));
 
     result.when(
       ok: (_) => fail('expected Err'),

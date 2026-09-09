@@ -2,17 +2,73 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:host_mobile_app/core/error/failures.dart';
+import 'package:host_mobile_app/core/error/result.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/city.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_signup_result.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_signup_repository.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/usecases/search_cities.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/city_search_providers.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_signup_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_signup_page.dart';
 
+class _FakeSearchCitiesUseCase implements SearchCitiesUseCase {
+  const _FakeSearchCitiesUseCase();
+
+  @override
+  Future<Result<List<City>>> call(String query) async {
+    return const Ok([
+      City(
+        id: 'city-1',
+        name: 'Chennai city',
+        state: 'Tamil Nadu',
+        country: 'India',
+      ),
+    ]);
+  }
+}
+
+class _FakeHostSignupRepository implements HostSignupRepository {
+  _FakeHostSignupRepository(this._result);
+  final Result<HostSignupResult> _result;
+
+  @override
+  Future<Result<HostSignupResult>> signup(draft) async => _result;
+}
+
 void main() {
-  Widget buildSubject() {
+  Widget buildSubject({
+    Result<HostSignupResult> signupResult = const Ok(
+      HostSignupResult(
+        accessToken: 'token',
+        userId: 'u1',
+        accountStatus: 'active',
+      ),
+    ),
+  }) {
     return ProviderScope(
+      overrides: [
+        searchCitiesUseCaseProvider.overrideWithValue(
+          const _FakeSearchCitiesUseCase(),
+        ),
+        hostSignupRepositoryProvider.overrideWithValue(
+          _FakeHostSignupRepository(signupResult),
+        ),
+      ],
       child: MaterialApp(theme: AppTheme.dark, home: const HostSignupPage()),
     );
   }
 
-  Widget buildRoutedSubject() {
+  Widget buildRoutedSubject({
+    Result<HostSignupResult> signupResult = const Ok(
+      HostSignupResult(
+        accessToken: 'token',
+        userId: 'u1',
+        accountStatus: 'active',
+      ),
+    ),
+  }) {
     final router = GoRouter(
       initialLocation: '/',
       routes: [
@@ -25,6 +81,14 @@ void main() {
       ],
     );
     return ProviderScope(
+      overrides: [
+        searchCitiesUseCaseProvider.overrideWithValue(
+          const _FakeSearchCitiesUseCase(),
+        ),
+        hostSignupRepositoryProvider.overrideWithValue(
+          _FakeHostSignupRepository(signupResult),
+        ),
+      ],
       child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
   }
@@ -53,6 +117,7 @@ void main() {
     expect(find.text('Enter a business or organiser name'), findsOneWidget);
     expect(find.text('Enter a valid phone number'), findsOneWidget);
     expect(find.text('Enter a valid email address'), findsOneWidget);
+    expect(find.text('Select a city'), findsOneWidget);
   });
 
   testWidgets('advances to host type once all fields are valid', (
@@ -72,6 +137,15 @@ void main() {
       find.widgetWithText(TextField, 'you@business.com'),
       'you@business.com',
     );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Search for a city'),
+      'Chennai',
+    );
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Chennai city'));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
     await tester.pumpAndSettle();
 
@@ -81,4 +155,42 @@ void main() {
     expect(find.text('Select a city'), findsNothing);
     expect(find.text('Host type page'), findsOneWidget);
   });
+
+  testWidgets(
+    'shows the submit error and stays on the page when signup fails',
+    (tester) async {
+      await tester.pumpWidget(
+        buildRoutedSubject(
+          signupResult: const Err(NetworkFailure(message: 'Signup failed.')),
+        ),
+      );
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'e.g. Cellar Door Collective'),
+        'Cellar Door Collective',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, '+91 98765 43210'),
+        '+919876543210',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'you@business.com'),
+        'you@business.com',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Search for a city'),
+        'Chennai',
+      );
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Chennai city'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Signup failed.'), findsOneWidget);
+      expect(find.text('Host type page'), findsNothing);
+    },
+  );
 }
