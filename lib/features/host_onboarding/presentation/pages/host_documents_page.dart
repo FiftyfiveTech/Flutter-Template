@@ -15,7 +15,11 @@ import '../../../../shared/widgets/ah_text_field.dart';
 import '../../domain/entities/host_document_selection.dart';
 import '../../domain/entities/host_document_type.dart';
 import '../../domain/entities/host_type.dart';
-import '../controllers/host_documents_controller.dart';
+import '../controllers/host_documents_controller.dart'
+    show
+        DocumentUploadState,
+        DocumentUploadStatus,
+        hostDocumentsControllerProvider;
 import '../controllers/host_type_controller.dart';
 import '../widgets/step_progress_dots.dart';
 
@@ -54,6 +58,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
               fileName: result.fileName,
               sizeBytes: result.sizeBytes,
             ),
+            result.path,
           );
     } catch (_) {
       if (!mounted) return;
@@ -77,10 +82,13 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
     HostDocumentType type,
     HostDocumentSelection? selection,
     String? errorText,
+    DocumentUploadState? uploadState,
   ) {
     final typography = Theme.of(context).extension<AppTypography>()!;
     final isSelected = selection != null;
     final hasError = errorText != null && errorText.isNotEmpty;
+    final isUploading = uploadState?.status == DocumentUploadStatus.uploading;
+    final uploadFailed = uploadState?.status == DocumentUploadStatus.error;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,13 +101,26 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
           ),
           child: Row(
             children: [
-              Icon(
-                isSelected ? Icons.insert_drive_file : Icons.upload_file,
-                size: 20,
-                color: isSelected
-                    ? AppColors.actionPrimary
-                    : AppColors.textTertiary,
-              ),
+              if (isUploading)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Icon(
+                  isSelected
+                      ? (uploadFailed
+                            ? Icons.error_outline
+                            : Icons.insert_drive_file)
+                      : Icons.upload_file,
+                  size: 20,
+                  color: uploadFailed
+                      ? AppColors.statusError
+                      : isSelected
+                      ? AppColors.actionPrimary
+                      : AppColors.textTertiary,
+                ),
               AppSpacing.spacerMd,
               Expanded(
                 child: Column(
@@ -120,7 +141,16 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                   ],
                 ),
               ),
-              AhBadge(label: isSelected ? 'Selected' : 'Add file'),
+              AhBadge(
+                label: isUploading
+                    ? 'Uploading…'
+                    : uploadFailed
+                    ? 'Retry'
+                    : isSelected
+                    ? 'Selected'
+                    : 'Add file',
+                tone: uploadFailed ? AhTone.error : AhTone.accent,
+              ),
             ],
           ),
         ),
@@ -145,6 +175,8 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
     final isVenue = hostType == HostType.venue;
     final documents = formState.draft.documents;
     final fieldErrors = formState.fieldErrors;
+    final uploadStates = formState.uploadStates;
+    final uploadErrors = formState.uploadErrors;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -191,12 +223,14 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                       HostDocumentType.businessRegistration,
                       documents[HostDocumentType.businessRegistration],
                       fieldErrors[HostDocumentType.businessRegistration.name],
+                      uploadStates[HostDocumentType.businessRegistration],
                     ),
                     AppSpacing.spacerSm,
                     _documentRow(
                       HostDocumentType.panCard,
                       documents[HostDocumentType.panCard],
                       fieldErrors[HostDocumentType.panCard.name],
+                      uploadStates[HostDocumentType.panCard],
                     ),
                     AppSpacing.spacerMd,
                     AhTextField(
@@ -223,6 +257,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         HostDocumentType.addressProof,
                         documents[HostDocumentType.addressProof],
                         fieldErrors[HostDocumentType.addressProof.name],
+                        uploadStates[HostDocumentType.addressProof],
                       ),
                       AppSpacing.spacerMd,
                       AhSwitchTile(
@@ -236,6 +271,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         HostDocumentType.fssaiRegistration,
                         documents[HostDocumentType.fssaiRegistration],
                         fieldErrors[HostDocumentType.fssaiRegistration.name],
+                        uploadStates[HostDocumentType.fssaiRegistration],
                       ),
                       AppSpacing.spacerMd,
                       Row(
@@ -272,6 +308,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         HostDocumentType.exciseLicence,
                         documents[HostDocumentType.exciseLicence],
                         fieldErrors[HostDocumentType.exciseLicence.name],
+                        uploadStates[HostDocumentType.exciseLicence],
                       ),
                       AppSpacing.spacerMd,
                       Row(
@@ -320,10 +357,23 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                   AppSpacing.gutter,
                   AppSpacing.lg,
                 ),
-                child: AhButton(
-                  label: 'Submit for review',
-                  fullWidth: true,
-                  onPressed: () => _onSubmit(hostType),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (uploadErrors.isNotEmpty) ...[
+                      AhAlertBanner(
+                        message: uploadErrors.join('\n'),
+                        tone: AhBannerTone.error,
+                      ),
+                      AppSpacing.spacerSm,
+                    ],
+                    AhButton(
+                      label: 'Submit for review',
+                      fullWidth: true,
+                      onPressed: () => _onSubmit(hostType),
+                    ),
+                  ],
                 ),
               ),
             ),

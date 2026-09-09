@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:host_mobile_app/core/di/document_compressor_providers.dart';
 import 'package:host_mobile_app/core/di/document_picker_providers.dart';
+import 'package:host_mobile_app/core/error/result.dart';
+import 'package:host_mobile_app/core/files/document_compressor.dart';
 import 'package:host_mobile_app/core/files/document_picker.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_type.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_upload_result.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_type.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_document_repository.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_document_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_type_controller.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_documents_page.dart';
 
@@ -26,11 +33,38 @@ class _FakeDocumentPicker implements DocumentPicker {
   }) async => _result;
 }
 
+/// Passes the path through untouched — avoids touching the real
+/// filesystem for a fixture path that doesn't exist on disk.
+class _FakeDocumentCompressor implements DocumentCompressor {
+  const _FakeDocumentCompressor();
+
+  @override
+  Future<String> compress(String path, String fileName) async => path;
+}
+
+/// Resolves every upload instantly with success, so widget tests don't
+/// make real network calls or race the background upload.
+class _FakeHostDocumentRepository implements HostDocumentRepository {
+  const _FakeHostDocumentRepository();
+
+  @override
+  Future<Result<HostDocumentUploadResult>> uploadDocument({
+    required HostDocumentType documentType,
+    required String filePath,
+    required String fileName,
+  }) async {
+    return const Ok(
+      HostDocumentUploadResult(documentId: 'test-doc', status: 'UPLOADED'),
+    );
+  }
+}
+
 void main() {
   Widget buildSubject(
     HostType hostType, {
     DocumentPickerResult? pickerResult = const DocumentPickerResult(
       fileName: 'document.pdf',
+      path: 'document.pdf',
     ),
   }) {
     return ProviderScope(
@@ -40,6 +74,12 @@ void main() {
         ),
         documentPickerProvider.overrideWithValue(
           _FakeDocumentPicker(pickerResult),
+        ),
+        documentCompressorProvider.overrideWithValue(
+          const _FakeDocumentCompressor(),
+        ),
+        hostDocumentRepositoryProvider.overrideWithValue(
+          const _FakeHostDocumentRepository(),
         ),
       ],
       child: MaterialApp(theme: AppTheme.dark, home: const HostDocumentsPage()),
@@ -84,7 +124,10 @@ void main() {
     await tester.pumpWidget(
       buildSubject(
         HostType.club,
-        pickerResult: const DocumentPickerResult(fileName: 'pan-card.pdf'),
+        pickerResult: const DocumentPickerResult(
+          fileName: 'pan-card.pdf',
+          path: 'pan-card.pdf',
+        ),
       ),
     );
 

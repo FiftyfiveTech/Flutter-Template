@@ -1,11 +1,18 @@
 import 'package:file_picker/file_picker.dart';
 
-/// Metadata for a locally picked file — deliberately no raw bytes/path,
-/// see `HostDocumentSelection`'s doc comment for why.
+/// Metadata for a locally picked file, plus its on-disk [path] so the
+/// upload call can read it fresh and compress/discard it immediately —
+/// see `HostDocumentSelection`'s doc comment: the path is used transiently
+/// for upload, never persisted into a stored entity.
 class DocumentPickerResult {
-  const DocumentPickerResult({required this.fileName, this.sizeBytes});
+  const DocumentPickerResult({
+    required this.fileName,
+    required this.path,
+    this.sizeBytes,
+  });
 
   final String fileName;
+  final String path;
   final int? sizeBytes;
 }
 
@@ -29,9 +36,10 @@ class FilePickerDocumentPicker implements DocumentPicker {
       type: FileType.custom,
       allowedExtensions: allowedExtensions,
     );
-    if (file == null) return null;
+    if (file == null || file.path == null) return null;
     return DocumentPickerResult(
       fileName: file.name,
+      path: file.path!,
       sizeBytes: file.lengthSync(),
     );
   }

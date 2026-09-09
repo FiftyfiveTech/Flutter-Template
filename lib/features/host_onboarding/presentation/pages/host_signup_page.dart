@@ -49,7 +49,10 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
     }
     if (!mounted) return;
 
-    context.push('/host/signup/host-type');
+    // pushReplacement, not push: signup is one-time (it mints the session
+    // token), so once it succeeds the route must drop off the stack and
+    // the back button/gesture must not be able to return here.
+    context.pushReplacement('/host/signup/host-type');
   }
 
   @override

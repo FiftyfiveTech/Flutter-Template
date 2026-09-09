@@ -40,25 +40,34 @@ class ApiLoggingInterceptor extends Interceptor {
     handler.next(err);
   }
 
+  /// Built as one single-line string, deliberately — logcat/console prefix
+  /// every wrapped line with `I/flutter (pid):`, which breaks a multi-line
+  /// `\`-continued curl into unselectable fragments. One line stays
+  /// copy-pasteable as a whole.
   String _toCurl(RequestOptions options) {
     final buffer = StringBuffer(
-      "curl --location --request ${options.method} "
-      "'${options.uri}'",
+      "curl --location --request ${options.method} '${options.uri}'",
     );
 
     final headers = {...options.headers};
     headers.remove(Headers.contentLengthHeader);
-    if (headers.containsKey('Authorization')) {
-      headers['Authorization'] = 'Bearer <redacted>';
-    }
+    // TODO(host-onboarding): re-enable redaction before merging — token is
+    // printed in full temporarily so it can be copied for manual curl testing.
     for (final entry in headers.entries) {
-      buffer.write(" \\\n  --header '${entry.key}: ${entry.value}'");
+      buffer.write(" --header '${entry.key}: ${entry.value}'");
     }
 
     final data = options.data;
-    if (data != null) {
+    if (data is FormData) {
+      for (final field in data.fields) {
+        buffer.write(" --form '${field.key}=${field.value}'");
+      }
+      for (final file in data.files) {
+        buffer.write(" --form '${file.key}=@${file.value.filename}'");
+      }
+    } else if (data != null) {
       final body = data is Map || data is List ? jsonEncode(data) : data;
-      buffer.write(" \\\n  --data-raw '$body'");
+      buffer.write(" --data-raw '$body'");
     }
 
     return buffer.toString();

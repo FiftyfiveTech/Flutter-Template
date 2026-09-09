@@ -18,4 +18,16 @@ extension HostDocumentTypeLabel on HostDocumentType {
     HostDocumentType.fssaiRegistration => 'FSSAI registration',
     HostDocumentType.exciseLicence => 'Excise licence',
   };
+
+  /// `fileType` query param sent to `POST /api/v1/uploads`, matching the
+  /// enum the backend advertises (`profile_photo`, `business_registration`,
+  /// `pan_document`, `excise_license`, `fssai_document`, `address_proof`,
+  /// `event_cover_media`).
+  String get apiValue => switch (this) {
+    HostDocumentType.businessRegistration => 'business_registration',
+    HostDocumentType.panCard => 'pan_document',
+    HostDocumentType.addressProof => 'address_proof',
+    HostDocumentType.fssaiRegistration => 'fssai_document',
+    HostDocumentType.exciseLicence => 'excise_license',
+  };
 }
