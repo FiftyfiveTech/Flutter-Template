@@ -20,12 +20,16 @@ import '../controllers/host_verification_status_controller.dart';
 /// `pending_review` until every document is verified
 /// (`docs/features/11-admin-dashboard.md`'s manual review queue). The
 /// host can still create draft events while waiting, just not publish.
+///
+/// Mirrors the H-04 frame in the design project's
+/// `After Hours - Host screens.dc.html` — status card, banner, document
+/// list, and bottom action — token for token.
 class HostVerificationPage extends ConsumerWidget {
   const HostVerificationPage({super.key});
 
-  String _label(HostDocumentStatus doc) => doc.docType?.label ?? 'Document';
-
-  ({String label, AhTone tone}) _badge(HostDocumentVerificationStatus status) {
+  ({String label, AhTone tone}) _badgeFor(
+    HostDocumentVerificationStatus status,
+  ) {
     return switch (status) {
       HostDocumentVerificationStatus.verified => (
         label: 'Verified',
@@ -36,8 +40,8 @@ class HostVerificationPage extends ConsumerWidget {
         tone: AhTone.error,
       ),
       HostDocumentVerificationStatus.pending => (
-        label: 'Pending',
-        tone: AhTone.warning,
+        label: 'In review',
+        tone: AhTone.accent,
       ),
     };
   }
@@ -63,11 +67,8 @@ class HostVerificationPage extends ConsumerWidget {
         child: RefreshIndicator(
           onRefresh: controller.refresh,
           child: statusAsync.when(
-            data: (documents) => _VerificationContent(
-              documents: documents,
-              badgeFor: _badge,
-              labelFor: _label,
-            ),
+            data: (documents) =>
+                _VerificationContent(documents: documents, badgeFor: _badgeFor),
             loading: () => ListView(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.gutter,
@@ -101,92 +102,129 @@ class HostVerificationPage extends ConsumerWidget {
 }
 
 class _VerificationContent extends StatelessWidget {
-  const _VerificationContent({
-    required this.documents,
-    required this.badgeFor,
-    required this.labelFor,
-  });
+  const _VerificationContent({required this.documents, required this.badgeFor});
 
   final List<HostDocumentStatus> documents;
   final ({String label, AhTone tone}) Function(HostDocumentVerificationStatus)
   badgeFor;
-  final String Function(HostDocumentStatus) labelFor;
 
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
     final allVerified = documents.allVerified;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.gutter,
-        AppSpacing.lg,
-        AppSpacing.gutter,
-        AppSpacing.lg,
-      ),
+    return Column(
       children: [
-        Center(
-          child: Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color:
-                  (allVerified
-                          ? AppColors.statusSuccess
-                          : AppColors.statusWarning)
-                      .withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.md,
+              AppSpacing.gutter,
+              AppSpacing.lg,
             ),
-            child: Icon(
-              allVerified ? Icons.check_circle : Icons.hourglass_top,
-              size: 32,
-              color: allVerified
-                  ? AppColors.statusSuccess
-                  : AppColors.statusWarning,
+            children: [
+              AhCard(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  children: [
+                    Icon(
+                      allVerified ? Icons.verified_user : Icons.hourglass_top,
+                      size: 28,
+                      color: allVerified
+                          ? AppColors.trustVerified
+                          : AppColors.actionPrimary,
+                    ),
+                    AppSpacing.spacerSm,
+                    Text(
+                      allVerified ? 'Verified' : 'Under review',
+                      style: typography.h2,
+                      textAlign: TextAlign.center,
+                    ),
+                    AppSpacing.spacerXs,
+                    Text(
+                      allVerified
+                          ? 'Every document checked out. You can publish '
+                                'events and take bookings.'
+                          : "We review every host's first documents by "
+                                'hand. Usually within 1 business day.',
+                      style: typography.bodySm.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              AppSpacing.spacerMd,
+              AhAlertBanner(
+                message: allVerified
+                    ? 'You can publish events now. Your first three go '
+                          'through admin approval.'
+                    : 'You can create and edit draft events now. '
+                          'Publishing needs verification first.',
+                tone: allVerified ? AhBannerTone.success : AhBannerTone.info,
+              ),
+              AppSpacing.spacerMd,
+              Text(
+                'DOCUMENTS',
+                style: typography.caption.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              AppSpacing.spacerSm,
+              for (final doc in documents) ...[
+                _DocumentStatusRow(
+                  label: doc.docType?.label ?? 'Document',
+                  reason: doc.reason,
+                  badge: badgeFor(doc.status),
+                ),
+                AppSpacing.spacerSm,
+              ],
+            ],
+          ),
+        ),
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: AppColors.borderDefault)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.sm + AppSpacing.xs,
+              AppSpacing.gutter,
+              AppSpacing.lg,
             ),
+            child: allVerified
+                ? AhButton(
+                    label: 'Go to home',
+                    fullWidth: true,
+                    onPressed: () => context.go('/host/home'),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.lock_outline,
+                        size: 16,
+                        color: AppColors.textTertiary,
+                      ),
+                      AppSpacing.spacerSm,
+                      Flexible(
+                        child: Text(
+                          'Home unlocks once every document is verified',
+                          style: typography.bodySm.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
-        AppSpacing.spacerLg,
-        Text(
-          allVerified ? "You're verified!" : "You're under review",
-          style: typography.h2,
-          textAlign: TextAlign.center,
-        ),
-        AppSpacing.spacerSm,
-        Text(
-          allVerified
-              ? 'Every document checks out. You can publish events now.'
-              : "We've received your documents and payout details. Our "
-                    'team checks every host manually — it usually takes '
-                    '1-2 business days.',
-          style: typography.body.copyWith(color: AppColors.textSecondary),
-          textAlign: TextAlign.center,
-        ),
-        AppSpacing.spacerLg,
-        if (!allVerified) ...[
-          const AhAlertBanner(
-            message:
-                "You can start building a draft event now — you just "
-                "won't be able to publish it until you're verified.",
-            tone: AhBannerTone.info,
-          ),
-          AppSpacing.spacerLg,
-        ],
-        for (final doc in documents) ...[
-          _DocumentStatusRow(
-            label: labelFor(doc),
-            reason: doc.reason,
-            badge: badgeFor(doc.status),
-          ),
-          AppSpacing.spacerSm,
-        ],
-        AppSpacing.spacerMd,
-        if (allVerified)
-          AhButton(
-            label: 'Go to host home',
-            fullWidth: true,
-            onPressed: () => context.go('/host/home'),
-          ),
       ],
     );
   }

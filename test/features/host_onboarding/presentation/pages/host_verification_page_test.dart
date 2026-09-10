@@ -71,10 +71,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text("You're under review"), findsOneWidget);
-      expect(find.text('Go to host home'), findsNothing);
+      expect(find.text('Under review'), findsOneWidget);
+      expect(find.text('Go to home'), findsNothing);
       expect(find.text('Verified'), findsOneWidget);
-      expect(find.text('Pending'), findsOneWidget);
+      expect(find.text('In review'), findsOneWidget);
     },
   );
 
@@ -94,10 +94,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text("You're verified!"), findsOneWidget);
-      expect(find.text('Go to host home'), findsOneWidget);
+      expect(find.text('Verified'), findsNWidgets(2));
+      expect(find.text('Go to home'), findsOneWidget);
 
-      await tester.tap(find.text('Go to host home'));
+      await tester.tap(find.text('Go to home'));
       await tester.pumpAndSettle();
 
       expect(find.text('Home page'), findsOneWidget);
@@ -137,11 +137,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text("You're under review"), findsOneWidget);
+    expect(find.text('Under review'), findsOneWidget);
 
     await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
     await tester.pumpAndSettle();
 
-    expect(find.text("You're verified!"), findsOneWidget);
+    expect(find.text('Verified'), findsNWidgets(2));
   });
 }
