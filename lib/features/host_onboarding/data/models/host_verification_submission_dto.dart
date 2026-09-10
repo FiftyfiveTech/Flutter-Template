@@ -90,20 +90,22 @@ class HostVerificationDocumentDto {
       date.toIso8601String().split('T').first;
 }
 
-/// The `data` object of a successful submit-verification response.
+/// A successful submit-verification response. The API returns `data:
+/// null` on success — there's no `accountStatus` here, just a
+/// confirmation `message`; the real per-document status is read
+/// separately from `GET /api/v1/host/documents` (H-04's status poll).
 class HostVerificationSubmissionResponseDto {
-  const HostVerificationSubmissionResponseDto({required this.accountStatus});
+  const HostVerificationSubmissionResponseDto({required this.message});
 
-  final String accountStatus;
+  final String message;
 
   factory HostVerificationSubmissionResponseDto.fromJson(
     Map<String, dynamic> json,
   ) {
     return HostVerificationSubmissionResponseDto(
-      accountStatus: json['accountStatus'] as String,
+      message: json['message'] as String? ?? 'Verification submitted',
     );
   }
 
-  HostVerificationResult toEntity() =>
-      HostVerificationResult(accountStatus: accountStatus);
+  HostVerificationResult toEntity() => HostVerificationResult(message: message);
 }

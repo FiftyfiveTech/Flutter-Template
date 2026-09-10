@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/document_compressor_providers.dart';
-import '../../../../core/di/session_providers.dart';
 import '../../../../core/files/document_compressor.dart';
-import '../../../../core/session/host_session.dart';
 import '../../domain/entities/host_document_selection.dart';
 import '../../domain/entities/host_document_type.dart';
 import '../../domain/entities/host_documents_draft.dart';
@@ -285,19 +283,7 @@ class HostDocumentsController extends _$HostDocumentsController {
     final useCase = ref.read(submitHostVerificationUseCaseProvider);
     final result = await useCase(submissionDraft);
     return result.when(
-      ok: (verification) {
-        final session = ref.read(hostSessionControllerProvider);
-        if (session != null) {
-          ref
-              .read(hostSessionControllerProvider.notifier)
-              .setSession(
-                HostSession(
-                  accessToken: session.accessToken,
-                  userId: session.userId,
-                  accountStatus: verification.accountStatus,
-                ),
-              );
-        }
+      ok: (_) {
         state = state.copyWith(isSubmitting: false);
         return true;
       },

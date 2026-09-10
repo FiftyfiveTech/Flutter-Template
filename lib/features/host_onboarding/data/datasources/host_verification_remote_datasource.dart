@@ -21,8 +21,6 @@ class HostVerificationRestDatasource
       data: request.toJson(),
     );
     final body = response.data as Map<String, dynamic>;
-    return HostVerificationSubmissionResponseDto.fromJson(
-      body['data'] as Map<String, dynamic>,
-    );
+    return HostVerificationSubmissionResponseDto.fromJson(body);
   }
 }

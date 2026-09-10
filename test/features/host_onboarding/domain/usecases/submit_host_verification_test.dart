@@ -37,7 +37,9 @@ void main() {
   test(
     'passes the draft through to the repository and returns its result',
     () async {
-      const result = HostVerificationResult(accountStatus: 'pending_review');
+      const result = HostVerificationResult(
+        message: 'Verification submitted for review',
+      );
       final repository = _FakeHostVerificationRepository(const Ok(result));
       final useCase = SubmitHostVerificationUseCase(repository);
 
@@ -45,7 +47,8 @@ void main() {
 
       expect(repository.lastDraft, draft);
       actual.when(
-        ok: (value) => expect(value.accountStatus, 'pending_review'),
+        ok: (value) =>
+            expect(value.message, 'Verification submitted for review'),
         err: (_) => fail('expected Ok'),
       );
     },

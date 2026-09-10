@@ -83,7 +83,7 @@ void main() {
       path: 'document.pdf',
     ),
     Result<HostVerificationResult> verificationResult = const Ok(
-      HostVerificationResult(accountStatus: 'pending_review'),
+      HostVerificationResult(message: 'Verification submitted for review'),
     ),
   }) {
     return ProviderScope(
@@ -115,7 +115,7 @@ void main() {
       path: 'document.pdf',
     ),
     Result<HostVerificationResult> verificationResult = const Ok(
-      HostVerificationResult(accountStatus: 'pending_review'),
+      HostVerificationResult(message: 'Verification submitted for review'),
     ),
   }) {
     final router = GoRouter(
