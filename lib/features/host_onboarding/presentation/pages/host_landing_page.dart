@@ -11,12 +11,6 @@ import '../widgets/host_landing_feature_row.dart';
 class HostLandingPage extends StatelessWidget {
   const HostLandingPage({super.key});
 
-  void _showComingSoon(BuildContext context, String destination) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$destination — coming soon')));
-  }
-
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
@@ -131,7 +125,7 @@ class HostLandingPage extends StatelessWidget {
                     label: 'I already have an account',
                     variant: AhButtonVariant.tertiary,
                     fullWidth: true,
-                    onPressed: () => _showComingSoon(context, 'Log in'),
+                    onPressed: () => context.go('/auth/phone'),
                   ),
                 ],
               ),
