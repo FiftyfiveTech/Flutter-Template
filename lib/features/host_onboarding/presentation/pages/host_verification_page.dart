@@ -169,7 +169,7 @@ class _VerificationContent extends StatelessWidget {
                 message: allVerified
                     ? 'You can publish events now. Your first three go '
                           'through admin approval.'
-                    : 'Publishing needs verification first.',
+                    : 'Publishing needs verification first. Try refershing the page or recheck after some time',
                 tone: allVerified ? AhBannerTone.success : AhBannerTone.info,
               ),
               AppSpacing.spacerMd,
