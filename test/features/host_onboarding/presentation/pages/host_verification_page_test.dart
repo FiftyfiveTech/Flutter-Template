@@ -51,6 +51,56 @@ void main() {
     );
   }
 
+  testWidgets('the system back gesture cannot return to H-03 · Documents', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => Scaffold(
+            body: TextButton(
+              onPressed: () => context.push('/verification'),
+              child: const Text('Go to verification'),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/verification',
+          builder: (context, state) => const HostVerificationPage(),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hostDocumentStatusRepositoryProvider.overrideWithValue(
+            _FakeHostDocumentStatusRepository([
+              const Ok([
+                HostDocumentStatus(
+                  docType: HostDocumentType.panCard,
+                  status: HostDocumentVerificationStatus.pending,
+                ),
+              ]),
+            ]),
+          ),
+        ],
+        child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
+      ),
+    );
+
+    await tester.tap(find.text('Go to verification'));
+    await tester.pumpAndSettle();
+    expect(find.text('Verification'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Verification'), findsOneWidget);
+    expect(find.text('Go to verification'), findsNothing);
+  });
+
   testWidgets(
     'shows the under-review state and no home button when a document is '
     'still pending',

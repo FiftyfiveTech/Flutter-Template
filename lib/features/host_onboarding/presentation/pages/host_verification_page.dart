@@ -54,45 +54,53 @@ class HostVerificationPage extends ConsumerWidget {
       hostVerificationStatusControllerProvider.notifier,
     );
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
-      appBar: AppBar(
+    return PopScope(
+      // The wizard is done once documents are submitted for review —
+      // system back/gesture must not return to H-03 · Documents to
+      // resubmit, same as the app bar already hiding its back button.
+      canPop: false,
+      child: Scaffold(
         backgroundColor: AppColors.backgroundPrimary,
-        elevation: 0,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: Text('Verification', style: typography.h3),
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: controller.refresh,
-          child: statusAsync.when(
-            data: (documents) =>
-                _VerificationContent(documents: documents, badgeFor: _badgeFor),
-            loading: () => ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.gutter,
-                AppSpacing.xl,
-                AppSpacing.gutter,
-                AppSpacing.lg,
+        appBar: AppBar(
+          backgroundColor: AppColors.backgroundPrimary,
+          elevation: 0,
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+          title: Text('Verification', style: typography.h3),
+        ),
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: controller.refresh,
+            child: statusAsync.when(
+              data: (documents) => _VerificationContent(
+                documents: documents,
+                badgeFor: _badgeFor,
               ),
-              children: const [Center(child: CircularProgressIndicator())],
-            ),
-            error: (error, _) => ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.gutter,
-                AppSpacing.lg,
-                AppSpacing.gutter,
-                AppSpacing.lg,
-              ),
-              children: const [
-                AhAlertBanner(
-                  message:
-                      "Couldn't load your verification status. Pull down "
-                      'to try again.',
-                  tone: AhBannerTone.error,
+              loading: () => ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.gutter,
+                  AppSpacing.xl,
+                  AppSpacing.gutter,
+                  AppSpacing.lg,
                 ),
-              ],
+                children: const [Center(child: CircularProgressIndicator())],
+              ),
+              error: (error, _) => ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.gutter,
+                  AppSpacing.lg,
+                  AppSpacing.gutter,
+                  AppSpacing.lg,
+                ),
+                children: const [
+                  AhAlertBanner(
+                    message:
+                        "Couldn't load your verification status. Pull down "
+                        'to try again.',
+                    tone: AhBannerTone.error,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -161,8 +169,7 @@ class _VerificationContent extends StatelessWidget {
                 message: allVerified
                     ? 'You can publish events now. Your first three go '
                           'through admin approval.'
-                    : 'You can create and edit draft events now. '
-                          'Publishing needs verification first.',
+                    : 'Publishing needs verification first.',
                 tone: allVerified ? AhBannerTone.success : AhBannerTone.info,
               ),
               AppSpacing.spacerMd,
