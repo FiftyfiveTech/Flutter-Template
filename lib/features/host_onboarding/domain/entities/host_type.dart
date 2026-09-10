@@ -12,4 +12,12 @@ extension HostTypeLabel on HostType {
     HostType.venue => 'Venue',
     HostType.individualOperator => 'Individual operator',
   };
+
+  /// Value sent as `hostType` to `POST /api/v1/host/submit-verification`.
+  String get apiValue => switch (this) {
+    HostType.club => 'club',
+    HostType.community => 'community',
+    HostType.venue => 'venue',
+    HostType.individualOperator => 'individual_operator',
+  };
 }

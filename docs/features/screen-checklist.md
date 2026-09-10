@@ -47,7 +47,7 @@ Legend: `[ ]` not yet verified · mark `[x]` once confirmed present and correct,
 - [x] `HOST-ON-01` Host Signup
 - [x] `HOST-ON-02` host_type Selection
 - [x] `HOST-ON-03` Document Upload — must render **conditionally** per host_type (venue gets FSSAI/excise fields, others don't)
-- [ ] `HOST-ON-04` Verification Status
+- [x] `HOST-ON-04` Verification Status — reflects live per-document status from `GET /api/v1/host/documents` (pending/verified/rejected), not a static spinner; pull-to-refresh
 
 ### 09 — Host Event Creation & Publishing
 - [ ] `HOST-EVT-01` Event Form (Create/Edit) — must include ratio target/release schedule fields, and lock price/date once first ticket sells

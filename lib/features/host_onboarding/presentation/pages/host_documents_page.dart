@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/document_picker_providers.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -68,14 +69,26 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
     }
   }
 
-  void _onSubmit(HostType hostType) {
+  Future<void> _onSubmit(HostType hostType) async {
     final notifier = ref.read(hostDocumentsControllerProvider.notifier);
     final isValid = notifier.submit(hostType: hostType);
     if (!isValid) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Verification — coming soon')));
+    final submitted = await notifier.submitForReview(hostType: hostType);
+    if (!submitted) {
+      final submitError = ref.read(hostDocumentsControllerProvider).submitError;
+      if (submitError != null && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(submitError)));
+      }
+      return;
+    }
+    if (!mounted) return;
+
+    // pushReplacement, not push: the wizard is done once submitted — back
+    // shouldn't return to the documents form.
+    context.pushReplacement('/host/signup/host-type/documents/verification');
   }
 
   Widget _documentRow(
@@ -368,9 +381,13 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                   AppSpacing.lg,
                 ),
                 child: AhButton(
-                  label: 'Submit for review',
+                  label: formState.isSubmitting
+                      ? 'Please wait…'
+                      : 'Submit for review',
                   fullWidth: true,
-                  onPressed: () => _onSubmit(hostType),
+                  onPressed: formState.isSubmitting
+                      ? null
+                      : () => _onSubmit(hostType),
                 ),
               ),
             ),

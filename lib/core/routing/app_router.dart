@@ -5,6 +5,7 @@ import '../../features/host_onboarding/presentation/pages/host_documents_page.da
 import '../../features/host_onboarding/presentation/pages/host_landing_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_signup_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_type_page.dart';
+import '../../features/host_onboarding/presentation/pages/host_verification_page.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/host/landing',
@@ -28,6 +29,11 @@ final appRouter = GoRouter(
       path: '/host/signup/host-type/documents',
       name: 'hostDocuments',
       builder: (context, state) => const HostDocumentsPage(),
+    ),
+    GoRoute(
+      path: '/host/signup/host-type/documents/verification',
+      name: 'hostVerification',
+      builder: (context, state) => const HostVerificationPage(),
     ),
     GoRoute(
       path: '/host/home',

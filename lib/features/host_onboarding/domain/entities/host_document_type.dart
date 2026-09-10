@@ -30,4 +30,25 @@ extension HostDocumentTypeLabel on HostDocumentType {
     HostDocumentType.fssaiRegistration => 'fssai_document',
     HostDocumentType.exciseLicence => 'excise_license',
   };
+
+  /// `docType` sent to `POST /api/v1/host/submit-verification` — a
+  /// different vocabulary from [apiValue]'s upload `fileType`.
+  String get submitDocType => switch (this) {
+    HostDocumentType.businessRegistration => 'business_registration',
+    HostDocumentType.panCard => 'pan',
+    HostDocumentType.addressProof => 'premises_address_proof',
+    HostDocumentType.fssaiRegistration => 'fssai',
+    HostDocumentType.exciseLicence => 'state_excise',
+  };
+
+  /// Reverses [submitDocType] — used to parse
+  /// `GET /api/v1/host/documents`'s `docType` back into the enum. `null`
+  /// for a value the client doesn't recognize, so an unexpected addition
+  /// on the backend doesn't crash the status screen.
+  static HostDocumentType? fromSubmitDocType(String value) {
+    for (final type in HostDocumentType.values) {
+      if (type.submitDocType == value) return type;
+    }
+    return null;
+  }
 }

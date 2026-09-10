@@ -17,8 +17,6 @@ class HostDocumentUploadResponseDto {
     );
   }
 
-  HostDocumentUploadResult toEntity() => HostDocumentUploadResult(
-    documentId: documentId,
-    status: status,
-  );
+  HostDocumentUploadResult toEntity() =>
+      HostDocumentUploadResult(documentId: documentId, status: status);
 }

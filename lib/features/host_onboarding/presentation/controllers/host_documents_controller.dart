@@ -3,13 +3,19 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/document_compressor_providers.dart';
+import '../../../../core/di/session_providers.dart';
 import '../../../../core/files/document_compressor.dart';
+import '../../../../core/session/host_session.dart';
 import '../../domain/entities/host_document_selection.dart';
 import '../../domain/entities/host_document_type.dart';
 import '../../domain/entities/host_documents_draft.dart';
+import '../../domain/entities/host_payout_details.dart';
 import '../../domain/entities/host_type.dart';
+import '../../domain/entities/host_verification_document.dart';
+import '../../domain/entities/host_verification_submission_draft.dart';
 import '../../domain/usecases/validate_host_documents.dart';
 import 'host_document_api_providers.dart';
+import 'host_verification_api_providers.dart';
 
 part 'host_documents_controller.g.dart';
 
@@ -19,10 +25,19 @@ enum DocumentUploadStatus { uploading, success, error }
 /// from the draft so a slow/failed upload never blocks the user from
 /// picking other documents or moving through the rest of the form.
 class DocumentUploadState {
-  const DocumentUploadState({required this.status, this.errorMessage});
+  const DocumentUploadState({
+    required this.status,
+    this.errorMessage,
+    this.documentId,
+  });
 
   final DocumentUploadStatus status;
   final String? errorMessage;
+
+  /// The uploaded document's id, set once [status] is
+  /// [DocumentUploadStatus.success] — the `uploadId` submit-verification
+  /// needs for this slot.
+  final String? documentId;
 }
 
 class HostDocumentsFormState {
@@ -30,6 +45,8 @@ class HostDocumentsFormState {
     this.draft = const HostDocumentsDraft(),
     this.fieldErrors = const {},
     this.uploadStates = const {},
+    this.isSubmitting = false,
+    this.submitError,
   });
 
   final HostDocumentsDraft draft;
@@ -40,15 +57,27 @@ class HostDocumentsFormState {
   final Map<String, String> fieldErrors;
   final Map<HostDocumentType, DocumentUploadState> uploadStates;
 
+  /// True while [submitForReview]'s API call is in flight.
+  final bool isSubmitting;
+
+  /// Set when the submit-verification API call itself fails
+  /// (network/server), as opposed to [fieldErrors] from client-side
+  /// validation.
+  final String? submitError;
+
   HostDocumentsFormState copyWith({
     HostDocumentsDraft? draft,
     Map<String, String>? fieldErrors,
     Map<HostDocumentType, DocumentUploadState>? uploadStates,
+    bool? isSubmitting,
+    String? submitError,
   }) {
     return HostDocumentsFormState(
       draft: draft ?? this.draft,
       fieldErrors: fieldErrors ?? this.fieldErrors,
       uploadStates: uploadStates ?? this.uploadStates,
+      isSubmitting: isSubmitting ?? this.isSubmitting,
+      submitError: submitError,
     );
   }
 }
@@ -150,8 +179,10 @@ class HostDocumentsController extends _$HostDocumentsController {
       _setUploadState(
         type,
         result.when(
-          ok: (_) =>
-              const DocumentUploadState(status: DocumentUploadStatus.success),
+          ok: (uploaded) => DocumentUploadState(
+            status: DocumentUploadStatus.success,
+            documentId: uploaded.documentId,
+          ),
           err: (failure) => DocumentUploadState(
             status: DocumentUploadStatus.error,
             errorMessage: failure.message,
@@ -180,9 +211,9 @@ class HostDocumentsController extends _$HostDocumentsController {
   }
 
   void _setUploadState(HostDocumentType type, DocumentUploadState value) {
-    final uploadStates =
-        Map<HostDocumentType, DocumentUploadState>.from(state.uploadStates)
-          ..[type] = value;
+    final uploadStates = Map<HostDocumentType, DocumentUploadState>.from(
+      state.uploadStates,
+    )..[type] = value;
     state = state.copyWith(uploadStates: uploadStates);
   }
 
@@ -205,6 +236,76 @@ class HostDocumentsController extends _$HostDocumentsController {
             ? failure.fieldErrors
             : const <String, String>{};
         state = state.copyWith(fieldErrors: fieldErrors);
+        return false;
+      },
+    );
+  }
+
+  /// Assembles the validated draft's documents/payout details and submits
+  /// them for review. Only call after [submit] has returned true, so every
+  /// selected document already carries a successful upload's
+  /// [DocumentUploadState.documentId]. Returns true once the account moves
+  /// into review and the wizard can advance to H-04 · Verification; on an
+  /// API failure, [HostDocumentsFormState.submitError] is set instead.
+  Future<bool> submitForReview({required HostType hostType}) async {
+    state = state.copyWith(isSubmitting: true, submitError: null);
+
+    final draft = state.draft;
+    final documents = draft.documents.entries.map((entry) {
+      final type = entry.key;
+      final isFssai = type == HostDocumentType.fssaiRegistration;
+      final isExcise = type == HostDocumentType.exciseLicence;
+      return HostVerificationDocument(
+        docType: type,
+        uploadId: state.uploadStates[type]?.documentId ?? '',
+        issuedAt: isFssai
+            ? draft.fssaiLicenceValidFrom
+            : isExcise
+            ? draft.exciseLicenceValidFrom
+            : null,
+        expiresAt: isFssai
+            ? draft.fssaiLicenceValidTo
+            : isExcise
+            ? draft.exciseLicenceValidTo
+            : null,
+      );
+    }).toList();
+
+    final submissionDraft = HostVerificationSubmissionDraft(
+      hostType: hostType,
+      servesFood: draft.servesFood,
+      servesAlcohol: draft.servesAlcohol,
+      payoutDetails: HostPayoutDetails(
+        method: HostPayoutMethod.upi,
+        vpa: draft.upiId,
+      ),
+      documents: documents,
+    );
+
+    final useCase = ref.read(submitHostVerificationUseCaseProvider);
+    final result = await useCase(submissionDraft);
+    return result.when(
+      ok: (verification) {
+        final session = ref.read(hostSessionControllerProvider);
+        if (session != null) {
+          ref
+              .read(hostSessionControllerProvider.notifier)
+              .setSession(
+                HostSession(
+                  accessToken: session.accessToken,
+                  userId: session.userId,
+                  accountStatus: verification.accountStatus,
+                ),
+              );
+        }
+        state = state.copyWith(isSubmitting: false);
+        return true;
+      },
+      err: (failure) {
+        state = state.copyWith(
+          isSubmitting: false,
+          submitError: failure.message,
+        );
         return false;
       },
     );

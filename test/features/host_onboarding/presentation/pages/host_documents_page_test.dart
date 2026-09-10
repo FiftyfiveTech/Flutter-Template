@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:host_mobile_app/core/di/document_compressor_providers.dart';
 import 'package:host_mobile_app/core/di/document_picker_providers.dart';
+import 'package:host_mobile_app/core/error/failures.dart';
 import 'package:host_mobile_app/core/error/result.dart';
 import 'package:host_mobile_app/core/files/document_compressor.dart';
 import 'package:host_mobile_app/core/files/document_picker.dart';
@@ -10,9 +12,13 @@ import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_type.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_upload_result.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_type.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_verification_result.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_verification_submission_draft.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_document_repository.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_verification_repository.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_document_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_type_controller.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_verification_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_documents_page.dart';
 
 class _FixedHostTypeController extends HostTypeController {
@@ -59,12 +65,25 @@ class _FakeHostDocumentRepository implements HostDocumentRepository {
   }
 }
 
+class _FakeHostVerificationRepository implements HostVerificationRepository {
+  _FakeHostVerificationRepository(this._result);
+  final Result<HostVerificationResult> _result;
+
+  @override
+  Future<Result<HostVerificationResult>> submit(
+    HostVerificationSubmissionDraft draft,
+  ) async => _result;
+}
+
 void main() {
   Widget buildSubject(
     HostType hostType, {
     DocumentPickerResult? pickerResult = const DocumentPickerResult(
       fileName: 'document.pdf',
       path: 'document.pdf',
+    ),
+    Result<HostVerificationResult> verificationResult = const Ok(
+      HostVerificationResult(accountStatus: 'pending_review'),
     ),
   }) {
     return ProviderScope(
@@ -81,8 +100,57 @@ void main() {
         hostDocumentRepositoryProvider.overrideWithValue(
           const _FakeHostDocumentRepository(),
         ),
+        hostVerificationRepositoryProvider.overrideWithValue(
+          _FakeHostVerificationRepository(verificationResult),
+        ),
       ],
       child: MaterialApp(theme: AppTheme.dark, home: const HostDocumentsPage()),
+    );
+  }
+
+  Widget buildRoutedSubject(
+    HostType hostType, {
+    DocumentPickerResult? pickerResult = const DocumentPickerResult(
+      fileName: 'document.pdf',
+      path: 'document.pdf',
+    ),
+    Result<HostVerificationResult> verificationResult = const Ok(
+      HostVerificationResult(accountStatus: 'pending_review'),
+    ),
+  }) {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const HostDocumentsPage(),
+        ),
+        GoRoute(
+          path: '/host/signup/host-type/documents/verification',
+          builder: (context, state) =>
+              const Scaffold(body: Text('Verification page')),
+        ),
+      ],
+    );
+    return ProviderScope(
+      overrides: [
+        hostTypeControllerProvider.overrideWith(
+          () => _FixedHostTypeController(hostType),
+        ),
+        documentPickerProvider.overrideWithValue(
+          _FakeDocumentPicker(pickerResult),
+        ),
+        documentCompressorProvider.overrideWithValue(
+          const _FakeDocumentCompressor(),
+        ),
+        hostDocumentRepositoryProvider.overrideWithValue(
+          const _FakeHostDocumentRepository(),
+        ),
+        hostVerificationRepositoryProvider.overrideWithValue(
+          _FakeHostVerificationRepository(verificationResult),
+        ),
+      ],
+      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
   }
 
@@ -160,9 +228,10 @@ void main() {
   });
 
   testWidgets(
-    'submitting a club with valid UPI and required documents advances',
+    'submitting a club with valid UPI and required documents advances to '
+    'H-04 · Verification',
     (tester) async {
-      await tester.pumpWidget(buildSubject(HostType.club));
+      await tester.pumpWidget(buildRoutedSubject(HostType.club));
 
       await tester.enterText(
         find.widgetWithText(TextField, 'business@upi'),
@@ -175,11 +244,42 @@ void main() {
       await tester.tap(
         find.widgetWithText(ElevatedButton, 'Submit for review'),
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Enter a valid UPI ID'), findsNothing);
       expect(find.text('Upload required'), findsNothing);
-      expect(find.text('Verification — coming soon'), findsOneWidget);
+      expect(find.text('Verification page'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'shows the submit error and stays on the page when submit-verification '
+    'fails',
+    (tester) async {
+      await tester.pumpWidget(
+        buildRoutedSubject(
+          HostType.club,
+          verificationResult: const Err(
+            NetworkFailure(message: 'Submission failed.'),
+          ),
+        ),
+      );
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'business@upi'),
+        'business@upi',
+      );
+      await tester.tap(find.text('Business registration or organiser ID'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('PAN card'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(ElevatedButton, 'Submit for review'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Submission failed.'), findsOneWidget);
+      expect(find.text('Verification page'), findsNothing);
     },
   );
 }
