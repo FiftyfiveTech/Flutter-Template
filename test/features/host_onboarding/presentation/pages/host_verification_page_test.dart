@@ -10,7 +10,10 @@ import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_do
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_verification_status.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_document_status_repository.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_document_status_api_providers.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_onboarding_progress_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_verification_page.dart';
+
+import '../../../../support/fakes.dart';
 
 class _FakeHostDocumentStatusRepository
     implements HostDocumentStatusRepository {
@@ -45,6 +48,9 @@ void main() {
       overrides: [
         hostDocumentStatusRepositoryProvider.overrideWithValue(
           _FakeHostDocumentStatusRepository(results),
+        ),
+        hostOnboardingProgressRepositoryProvider.overrideWithValue(
+          FakeHostOnboardingProgressRepository(),
         ),
       ],
       child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),

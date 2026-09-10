@@ -7,7 +7,9 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_card.dart';
+import '../../domain/entities/host_onboarding_step.dart';
 import '../../domain/entities/host_type.dart';
+import '../controllers/host_onboarding_progress_controller.dart';
 import '../controllers/host_type_controller.dart';
 import '../widgets/step_progress_dots.dart';
 
@@ -53,6 +55,9 @@ class HostTypePage extends ConsumerWidget {
     final result = ref.read(hostTypeControllerProvider.notifier).submit();
     result.when(
       ok: (_) {
+        ref
+            .read(hostOnboardingProgressControllerProvider.notifier)
+            .setStep(HostOnboardingStep.documents);
         context.push('/host/signup/host-type/documents');
       },
       err: (failure) {

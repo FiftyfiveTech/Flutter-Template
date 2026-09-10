@@ -17,9 +17,12 @@ import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_ve
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_document_repository.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_verification_repository.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_document_api_providers.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_onboarding_progress_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_type_controller.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_verification_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_documents_page.dart';
+
+import '../../../../support/fakes.dart';
 
 class _FixedHostTypeController extends HostTypeController {
   _FixedHostTypeController(this._initial);
@@ -103,6 +106,9 @@ void main() {
         hostVerificationRepositoryProvider.overrideWithValue(
           _FakeHostVerificationRepository(verificationResult),
         ),
+        hostOnboardingProgressRepositoryProvider.overrideWithValue(
+          FakeHostOnboardingProgressRepository(),
+        ),
       ],
       child: MaterialApp(theme: AppTheme.dark, home: const HostDocumentsPage()),
     );
@@ -148,6 +154,9 @@ void main() {
         ),
         hostVerificationRepositoryProvider.overrideWithValue(
           _FakeHostVerificationRepository(verificationResult),
+        ),
+        hostOnboardingProgressRepositoryProvider.overrideWithValue(
+          FakeHostOnboardingProgressRepository(),
         ),
       ],
       child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),

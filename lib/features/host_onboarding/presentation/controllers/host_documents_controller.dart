@@ -7,12 +7,14 @@ import '../../../../core/files/document_compressor.dart';
 import '../../domain/entities/host_document_selection.dart';
 import '../../domain/entities/host_document_type.dart';
 import '../../domain/entities/host_documents_draft.dart';
+import '../../domain/entities/host_onboarding_step.dart';
 import '../../domain/entities/host_payout_details.dart';
 import '../../domain/entities/host_type.dart';
 import '../../domain/entities/host_verification_document.dart';
 import '../../domain/entities/host_verification_submission_draft.dart';
 import '../../domain/usecases/validate_host_documents.dart';
 import 'host_document_api_providers.dart';
+import 'host_onboarding_progress_controller.dart';
 import 'host_verification_api_providers.dart';
 
 part 'host_documents_controller.g.dart';
@@ -84,48 +86,72 @@ class HostDocumentsFormState {
 /// silently uploads each document in the background as soon as it's
 /// picked so the user can keep filling the rest of the form without
 /// waiting. Screen-scoped (autoDispose): the draft only needs to live for
-/// the duration of this step.
+/// the duration of this step — [build] seeds it from
+/// `HostOnboardingProgressController`'s persisted copy so a restart
+/// resumes with the same fields filled and the same documents marked
+/// uploaded (any slot that hadn't finished uploading is dropped: there's
+/// no local file left to resume it from).
 @riverpod
 class HostDocumentsController extends _$HostDocumentsController {
   static const _useCase = ValidateHostDocumentsUseCase();
 
   @override
-  HostDocumentsFormState build() => const HostDocumentsFormState();
+  HostDocumentsFormState build() {
+    final draft =
+        ref.read(hostOnboardingProgressControllerProvider)?.documentsDraft ??
+        const HostDocumentsDraft();
+    final uploadStates = <HostDocumentType, DocumentUploadState>{
+      for (final entry in draft.documents.entries)
+        if (entry.value.documentId != null)
+          entry.key: DocumentUploadState(
+            status: DocumentUploadStatus.success,
+            documentId: entry.value.documentId,
+          ),
+    };
+    return HostDocumentsFormState(draft: draft, uploadStates: uploadStates);
+  }
 
   void updateUpiId(String value) {
     state = state.copyWith(draft: state.draft.copyWith(upiId: value));
+    _persistProgress();
   }
 
   void setServesFood(bool value) {
     state = state.copyWith(draft: state.draft.copyWith(servesFood: value));
+    _persistProgress();
   }
 
   void setServesAlcohol(bool value) {
     state = state.copyWith(draft: state.draft.copyWith(servesAlcohol: value));
+    _persistProgress();
   }
 
   void updateFssaiLicenceValidFrom(DateTime value) {
     state = state.copyWith(
       draft: state.draft.copyWith(fssaiLicenceValidFrom: value),
     );
+    _persistProgress();
   }
 
   void updateFssaiLicenceValidTo(DateTime value) {
     state = state.copyWith(
       draft: state.draft.copyWith(fssaiLicenceValidTo: value),
     );
+    _persistProgress();
   }
 
   void updateExciseLicenceValidFrom(DateTime value) {
     state = state.copyWith(
       draft: state.draft.copyWith(exciseLicenceValidFrom: value),
     );
+    _persistProgress();
   }
 
   void updateExciseLicenceValidTo(DateTime value) {
     state = state.copyWith(
       draft: state.draft.copyWith(exciseLicenceValidTo: value),
     );
+    _persistProgress();
   }
 
   /// Records the pick immediately (so the row shows the file name) and
@@ -174,14 +200,12 @@ class HostDocumentsController extends _$HostDocumentsController {
       // this entry) while the upload was in flight — don't let a stale
       // result clobber it.
       if (state.draft.documents[type] != selection) return;
-      _setUploadState(
-        type,
-        result.when(
-          ok: (uploaded) => DocumentUploadState(
-            status: DocumentUploadStatus.success,
-            documentId: uploaded.documentId,
-          ),
-          err: (failure) => DocumentUploadState(
+      result.when(
+        ok: (uploaded) =>
+            _onUploadSuccess(type, selection, uploaded.documentId),
+        err: (failure) => _setUploadState(
+          type,
+          DocumentUploadState(
             status: DocumentUploadStatus.error,
             errorMessage: failure.message,
           ),
@@ -208,11 +232,54 @@ class HostDocumentsController extends _$HostDocumentsController {
     }
   }
 
+  /// Stamps the successful upload's `documentId` onto the draft's
+  /// selection too (not just [DocumentUploadState]) — that's the field
+  /// `HostOnboardingProgressController` persists, so a resumed session
+  /// shows this slot as already uploaded instead of re-asking for it.
+  void _onUploadSuccess(
+    HostDocumentType type,
+    HostDocumentSelection selection,
+    String documentId,
+  ) {
+    final documents =
+        Map<HostDocumentType, HostDocumentSelection>.from(state.draft.documents)
+          ..[type] = HostDocumentSelection(
+            fileName: selection.fileName,
+            sizeBytes: selection.sizeBytes,
+            documentId: documentId,
+          );
+    state = state.copyWith(draft: state.draft.copyWith(documents: documents));
+    _setUploadState(
+      type,
+      DocumentUploadState(
+        status: DocumentUploadStatus.success,
+        documentId: documentId,
+      ),
+    );
+  }
+
   void _setUploadState(HostDocumentType type, DocumentUploadState value) {
     final uploadStates = Map<HostDocumentType, DocumentUploadState>.from(
       state.uploadStates,
     )..[type] = value;
     state = state.copyWith(uploadStates: uploadStates);
+    _persistProgress();
+  }
+
+  /// Persists [state.draft] via `HostOnboardingProgressController`,
+  /// dropping any document slot that hasn't finished uploading — there's
+  /// no local file behind it to resume from, and a stale "selected but
+  /// not uploaded" row would just confuse a resumed session.
+  void _persistProgress() {
+    final persistable = state.draft.copyWith(
+      documents: {
+        for (final entry in state.draft.documents.entries)
+          if (entry.value.documentId != null) entry.key: entry.value,
+      },
+    );
+    ref
+        .read(hostOnboardingProgressControllerProvider.notifier)
+        .updateDocumentsDraft(persistable);
   }
 
   /// Validates the draft against [hostType]'s document set, then checks
@@ -285,6 +352,9 @@ class HostDocumentsController extends _$HostDocumentsController {
     return result.when(
       ok: (_) {
         state = state.copyWith(isSubmitting: false);
+        ref
+            .read(hostOnboardingProgressControllerProvider.notifier)
+            .setStep(HostOnboardingStep.verification);
         return true;
       },
       err: (failure) {

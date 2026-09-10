@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:host_mobile_app/core/di/database_providers.dart';
 import 'package:host_mobile_app/core/error/failures.dart';
 import 'package:host_mobile_app/core/error/result.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
@@ -10,8 +11,11 @@ import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_si
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_signup_repository.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/usecases/search_cities.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/city_search_providers.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_onboarding_progress_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_signup_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_signup_page.dart';
+
+import '../../../../support/fakes.dart';
 
 class _FakeSearchCitiesUseCase implements SearchCitiesUseCase {
   const _FakeSearchCitiesUseCase();
@@ -55,6 +59,12 @@ void main() {
         hostSignupRepositoryProvider.overrideWithValue(
           _FakeHostSignupRepository(signupResult),
         ),
+        hostSessionLocalDatasourceProvider.overrideWithValue(
+          FakeHostSessionLocalDatasource(),
+        ),
+        hostOnboardingProgressRepositoryProvider.overrideWithValue(
+          FakeHostOnboardingProgressRepository(),
+        ),
       ],
       child: MaterialApp(theme: AppTheme.dark, home: const HostSignupPage()),
     );
@@ -87,6 +97,12 @@ void main() {
         ),
         hostSignupRepositoryProvider.overrideWithValue(
           _FakeHostSignupRepository(signupResult),
+        ),
+        hostSessionLocalDatasourceProvider.overrideWithValue(
+          FakeHostSessionLocalDatasource(),
+        ),
+        hostOnboardingProgressRepositoryProvider.overrideWithValue(
+          FakeHostOnboardingProgressRepository(),
         ),
       ],
       child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),

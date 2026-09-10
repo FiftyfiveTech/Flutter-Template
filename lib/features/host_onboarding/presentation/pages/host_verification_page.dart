@@ -12,6 +12,8 @@ import '../../../../shared/widgets/ah_card.dart';
 import '../../domain/entities/host_document_status.dart';
 import '../../domain/entities/host_document_type.dart';
 import '../../domain/entities/host_document_verification_status.dart';
+import '../../domain/entities/host_onboarding_step.dart';
+import '../controllers/host_onboarding_progress_controller.dart';
 import '../controllers/host_verification_status_controller.dart';
 
 /// H-04 · Verification — shown once H-03 · Documents has been submitted
@@ -75,6 +77,14 @@ class HostVerificationPage extends ConsumerWidget {
               data: (documents) => _VerificationContent(
                 documents: documents,
                 badgeFor: _badgeFor,
+                onGoHome: () {
+                  // The wizard is fully done — a restart from here should
+                  // land straight on H-05 Home, not re-poll verification.
+                  ref
+                      .read(hostOnboardingProgressControllerProvider.notifier)
+                      .setStep(HostOnboardingStep.home);
+                  context.go('/host/home');
+                },
               ),
               loading: () => ListView(
                 padding: const EdgeInsets.fromLTRB(
@@ -110,11 +120,16 @@ class HostVerificationPage extends ConsumerWidget {
 }
 
 class _VerificationContent extends StatelessWidget {
-  const _VerificationContent({required this.documents, required this.badgeFor});
+  const _VerificationContent({
+    required this.documents,
+    required this.badgeFor,
+    required this.onGoHome,
+  });
 
   final List<HostDocumentStatus> documents;
   final ({String label, AhTone tone}) Function(HostDocumentVerificationStatus)
   badgeFor;
+  final VoidCallback onGoHome;
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +223,7 @@ class _VerificationContent extends StatelessWidget {
                 ? AhButton(
                     label: 'Go to home',
                     fullWidth: true,
-                    onPressed: () => context.go('/host/home'),
+                    onPressed: onGoHome,
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,

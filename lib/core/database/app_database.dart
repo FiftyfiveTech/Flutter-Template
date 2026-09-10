@@ -5,17 +5,32 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../features/host_onboarding/data/local/host_onboarding_progress_table.dart';
+import 'host_session_table.dart';
 import 'sync_queue_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [SyncQueueEntries])
+@DriftDatabase(
+  tables: [SyncQueueEntries, HostSessionTable, HostOnboardingProgressTable],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(hostSessionTable);
+        await m.createTable(hostOnboardingProgressTable);
+      }
+    },
+  );
 
   Future<void> wipeAllTables() async {
     await batch((batch) {

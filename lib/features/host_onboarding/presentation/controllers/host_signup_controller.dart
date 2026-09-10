@@ -3,8 +3,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/di/session_providers.dart';
 import '../../../../core/session/host_session.dart';
 import '../../domain/entities/city.dart';
+import '../../domain/entities/host_onboarding_step.dart';
 import '../../domain/entities/host_signup_draft.dart';
 import '../../domain/usecases/validate_host_signup_basics.dart';
+import 'host_onboarding_progress_controller.dart';
 import 'host_signup_api_providers.dart';
 
 part 'host_signup_controller.g.dart';
@@ -105,6 +107,12 @@ class HostSignupController extends _$HostSignupController {
                 accountStatus: result.accountStatus,
               ),
             );
+        // Seeds the resumable wizard step now, before the user has made
+        // any H-02 choice, so a restart before then still resumes at
+        // H-02 instead of falling back to H-05 Home for lack of a row.
+        ref
+            .read(hostOnboardingProgressControllerProvider.notifier)
+            .setStep(HostOnboardingStep.hostType);
         state = state.copyWith(draft: validated, isSubmitting: false);
         return true;
       },

@@ -3,11 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_onboarding_progress_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_type_page.dart';
+
+import '../../../../support/fakes.dart';
 
 void main() {
   Widget buildSubject() {
     return ProviderScope(
+      overrides: [
+        hostOnboardingProgressRepositoryProvider.overrideWithValue(
+          FakeHostOnboardingProgressRepository(),
+        ),
+      ],
       child: MaterialApp(theme: AppTheme.dark, home: const HostTypePage()),
     );
   }
@@ -25,6 +33,11 @@ void main() {
       ],
     );
     return ProviderScope(
+      overrides: [
+        hostOnboardingProgressRepositoryProvider.overrideWithValue(
+          FakeHostOnboardingProgressRepository(),
+        ),
+      ],
       child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
   }

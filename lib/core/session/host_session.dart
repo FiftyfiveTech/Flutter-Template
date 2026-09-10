@@ -1,6 +1,6 @@
 /// The signed-in host session established once H-01 · Signup succeeds.
-/// Held in memory only for now — no secure-storage persistence yet, so a
-/// process restart requires signing in again.
+/// Persisted to Drift (`HostSessionTable`) via `HostSessionLocalDatasource`
+/// so an app restart doesn't require signing in again mid-onboarding.
 class HostSession {
   const HostSession({
     required this.accessToken,

@@ -8,10 +8,16 @@ import '../../features/host_onboarding/presentation/pages/host_landing_page.dart
 import '../../features/host_onboarding/presentation/pages/host_signup_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_type_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_verification_page.dart';
+import 'host_bootstrap_page.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/host/landing',
+  initialLocation: '/',
   routes: [
+    GoRoute(
+      path: '/',
+      name: 'hostBootstrap',
+      builder: (context, state) => const HostBootstrapPage(),
+    ),
     GoRoute(
       path: '/host/landing',
       name: 'hostLanding',
