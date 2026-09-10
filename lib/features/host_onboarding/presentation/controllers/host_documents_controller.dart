@@ -30,29 +30,25 @@ class HostDocumentsFormState {
     this.draft = const HostDocumentsDraft(),
     this.fieldErrors = const {},
     this.uploadStates = const {},
-    this.uploadErrors = const [],
   });
 
   final HostDocumentsDraft draft;
+
+  /// Keyed by `HostDocumentType.name` (matching the field-validation keys),
+  /// so upload problems render in the exact same place as validation
+  /// errors — right below that document's row — once [submit] runs.
   final Map<String, String> fieldErrors;
   final Map<HostDocumentType, DocumentUploadState> uploadStates;
-
-  /// Set by [HostDocumentsController.submit] when it's blocked by
-  /// still-uploading or failed documents — all of them together, so the
-  /// UI can show one aggregated list instead of one error at a time.
-  final List<String> uploadErrors;
 
   HostDocumentsFormState copyWith({
     HostDocumentsDraft? draft,
     Map<String, String>? fieldErrors,
     Map<HostDocumentType, DocumentUploadState>? uploadStates,
-    List<String>? uploadErrors,
   }) {
     return HostDocumentsFormState(
       draft: draft ?? this.draft,
       fieldErrors: fieldErrors ?? this.fieldErrors,
       uploadStates: uploadStates ?? this.uploadStates,
-      uploadErrors: uploadErrors ?? this.uploadErrors,
     );
   }
 }
@@ -158,7 +154,7 @@ class HostDocumentsController extends _$HostDocumentsController {
               const DocumentUploadState(status: DocumentUploadStatus.success),
           err: (failure) => DocumentUploadState(
             status: DocumentUploadStatus.error,
-            errorMessage: '${type.label}: ${failure.message}',
+            errorMessage: failure.message,
           ),
         ),
       );
@@ -168,16 +164,16 @@ class HostDocumentsController extends _$HostDocumentsController {
         type,
         DocumentUploadState(
           status: DocumentUploadStatus.error,
-          errorMessage: '${type.label}: ${e.toString()}',
+          errorMessage: e.toString(),
         ),
       );
     } catch (_) {
       if (state.draft.documents[type] != selection) return;
       _setUploadState(
         type,
-        DocumentUploadState(
+        const DocumentUploadState(
           status: DocumentUploadStatus.error,
-          errorMessage: "${type.label}: couldn't be uploaded",
+          errorMessage: "Couldn't be uploaded",
         ),
       );
     }
@@ -191,43 +187,39 @@ class HostDocumentsController extends _$HostDocumentsController {
   }
 
   /// Validates the draft against [hostType]'s document set, then checks
-  /// every selected document has finished uploading successfully.
-  /// Returns true (and clears field/upload errors) only when both pass,
-  /// so the wizard can advance to H-04 · Verification. All problems —
-  /// field validation and upload failures/in-progress uploads together —
-  /// are surfaced at once via [uploadErrors] rather than one at a time.
+  /// every selected document has finished uploading successfully. Returns
+  /// true only when both pass, so the wizard can advance to H-04 ·
+  /// Verification. Problems from both checks land in the same
+  /// [HostDocumentsFormState.fieldErrors] map, so they render right below
+  /// the field they belong to instead of in a separate summary.
   bool submit({required HostType hostType}) {
     final result = _useCase(state.draft, hostType: hostType);
     return result.when(
       ok: (validated) {
-        final uploadErrors = _collectUploadErrors(validated);
-        state = state.copyWith(
-          draft: validated,
-          fieldErrors: const {},
-          uploadErrors: uploadErrors,
-        );
-        return uploadErrors.isEmpty;
+        final fieldErrors = _collectUploadFieldErrors(validated);
+        state = state.copyWith(draft: validated, fieldErrors: fieldErrors);
+        return fieldErrors.isEmpty;
       },
       err: (failure) {
         final fieldErrors = failure is HostDocumentsValidationFailure
             ? failure.fieldErrors
             : const <String, String>{};
-        state = state.copyWith(fieldErrors: fieldErrors, uploadErrors: const []);
+        state = state.copyWith(fieldErrors: fieldErrors);
         return false;
       },
     );
   }
 
-  List<String> _collectUploadErrors(HostDocumentsDraft draft) {
-    final errors = <String>[];
+  Map<String, String> _collectUploadFieldErrors(HostDocumentsDraft draft) {
+    final errors = <String, String>{};
     for (final type in draft.documents.keys) {
       final uploadState = state.uploadStates[type];
       if (uploadState == null) continue;
       switch (uploadState.status) {
         case DocumentUploadStatus.uploading:
-          errors.add('${type.label} is still uploading — please wait');
+          errors[type.name] = 'Still uploading — please wait';
         case DocumentUploadStatus.error:
-          errors.add(uploadState.errorMessage ?? '${type.label} failed to upload');
+          errors[type.name] = uploadState.errorMessage ?? 'Failed to upload';
         case DocumentUploadStatus.success:
           break;
       }

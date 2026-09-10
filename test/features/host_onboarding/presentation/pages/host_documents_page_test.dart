@@ -111,10 +111,10 @@ void main() {
       expect(find.text('We serve alcohol'), findsOneWidget);
       expect(find.text('FSSAI registration'), findsOneWidget);
       expect(find.text('Excise licence'), findsOneWidget);
-      expect(find.text('FSSAI licence valid from'), findsOneWidget);
-      expect(find.text('FSSAI licence valid to'), findsOneWidget);
-      expect(find.text('Excise licence valid from'), findsOneWidget);
-      expect(find.text('Excise licence valid to'), findsOneWidget);
+      expect(find.text('FSSAI valid from'), findsOneWidget);
+      expect(find.text('FSSAI valid to'), findsOneWidget);
+      expect(find.text('Excise valid from'), findsOneWidget);
+      expect(find.text('Excise valid to'), findsOneWidget);
     },
   );
 
@@ -134,7 +134,7 @@ void main() {
     await tester.tap(find.text('PAN card'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Selected'), findsOneWidget);
+    expect(find.text('Uploaded'), findsOneWidget);
     expect(find.text('pan-card.pdf'), findsOneWidget);
   });
 

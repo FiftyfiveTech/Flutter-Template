@@ -89,6 +89,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
     final hasError = errorText != null && errorText.isNotEmpty;
     final isUploading = uploadState?.status == DocumentUploadStatus.uploading;
     final uploadFailed = uploadState?.status == DocumentUploadStatus.error;
+    final uploaded = uploadState?.status == DocumentUploadStatus.success;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,13 +110,17 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                 )
               else
                 Icon(
-                  isSelected
+                  uploaded
+                      ? Icons.check_circle
+                      : isSelected
                       ? (uploadFailed
                             ? Icons.error_outline
                             : Icons.insert_drive_file)
                       : Icons.upload_file,
                   size: 20,
-                  color: uploadFailed
+                  color: uploaded
+                      ? AppColors.statusSuccess
+                      : uploadFailed
                       ? AppColors.statusError
                       : isSelected
                       ? AppColors.actionPrimary
@@ -146,10 +151,16 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                     ? 'Uploading…'
                     : uploadFailed
                     ? 'Retry'
+                    : uploaded
+                    ? 'Uploaded'
                     : isSelected
                     ? 'Selected'
                     : 'Add file',
-                tone: uploadFailed ? AhTone.error : AhTone.accent,
+                tone: uploadFailed
+                    ? AhTone.error
+                    : uploaded
+                    ? AhTone.success
+                    : AhTone.accent,
               ),
             ],
           ),
@@ -176,7 +187,6 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
     final documents = formState.draft.documents;
     final fieldErrors = formState.fieldErrors;
     final uploadStates = formState.uploadStates;
-    final uploadErrors = formState.uploadErrors;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -279,7 +289,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         children: [
                           Expanded(
                             child: AhDateField(
-                              label: 'FSSAI licence valid from',
+                              label: 'FSSAI valid from',
                               value: formState.draft.fssaiLicenceValidFrom,
                               onChanged: notifier.updateFssaiLicenceValidFrom,
                               errorText: fieldErrors['fssaiLicenceValidFrom'],
@@ -288,7 +298,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                           AppSpacing.spacerMd,
                           Expanded(
                             child: AhDateField(
-                              label: 'FSSAI licence valid to',
+                              label: 'FSSAI valid to',
                               value: formState.draft.fssaiLicenceValidTo,
                               onChanged: notifier.updateFssaiLicenceValidTo,
                               errorText: fieldErrors['fssaiLicenceValidTo'],
@@ -316,7 +326,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         children: [
                           Expanded(
                             child: AhDateField(
-                              label: 'Excise licence valid from',
+                              label: 'Excise valid from',
                               value: formState.draft.exciseLicenceValidFrom,
                               onChanged: notifier.updateExciseLicenceValidFrom,
                               errorText: fieldErrors['exciseLicenceValidFrom'],
@@ -325,7 +335,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                           AppSpacing.spacerMd,
                           Expanded(
                             child: AhDateField(
-                              label: 'Excise licence valid to',
+                              label: 'Excise valid to',
                               value: formState.draft.exciseLicenceValidTo,
                               onChanged: notifier.updateExciseLicenceValidTo,
                               errorText: fieldErrors['exciseLicenceValidTo'],
@@ -357,23 +367,10 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                   AppSpacing.gutter,
                   AppSpacing.lg,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (uploadErrors.isNotEmpty) ...[
-                      AhAlertBanner(
-                        message: uploadErrors.join('\n'),
-                        tone: AhBannerTone.error,
-                      ),
-                      AppSpacing.spacerSm,
-                    ],
-                    AhButton(
-                      label: 'Submit for review',
-                      fullWidth: true,
-                      onPressed: () => _onSubmit(hostType),
-                    ),
-                  ],
+                child: AhButton(
+                  label: 'Submit for review',
+                  fullWidth: true,
+                  onPressed: () => _onSubmit(hostType),
                 ),
               ),
             ),
