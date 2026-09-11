@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/session_providers.dart';
@@ -7,29 +9,39 @@ import 'host_login_api_providers.dart';
 part 'otp_entry_controller.g.dart';
 
 class OtpEntryState {
+  static const _sentinel = Object();
+
   const OtpEntryState({
     this.otp = '',
     this.isSubmitting = false,
     this.isResending = false,
+    this.cooldownSeconds = 30,
     this.errorText,
   });
 
   final String otp;
   final bool isSubmitting;
   final bool isResending;
+  final int cooldownSeconds;
   final String? errorText;
+
+  bool get canResend => !isResending && cooldownSeconds == 0;
 
   OtpEntryState copyWith({
     String? otp,
     bool? isSubmitting,
     bool? isResending,
-    String? errorText,
+    int? cooldownSeconds,
+    Object? errorText = _sentinel,
   }) {
     return OtpEntryState(
       otp: otp ?? this.otp,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       isResending: isResending ?? this.isResending,
-      errorText: errorText,
+      cooldownSeconds: cooldownSeconds ?? this.cooldownSeconds,
+      errorText: identical(errorText, _sentinel)
+          ? this.errorText
+          : errorText as String?,
     );
   }
 }
@@ -38,19 +50,44 @@ class OtpEntryState {
 /// verifies it to sign the host in.
 @riverpod
 class OtpEntryController extends _$OtpEntryController {
+  Timer? _timer;
+
   @override
-  OtpEntryState build(String phoneNumber) => const OtpEntryState();
+  OtpEntryState build(String phoneNumber) {
+    ref.onDispose(() {
+      _timer?.cancel();
+    });
+    _startCooldown();
+    return const OtpEntryState(cooldownSeconds: 30);
+  }
+
+  void _startCooldown() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.cooldownSeconds <= 1) {
+        timer.cancel();
+        state = state.copyWith(cooldownSeconds: 0);
+      } else {
+        state = state.copyWith(cooldownSeconds: state.cooldownSeconds - 1);
+      }
+    });
+  }
 
   void updateOtp(String value) {
     state = state.copyWith(otp: value, errorText: null);
   }
 
   Future<void> resend() async {
+    if (!state.canResend) return;
+
     state = state.copyWith(isResending: true, errorText: null);
     final useCase = ref.read(requestOtpUseCaseProvider);
     final result = await useCase(phoneNumber);
-    state = result.when(
-      ok: (_) => state.copyWith(isResending: false),
+    result.when(
+      ok: (_) {
+        state = state.copyWith(isResending: false, cooldownSeconds: 30);
+        _startCooldown();
+      },
       err: (failure) =>
           state.copyWith(isResending: false, errorText: failure.message),
     );
