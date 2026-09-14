@@ -8,6 +8,9 @@ import '../../features/host_onboarding/presentation/pages/host_landing_page.dart
 import '../../features/host_onboarding/presentation/pages/host_signup_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_type_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_verification_page.dart';
+import '../../features/host_venues/domain/entities/host_venue.dart';
+import '../../features/host_venues/presentation/pages/host_venue_details_page.dart';
+import '../../features/host_venues/presentation/pages/host_venues_page.dart';
 import 'host_bootstrap_page.dart';
 
 final appRouter = GoRouter(
@@ -58,6 +61,22 @@ final appRouter = GoRouter(
       path: '/host/home',
       name: 'hostHome',
       builder: (context, state) => const HostHomePage(),
+    ),
+    GoRoute(
+      path: '/host/venues',
+      name: 'hostVenues',
+      builder: (context, state) => const HostVenuesPage(),
+    ),
+    GoRoute(
+      path: '/host/venues/add',
+      name: 'hostVenueAdd',
+      builder: (context, state) => const HostVenueDetailsPage(),
+    ),
+    GoRoute(
+      path: '/host/venues/:id',
+      name: 'hostVenueDetails',
+      builder: (context, state) =>
+          HostVenueDetailsPage(venue: state.extra as HostVenue?),
     ),
   ],
 );

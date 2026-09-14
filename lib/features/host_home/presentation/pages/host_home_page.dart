@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -85,7 +86,7 @@ class HostHomePage extends ConsumerWidget {
                       if (summary != null) ...[
                         _VenuesCard(
                           count: summary.savedVenuesCount,
-                          onTap: () => _showMessage(context, 'Venues'),
+                          onTap: () => context.push('/host/venues'),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                       ],
