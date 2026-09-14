@@ -7,38 +7,43 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_alert_banner.dart';
+import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_chip_select.dart';
-import '../../../../shared/widgets/ah_dropdown_field.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../../shared/widgets/ah_stepper_input.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
-import '../../domain/entities/host_venue.dart';
-import '../controllers/host_venue_form_controller.dart';
+import '../../../host_onboarding/domain/entities/city.dart';
+import '../../../host_onboarding/presentation/controllers/city_search_providers.dart';
+import '../controllers/host_venue_form_controller.dart'
+    show
+        HostVenueFormState,
+        hostVenueFormControllerProvider,
+        kMaxVenuePhotos,
+        kMinVenuePhotos;
 
-/// Event types offered when creating a venue. No product doc pins this list
-/// down yet; matches the placeholder set the design spec suggested.
+/// The backend's fixed event-type vocabulary for venues — the only values
+/// `allowedEventTypes` accepts.
 const kVenueEventTypeOptions = [
-  'House party',
-  'Rooftop',
-  'Bar takeover',
-  'Warehouse',
-  'Private residence',
+  'Dinner',
+  'Tasting',
+  'Board games',
+  'Live music',
+  'Workshop',
+  'Pottery',
 ];
 
-/// Bangalore-only pilot, same scoping as `host_documents_page.dart` and
-/// `host_signup_page.dart`'s city field.
-const kVenueCityOptions = ['Bangalore'];
-
-const _photoSlotCount = 3;
 const _imagePickerExtensions = ['jpg', 'jpeg', 'png'];
 
-/// H-07 · Venue details — also backs H-E0 "add a venue" when [venue] is
+/// H-07 · Venue details — also backs H-E0 "add a venue" when [venueId] is
 /// null. Editing an existing venue updates every upcoming event held there.
+/// The full venue (with its short-lived photo urls) is fetched fresh from
+/// the backend rather than passed in via navigation, since the H-06 list
+/// response never includes photos.
 class HostVenueDetailsPage extends ConsumerStatefulWidget {
-  const HostVenueDetailsPage({super.key, this.venue});
+  const HostVenueDetailsPage({super.key, this.venueId});
 
-  final HostVenue? venue;
+  final String? venueId;
 
   @override
   ConsumerState<HostVenueDetailsPage> createState() =>
@@ -46,27 +51,48 @@ class HostVenueDetailsPage extends ConsumerStatefulWidget {
 }
 
 class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
-  late final _nameController = TextEditingController(text: widget.venue?.name);
-  late final _addressLine1Controller = TextEditingController(
-    text: widget.venue?.addressLine1,
-  );
-  late final _addressLine2Controller = TextEditingController(
-    text: widget.venue?.addressLine2,
-  );
-  late final _pincodeController = TextEditingController(
-    text: widget.venue?.pincode,
-  );
+  late final _nameController = TextEditingController();
+  late final _addLine1Controller = TextEditingController();
+  late final _addLine2Controller = TextEditingController();
+  late final _localityController = TextEditingController();
+  late final _pincodeController = TextEditingController();
   bool _confirmDelete = false;
+  bool _controllersSeeded = false;
 
-  late final _provider = hostVenueFormControllerProvider(widget.venue);
+  late final _provider = hostVenueFormControllerProvider(widget.venueId);
 
   @override
   void dispose() {
     _nameController.dispose();
-    _addressLine1Controller.dispose();
-    _addressLine2Controller.dispose();
+    _addLine1Controller.dispose();
+    _addLine2Controller.dispose();
+    _localityController.dispose();
     _pincodeController.dispose();
     super.dispose();
+  }
+
+  /// Text controllers can only be seeded once the fetched venue lands (for
+  /// edit mode) — done here rather than in `initState` since the draft
+  /// isn't available until the async load completes.
+  void _seedControllersIfNeeded(HostVenueFormState state) {
+    if (_controllersSeeded) return;
+    if (widget.venueId != null && state.isLoadingVenue) return;
+    _controllersSeeded = true;
+    _nameController.text = state.draft.name;
+    _addLine1Controller.text = state.draft.addLine1;
+    _addLine2Controller.text = state.draft.addLine2;
+    _localityController.text = state.draft.locality;
+    _pincodeController.text = state.draft.pincode;
+  }
+
+  /// Always shows one empty "add" slot past the photos already picked so
+  /// far — down to [kMinVenuePhotos] shown at minimum — up to the
+  /// backend's [kMaxVenuePhotos] cap, past which no empty slot is offered.
+  int _visiblePhotoSlotCount(HostVenueFormState state) {
+    return (state.photoSlots.length + 1).clamp(
+      kMinVenuePhotos,
+      kMaxVenuePhotos,
+    );
   }
 
   Future<void> _pickPhoto(int index) async {
@@ -75,7 +101,9 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
           .read(documentPickerProvider)
           .pickFile(allowedExtensions: _imagePickerExtensions);
       if (result == null || !mounted) return;
-      ref.read(_provider.notifier).setPhotoAt(index, result.path);
+      ref
+          .read(_provider.notifier)
+          .pickPhotoAt(index, result.path, result.fileName);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -122,6 +150,7 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
     final notifier = ref.read(_provider.notifier);
     final draft = state.draft;
     final fieldErrors = state.fieldErrors;
+    _seedControllersIfNeeded(state);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -135,201 +164,266 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
         ),
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.gutter,
-                      AppSpacing.md,
-                      AppSpacing.gutter,
-                      AppSpacing.lg,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Saved once, reused across every event you create '
-                          'there. Editing it later updates all of your '
-                          'upcoming events at that venue.',
-                          style: typography.bodySm.copyWith(
-                            color: AppColors.textSecondary,
+        child: state.isLoadingVenue
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.actionPrimary,
+                ),
+              )
+            : state.loadError != null
+            ? _LoadErrorView(
+                message: state.loadError!,
+                onRetry: notifier.retryLoad,
+              )
+            : Stack(
+                children: [
+                  Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.gutter,
+                            AppSpacing.md,
+                            AppSpacing.gutter,
+                            AppSpacing.lg,
                           ),
-                        ),
-                        AppSpacing.spacerMd,
-                        Text(
-                          'Venue photos',
-                          style: typography.bodySm.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        AppSpacing.spacerSm,
-                        AhPhotoSlots(
-                          count: _photoSlotCount,
-                          photoPaths: draft.photoPaths,
-                          onTapSlot: _pickPhoto,
-                        ),
-                        AppSpacing.spacerXs,
-                        Text(
-                          fieldErrors['photos'] ??
-                              'Minimum 3. Used as fallback artwork on events '
-                                  'at this venue.',
-                          style: typography.caption.copyWith(
-                            color: fieldErrors['photos'] != null
-                                ? AppColors.statusError
-                                : AppColors.textTertiary,
-                          ),
-                        ),
-                        AppSpacing.spacerMd,
-                        Text(
-                          'Event types this venue can host',
-                          style: typography.bodySm.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        AppSpacing.spacerSm,
-                        AhChipSelect(
-                          options: kVenueEventTypeOptions,
-                          selected: draft.eventTypes,
-                          onToggle: notifier.toggleEventType,
-                        ),
-                        AppSpacing.spacerXs,
-                        Text(
-                          fieldErrors['eventTypes'] ??
-                              'Only these formats are offered when you '
-                                  'create an event here.',
-                          style: typography.caption.copyWith(
-                            color: fieldErrors['eventTypes'] != null
-                                ? AppColors.statusError
-                                : AppColors.textTertiary,
-                          ),
-                        ),
-                        AppSpacing.spacerMd,
-                        AhTextField(
-                          label: 'Venue name',
-                          controller: _nameController,
-                          onChanged: notifier.updateName,
-                          errorText: fieldErrors['name'],
-                        ),
-                        AppSpacing.spacerMd,
-                        AhTextField(
-                          label: 'Address line 1',
-                          controller: _addressLine1Controller,
-                          onChanged: notifier.updateAddressLine1,
-                          errorText: fieldErrors['addressLine1'],
-                        ),
-                        AppSpacing.spacerMd,
-                        AhTextField(
-                          label: 'Address line 2',
-                          controller: _addressLine2Controller,
-                          onChanged: notifier.updateAddressLine2,
-                        ),
-                        AppSpacing.spacerMd,
-                        AhDropdownField(
-                          label: 'City',
-                          value: draft.city.isEmpty
-                              ? kVenueCityOptions.first
-                              : draft.city,
-                          options: kVenueCityOptions,
-                          onChanged: notifier.updateCity,
-                          errorText: fieldErrors['city'],
-                        ),
-                        AppSpacing.spacerMd,
-                        AhTextField(
-                          label: 'Pincode',
-                          controller: _pincodeController,
-                          onChanged: notifier.updatePincode,
-                          keyboardType: TextInputType.number,
-                          errorText: fieldErrors['pincode'],
-                        ),
-                        AppSpacing.spacerMd,
-                        AhStepperInput(
-                          label: 'Max capacity at this venue',
-                          value: draft.maxCapacity,
-                          min: 8,
-                          max: 300,
-                          step: 2,
-                          suffix: 'seats',
-                          onChanged: notifier.updateMaxCapacity,
-                        ),
-                        AppSpacing.spacerMd,
-                        const AhAlertBanner(
-                          message:
-                              'The exact address is only released to a '
-                              "member after they book — this stays true for "
-                              'every event at this venue.',
-                        ),
-                        if (state.isEdit) ...[
-                          AppSpacing.spacerLg,
-                          DecoratedBox(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                top: BorderSide(color: AppColors.borderDefault),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Saved once, reused across every event you '
+                                'create there. Editing it later updates all '
+                                'of your upcoming events at that venue.',
+                                style: typography.bodySm.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                top: AppSpacing.md,
+                              AppSpacing.spacerMd,
+                              Text(
+                                'Venue photos',
+                                style: typography.bodySm.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                              child: Center(
-                                child: TextButton.icon(
-                                  onPressed: state.isDeleting
-                                      ? null
-                                      : () => setState(
-                                          () => _confirmDelete = true,
-                                        ),
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    size: 18,
-                                    color: AppColors.statusError,
+                              AppSpacing.spacerSm,
+                              AhPhotoSlots(
+                                count: _visiblePhotoSlotCount(state),
+                                slots: state.photoSlots,
+                                onTapSlot: _pickPhoto,
+                              ),
+                              AppSpacing.spacerXs,
+                              Text(
+                                fieldErrors['photos'] ??
+                                    'Minimum $kMinVenuePhotos, up to '
+                                        '$kMaxVenuePhotos. Used as fallback '
+                                        'artwork on events at this venue.',
+                                style: typography.caption.copyWith(
+                                  color: fieldErrors['photos'] != null
+                                      ? AppColors.statusError
+                                      : AppColors.textTertiary,
+                                ),
+                              ),
+                              AppSpacing.spacerMd,
+                              Text(
+                                'Event types this venue can host',
+                                style: typography.bodySm.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              AppSpacing.spacerSm,
+                              AhChipSelect(
+                                options: kVenueEventTypeOptions,
+                                selected: draft.allowedEventTypes,
+                                onToggle: notifier.toggleEventType,
+                              ),
+                              AppSpacing.spacerXs,
+                              Text(
+                                fieldErrors['eventTypes'] ??
+                                    'Only these formats are offered when you '
+                                        'create an event here.',
+                                style: typography.caption.copyWith(
+                                  color: fieldErrors['eventTypes'] != null
+                                      ? AppColors.statusError
+                                      : AppColors.textTertiary,
+                                ),
+                              ),
+                              AppSpacing.spacerMd,
+                              AhTextField(
+                                label: 'Venue name',
+                                placeholder: 'e.g. Toit, Indiranagar',
+                                controller: _nameController,
+                                onChanged: notifier.updateName,
+                                errorText: fieldErrors['name'],
+                              ),
+                              AppSpacing.spacerMd,
+                              AhTextField(
+                                label: 'Address line 1',
+                                placeholder: 'e.g. 12, 100 Feet Road',
+                                controller: _addLine1Controller,
+                                onChanged: notifier.updateAddLine1,
+                                errorText: fieldErrors['addLine1'],
+                              ),
+                              AppSpacing.spacerMd,
+                              AhTextField(
+                                label: 'Address line 2',
+                                placeholder: '(optional)',
+                                controller: _addLine2Controller,
+                                onChanged: notifier.updateAddLine2,
+                                errorText: fieldErrors['addLine2'],
+                              ),
+                              AppSpacing.spacerMd,
+                              AhTextField(
+                                label: 'Locality',
+                                placeholder: 'e.g. Indiranagar',
+                                controller: _localityController,
+                                onChanged: notifier.updateLocality,
+                                errorText: fieldErrors['locality'],
+                              ),
+                              AppSpacing.spacerMd,
+                              AhAsyncSearchField<City>(
+                                label: 'City',
+                                value: draft.cityName,
+                                placeholder: 'Search for a city',
+                                search: (query) => ref.read(
+                                  citySearchResultsProvider(query).future,
+                                ),
+                                displayStringForOption: (city) => city.name,
+                                onSelected: notifier.updateCity,
+                                errorText: fieldErrors['city'],
+                              ),
+                              AppSpacing.spacerMd,
+                              AhTextField(
+                                label: 'Pincode',
+                                placeholder: 'e.g. 560038',
+                                controller: _pincodeController,
+                                onChanged: notifier.updatePincode,
+                                keyboardType: TextInputType.number,
+                                errorText: fieldErrors['pincode'],
+                              ),
+                              AppSpacing.spacerMd,
+                              AhStepperInput(
+                                label: 'Max capacity at this venue',
+                                value: draft.maxCapacity,
+                                min: 1,
+                                max: 300,
+                                step: 1,
+                                suffix: 'seats',
+                                onChanged: notifier.updateMaxCapacity,
+                              ),
+                              AppSpacing.spacerMd,
+                              const AhAlertBanner(
+                                message:
+                                    'The exact address is only released to a '
+                                    "member after they book — this stays "
+                                    'true for every event at this venue.',
+                              ),
+                              if (state.isEdit) ...[
+                                AppSpacing.spacerLg,
+                                DecoratedBox(
+                                  decoration: const BoxDecoration(
+                                    border: Border(
+                                      top: BorderSide(
+                                        color: AppColors.borderDefault,
+                                      ),
+                                    ),
                                   ),
-                                  label: Text(
-                                    'Delete this venue',
-                                    style: typography.bodySm.copyWith(
-                                      color: AppColors.statusError,
-                                      fontWeight: FontWeight.w600,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: AppSpacing.md,
+                                    ),
+                                    child: Center(
+                                      child: TextButton.icon(
+                                        onPressed: state.isDeleting
+                                            ? null
+                                            : () => setState(
+                                                () => _confirmDelete = true,
+                                              ),
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          size: 18,
+                                          color: AppColors.statusError,
+                                        ),
+                                        label: Text(
+                                          'Delete this venue',
+                                          style: typography.bodySm.copyWith(
+                                            color: AppColors.statusError,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              ],
+                            ],
                           ),
-                        ],
-                      ],
-                    ),
+                        ),
+                      ),
+                      DecoratedBox(
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            top: BorderSide(color: AppColors.borderDefault),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.gutter,
+                            AppSpacing.sm + AppSpacing.xs,
+                            AppSpacing.gutter,
+                            AppSpacing.lg,
+                          ),
+                          child: AhButton(
+                            label: state.isSaving ? 'Saving…' : state.saveLabel,
+                            fullWidth: true,
+                            onPressed: state.isSaving ? null : _onSave,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                DecoratedBox(
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: AppColors.borderDefault),
+                  if (_confirmDelete)
+                    _DeleteVenueSheet(
+                      venueName: draft.name,
+                      isDeleting: state.isDeleting,
+                      onDelete: _onConfirmDelete,
+                      onCancel: () => setState(() => _confirmDelete = false),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.gutter,
-                      AppSpacing.sm + AppSpacing.xs,
-                      AppSpacing.gutter,
-                      AppSpacing.lg,
-                    ),
-                    child: AhButton(
-                      label: state.isSaving ? 'Saving…' : state.saveLabel,
-                      fullWidth: true,
-                      onPressed: state.isSaving ? null : _onSave,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (_confirmDelete)
-              _DeleteVenueSheet(
-                venueName: draft.name,
-                isDeleting: state.isDeleting,
-                onDelete: _onConfirmDelete,
-                onCancel: () => setState(() => _confirmDelete = false),
+                ],
               ),
+      ),
+    );
+  }
+}
+
+class _LoadErrorView extends StatelessWidget {
+  const _LoadErrorView({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final typography = Theme.of(context).extension<AppTypography>()!;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.gutter),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Couldn't load this venue",
+              style: typography.h3,
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.spacerSm,
+            Text(
+              message,
+              style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.spacerMd,
+            AhButton(label: 'Try again', onPressed: onRetry),
           ],
         ),
       ),

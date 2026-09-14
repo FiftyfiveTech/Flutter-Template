@@ -58,10 +58,8 @@ class HostVenuesPage extends ConsumerWidget {
                         for (final venue in state.venues) ...[
                           _VenueRow(
                             venue: venue,
-                            onTap: () => context.push(
-                              '/host/venues/${venue.id}',
-                              extra: venue,
-                            ),
+                            onTap: () =>
+                                context.push('/host/venues/${venue.id}'),
                           ),
                           AppSpacing.spacerSm,
                         ],

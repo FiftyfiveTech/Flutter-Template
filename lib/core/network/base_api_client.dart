@@ -79,6 +79,28 @@ class BaseApiClient {
     }
   }
 
+  Future<Response<T>> patch<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    Options? options,
+  }) async {
+    try {
+      final requestOptions = (options ?? Options()).copyWith(
+        headers: {...?headers, ...?options?.headers},
+      );
+      return await _dio.patch<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: requestOptions,
+      );
+    } on DioException catch (e) {
+      throw NetworkException(_handleError(e));
+    }
+  }
+
   Future<Response<T>> delete<T>(
     String path, {
     dynamic data,

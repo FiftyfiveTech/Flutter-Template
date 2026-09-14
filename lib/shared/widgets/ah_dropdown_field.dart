@@ -14,6 +14,7 @@ class AhDropdownField extends StatelessWidget {
     required this.value,
     required this.options,
     required this.onChanged,
+    this.hint,
     this.errorText,
   });
 
@@ -21,6 +22,11 @@ class AhDropdownField extends StatelessWidget {
   final String value;
   final List<String> options;
   final ValueChanged<String> onChanged;
+
+  /// Shown when [value] isn't (yet) one of [options] — e.g. before the
+  /// host has made an explicit choice. Leaving this unset and [value]
+  /// empty falls back to the field's default unselected look.
+  final String? hint;
   final String? errorText;
 
   @override
@@ -35,6 +41,14 @@ class AhDropdownField extends StatelessWidget {
         AppSpacing.spacerXs,
         DropdownButtonFormField<String>(
           initialValue: options.contains(value) ? value : null,
+          hint: hint == null
+              ? null
+              : Text(
+                  hint!,
+                  style: typography.body.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                ),
           items: [
             for (final option in options)
               DropdownMenuItem(value: option, child: Text(option)),
