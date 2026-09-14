@@ -109,8 +109,8 @@ class _OtpEntryPageState extends ConsumerState<OtpEntryPage> {
                       label: state.isResending
                           ? 'Resending…'
                           : state.cooldownSeconds > 0
-                              ? 'Resend in ${state.cooldownSeconds}s'
-                              : "Didn't get it? Resend",
+                          ? 'Resend in ${state.cooldownSeconds}s'
+                          : "Didn't get it? Resend",
                       variant: AhButtonVariant.tertiary,
                       onPressed: state.canResend ? _onResend : null,
                     ),

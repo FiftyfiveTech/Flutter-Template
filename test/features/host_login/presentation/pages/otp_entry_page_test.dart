@@ -12,19 +12,16 @@ import 'package:host_mobile_app/features/host_login/presentation/pages/otp_entry
 import '../../../../support/fakes.dart';
 
 class _FakeHostLoginRepository implements HostLoginRepository {
-  _FakeHostLoginRepository({
-    this.requestOtpResult = const Ok(null),
-    this.verifyOtpResult = const Ok(
-      HostLoginResult(
-        accessToken: 'fake_token',
-        userId: 'host_123',
-        accountStatus: 'active',
-      ),
-    ),
-  });
+  _FakeHostLoginRepository();
 
-  Result<void> requestOtpResult;
-  Result<HostLoginResult> verifyOtpResult;
+  Result<void> requestOtpResult = const Ok(null);
+  Result<HostLoginResult> verifyOtpResult = const Ok(
+    HostLoginResult(
+      accessToken: 'fake_token',
+      userId: 'host_123',
+      accountStatus: 'active',
+    ),
+  );
   int requestOtpCallCount = 0;
 
   @override

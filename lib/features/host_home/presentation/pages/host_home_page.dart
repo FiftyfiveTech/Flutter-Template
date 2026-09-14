@@ -1,75 +1,217 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../widgets/host_home_nav_card.dart';
+import '../../../../shared/widgets/ah_alert_banner.dart';
+import '../../../../shared/widgets/ah_card.dart';
+import '../controllers/host_home_controller.dart';
+import '../widgets/host_home_bottom_nav.dart';
+import '../widgets/host_home_event_card.dart';
 
-/// H-05 · Home — the placeholder hub a host lands on once onboarding
-/// completes. Nav destinations are stubs until their own features (event
-/// creation, night ops, payouts) exist.
-class HostHomePage extends StatelessWidget {
+/// H-05 · Home — the main hub for hosts to manage their events,
+/// venues, verification status, and operations.
+class HostHomePage extends ConsumerWidget {
   const HostHomePage({super.key});
 
-  void _showComingSoon(BuildContext context, String destination) {
+  void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text('$destination — coming soon')));
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final typography = Theme.of(context).extension<AppTypography>()!;
+    final state = ref.watch(hostHomeControllerProvider);
+    final notifier = ref.read(hostHomeControllerProvider.notifier);
+
+    final summary = state.summary;
+
+    return Scaffold(
+      backgroundColor: AppColors.backgroundPrimary,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: RefreshIndicator(
+                color: AppColors.actionPrimary,
+                backgroundColor: AppColors.surfaceCard,
+                onRefresh: notifier.loadSummary,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.gutter,
+                    AppSpacing.md,
+                    AppSpacing.gutter,
+                    AppSpacing.lg,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header Row: Organization name + Add Event FAB
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              summary?.hostName ?? '',
+                              style: typography.h2.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          _AddEventButton(
+                            onTap: () => _showMessage(context, 'Create event'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Verification Banner
+                      if (summary?.isVerified ?? false) ...[
+                        const AhAlertBanner(
+                          message: 'Verified. You can publish new events.',
+                          tone: AhBannerTone.success,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
+
+                      // Venues Card
+                      if (summary != null) ...[
+                        _VenuesCard(
+                          count: summary.savedVenuesCount,
+                          onTap: () => _showMessage(context, 'Venues'),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
+
+                      // Section Header
+                      Text(
+                        'YOUR EVENTS — TAP TO EDIT',
+                        style: typography.label.copyWith(
+                          letterSpacing: 1.1,
+                          color: AppColors.textTertiary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+
+                      // Events List
+                      if (state.isLoading && summary == null)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(AppSpacing.xl),
+                            child: CircularProgressIndicator(
+                              color: AppColors.actionPrimary,
+                            ),
+                          ),
+                        )
+                      else if (summary != null) ...[
+                        for (final event in summary.events) ...[
+                          HostHomeEventCard(
+                            event: event,
+                            onTap: () =>
+                                _showMessage(context, 'Edit ${event.title}'),
+                          ),
+                          const SizedBox(height: AppSpacing.cardGap),
+                        ],
+                      ],
+                      // Bottom padding so content is not hidden behind the floating nav bar
+                      const SizedBox(height: 70),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: HostHomeBottomNav(
+        currentIndex: state.selectedTabIndex,
+        onTap: (index) {
+          notifier.selectTab(index);
+          if (index == 1) {
+            _showMessage(context, 'Payouts — coming soon');
+          } else if (index == 2) {
+            _showMessage(context, 'Profile — coming soon');
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _AddEventButton extends StatelessWidget {
+  const _AddEventButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            color: AppColors.actionPrimary,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.add,
+            color: AppColors.actionPrimaryFg,
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VenuesCard extends StatelessWidget {
+  const _VenuesCard({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
-      appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Text('Home', style: typography.h3),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.gutter,
-            AppSpacing.md,
-            AppSpacing.gutter,
-            AppSpacing.lg,
+    return AhCard(
+      onTap: onTap,
+      child: Row(
+        children: [
+          const Icon(
+            Icons.storefront_outlined,
+            size: 20,
+            color: AppColors.textSecondary,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("You're in", style: typography.h2),
-              AppSpacing.spacerSm,
-              Text(
-                "We'll bring your events, night ops and payouts here next.",
-                style: typography.body.copyWith(color: AppColors.textSecondary),
+          const SizedBox(width: AppSpacing.sm + 2),
+          Expanded(
+            child: Text(
+              'Venues · $count saved',
+              style: typography.body.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
               ),
-              AppSpacing.spacerLg,
-              HostHomeNavCard(
-                icon: Icons.event_outlined,
-                label: 'Events',
-                description: 'Create and manage your listings.',
-                onTap: () => _showComingSoon(context, 'Events'),
-              ),
-              AppSpacing.spacerMd,
-              HostHomeNavCard(
-                icon: Icons.nightlife_outlined,
-                label: 'Night ops',
-                description: 'Live dashboard and door scanning.',
-                onTap: () => _showComingSoon(context, 'Night ops'),
-              ),
-              AppSpacing.spacerMd,
-              HostHomeNavCard(
-                icon: Icons.account_balance_wallet_outlined,
-                label: 'Payouts',
-                description: "Track what you've earned per event.",
-                onTap: () => _showComingSoon(context, 'Payouts'),
-              ),
-            ],
+            ),
           ),
-        ),
+          const Icon(
+            Icons.chevron_right,
+            size: 20,
+            color: AppColors.textTertiary,
+          ),
+        ],
       ),
     );
   }
