@@ -22,7 +22,7 @@ void main() {
     const documents = [
       HostDocumentStatus(
         docType: HostDocumentType.panCard,
-        status: HostDocumentVerificationStatus.verified,
+        status: HostDocumentVerificationStatus.approved,
       ),
     ];
     final repository = _FakeHostDocumentStatusRepository(const Ok(documents));

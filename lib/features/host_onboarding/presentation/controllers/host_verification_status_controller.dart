@@ -35,5 +35,5 @@ class HostVerificationStatusController
 extension HostDocumentStatusListX on List<HostDocumentStatus> {
   bool get allVerified =>
       isNotEmpty &&
-      every((doc) => doc.status == HostDocumentVerificationStatus.verified);
+      every((doc) => doc.status == HostDocumentVerificationStatus.approved);
 }

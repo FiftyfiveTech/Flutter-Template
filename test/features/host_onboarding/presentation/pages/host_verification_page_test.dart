@@ -116,7 +116,7 @@ void main() {
           const Ok([
             HostDocumentStatus(
               docType: HostDocumentType.panCard,
-              status: HostDocumentVerificationStatus.verified,
+              status: HostDocumentVerificationStatus.approved,
             ),
             HostDocumentStatus(
               docType: HostDocumentType.businessRegistration,
@@ -143,7 +143,7 @@ void main() {
           const Ok([
             HostDocumentStatus(
               docType: HostDocumentType.panCard,
-              status: HostDocumentVerificationStatus.verified,
+              status: HostDocumentVerificationStatus.approved,
             ),
           ]),
         ]),
@@ -186,7 +186,7 @@ void main() {
         const Ok([
           HostDocumentStatus(
             docType: HostDocumentType.panCard,
-            status: HostDocumentVerificationStatus.verified,
+            status: HostDocumentVerificationStatus.approved,
           ),
         ]),
       ]),

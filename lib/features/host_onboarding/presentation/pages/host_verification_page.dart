@@ -33,7 +33,7 @@ class HostVerificationPage extends ConsumerWidget {
     HostDocumentVerificationStatus status,
   ) {
     return switch (status) {
-      HostDocumentVerificationStatus.verified => (
+      HostDocumentVerificationStatus.approved => (
         label: 'Verified',
         tone: AhTone.success,
       ),
