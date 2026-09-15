@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:host_mobile_app/core/error/result.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/features/host_home/domain/entities/host_home_event.dart';
@@ -51,9 +52,23 @@ class _FakeHostHomeRepository implements HostHomeRepository {
 void main() {
   Widget buildSubject({_FakeHostHomeRepository? repository}) {
     final repo = repository ?? _FakeHostHomeRepository();
+    final router = GoRouter(
+      initialLocation: '/host/home',
+      routes: [
+        GoRoute(
+          path: '/host/home',
+          builder: (context, state) => const HostHomePage(),
+        ),
+        GoRoute(
+          path: '/host/events/new',
+          builder: (context, state) =>
+              const Scaffold(body: Text('New event page')),
+        ),
+      ],
+    );
     return ProviderScope(
       overrides: [hostHomeRepositoryProvider.overrideWithValue(repo)],
-      child: MaterialApp(theme: AppTheme.dark, home: const HostHomePage()),
+      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
   }
 
@@ -105,14 +120,16 @@ void main() {
     expect(find.text('Edit Blind Wine & Bad Takes'), findsOneWidget);
   });
 
-  testWidgets('tapping Add Event button shows message', (tester) async {
+  testWidgets('tapping Add Event button navigates to the new event screen', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.text('Create event'), findsOneWidget);
+    expect(find.text('New event page'), findsOneWidget);
   });
 
   testWidgets('tapping bottom nav tab switches tab and shows message', (

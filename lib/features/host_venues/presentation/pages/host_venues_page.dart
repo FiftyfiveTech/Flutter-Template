@@ -16,6 +16,20 @@ import '../controllers/host_venues_controller.dart';
 class HostVenuesPage extends ConsumerWidget {
   const HostVenuesPage({super.key});
 
+  /// The add/edit form (H-07/H-E0) doesn't share this screen's provider —
+  /// it pops back here on save without this list knowing anything changed.
+  /// Re-fetch once the pushed route returns, whether it saved, deleted, or
+  /// was just backed out of; a redundant refresh is harmless.
+  Future<void> _pushAndRefresh(
+    BuildContext context,
+    WidgetRef ref,
+    String path,
+  ) async {
+    await context.push(path);
+    if (!context.mounted) return;
+    ref.read(hostVenuesControllerProvider.notifier).loadVenues();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final typography = Theme.of(context).extension<AppTypography>()!;
@@ -39,6 +53,13 @@ class HostVenuesPage extends ConsumerWidget {
                         color: AppColors.actionPrimary,
                       ),
                     )
+                  : state.errorMessage != null && state.venues.isEmpty
+                  ? _LoadErrorView(
+                      message: state.errorMessage!,
+                      onRetry: () => ref
+                          .read(hostVenuesControllerProvider.notifier)
+                          .loadVenues(),
+                    )
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.gutter,
@@ -58,8 +79,11 @@ class HostVenuesPage extends ConsumerWidget {
                         for (final venue in state.venues) ...[
                           _VenueRow(
                             venue: venue,
-                            onTap: () =>
-                                context.push('/host/venues/${venue.id}'),
+                            onTap: () => _pushAndRefresh(
+                              context,
+                              ref,
+                              '/host/venues/${venue.id}',
+                            ),
                           ),
                           AppSpacing.spacerSm,
                         ],
@@ -80,10 +104,47 @@ class HostVenuesPage extends ConsumerWidget {
                 child: AhButton(
                   label: '+ Add a venue',
                   fullWidth: true,
-                  onPressed: () => context.push('/host/venues/add'),
+                  onPressed: () =>
+                      _pushAndRefresh(context, ref, '/host/venues/add'),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadErrorView extends StatelessWidget {
+  const _LoadErrorView({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final typography = Theme.of(context).extension<AppTypography>()!;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.gutter),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Couldn't load your venues",
+              style: typography.h3,
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.spacerSm,
+            Text(
+              message,
+              style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.spacerMd,
+            AhButton(label: 'Try again', onPressed: onRetry),
           ],
         ),
       ),

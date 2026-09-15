@@ -22,6 +22,20 @@ class HostHomePage extends ConsumerWidget {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Venues and events are managed on separate screens with their own
+  /// providers — they pop back here without this screen knowing anything
+  /// changed. Re-fetch the summary once the pushed route returns (saved,
+  /// deleted, or just backed out of); a redundant refresh is harmless.
+  Future<void> _pushAndRefresh(
+    BuildContext context,
+    WidgetRef ref,
+    String path,
+  ) async {
+    await context.push(path);
+    if (!context.mounted) return;
+    ref.read(hostHomeControllerProvider.notifier).loadSummary();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final typography = Theme.of(context).extension<AppTypography>()!;
@@ -67,7 +81,11 @@ class HostHomePage extends ConsumerWidget {
                           ),
                           const SizedBox(width: AppSpacing.md),
                           _AddEventButton(
-                            onTap: () => _showMessage(context, 'Create event'),
+                            onTap: () => _pushAndRefresh(
+                              context,
+                              ref,
+                              '/host/events/new',
+                            ),
                           ),
                         ],
                       ),
@@ -86,7 +104,8 @@ class HostHomePage extends ConsumerWidget {
                       if (summary != null) ...[
                         _VenuesCard(
                           count: summary.savedVenuesCount,
-                          onTap: () => context.push('/host/venues'),
+                          onTap: () =>
+                              _pushAndRefresh(context, ref, '/host/venues'),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                       ],
@@ -200,7 +219,7 @@ class _VenuesCard extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm + 2),
           Expanded(
             child: Text(
-              'Venues · $count saved',
+              count == 0 ? 'No venues yet — add one' : 'Venues · $count saved',
               style: typography.body.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,

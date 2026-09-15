@@ -16,37 +16,43 @@ class HostVenueDto {
     required this.photos,
   });
 
-  /// `GET /api/v1/venues` items omit `photos` entirely; `GET
-  /// /api/v1/venues/:id` and the create/edit responses include it as
-  /// `[{id, url}, ...]`.
+  /// `GET /api/v1/venues` list items are a minimal projection — they omit
+  /// `photos`, and (per an observed real response) also omit
+  /// `maxCapacity`/`allowedEventTypes` entirely. Only `GET
+  /// /api/v1/venues/:id` and the create/edit responses include the full
+  /// shape. Every field here is parsed defensively (falling back to an
+  /// empty/zero value rather than throwing) so a minimal list item never
+  /// breaks `getVenues()` — the alternative is a hard-to-notice list-wide
+  /// failure like the one this defensiveness was added to fix.
   ///
   /// `city` is documented as a plain ObjectId string on write. On read it
-  /// may come back either the same way (id only, no name to show) or
-  /// expanded into `{id, name}` — both shapes are accepted here so an
-  /// edit screen can still show a name when the backend provides one.
+  /// may come back the same way (id only, no name to show) or expanded —
+  /// an observed real response uses `{id, city, slug}` rather than
+  /// `{id, name}`, so both `name` and `city` are checked for the display
+  /// value.
   factory HostVenueDto.fromJson(Map<String, dynamic> json) {
     final cityJson = json['city'];
     final String cityId;
     final String cityName;
     if (cityJson is Map<String, dynamic>) {
       cityId = (cityJson['id'] ?? cityJson['_id'] ?? '').toString();
-      cityName = (cityJson['name'] ?? '').toString();
+      cityName = (cityJson['name'] ?? cityJson['city'] ?? '').toString();
     } else {
       cityId = (cityJson ?? '').toString();
       cityName = '';
     }
     return HostVenueDto(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      addLine1: json['addLine1'] as String,
-      addLine2: json['addLine2'] as String? ?? '',
-      locality: json['locality'] as String? ?? '',
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      addLine1: (json['addLine1'] ?? '').toString(),
+      addLine2: (json['addLine2'] ?? '').toString(),
+      locality: (json['locality'] ?? '').toString(),
       cityId: cityId,
       cityName: cityName,
-      pincode: json['pincode'] as String,
-      maxCapacity: (json['maxCapacity'] as num).toInt(),
+      pincode: (json['pincode'] ?? '').toString(),
+      maxCapacity: (json['maxCapacity'] as num?)?.toInt() ?? 0,
       allowedEventTypes: (json['allowedEventTypes'] as List<dynamic>? ?? [])
-          .map((e) => e as String)
+          .map((e) => e.toString())
           .toList(),
       photos: (json['photos'] as List<dynamic>? ?? [])
           .map((e) => HostVenuePhotoDto.fromJson(e as Map<String, dynamic>))
