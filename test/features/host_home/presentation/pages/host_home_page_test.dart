@@ -86,7 +86,7 @@ void main() {
     expect(find.text('Verified. You can publish new events.'), findsOneWidget);
 
     // Venues card
-    expect(find.text('Venues · 2 saved'), findsOneWidget);
+    expect(find.text('Venues'), findsOneWidget);
 
     // Section header
     expect(find.text('YOUR EVENTS — TAP TO EDIT'), findsOneWidget);

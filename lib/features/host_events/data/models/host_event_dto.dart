@@ -1,12 +1,28 @@
 import '../../domain/entities/host_event.dart';
 import 'host_event_photo_dto.dart';
 
-/// Assumed request/response shape for the not-yet-specified events
-/// endpoint, modelled directly on `HostVenueDto`'s conventions:
-/// `startAt`/`endAt` as ISO-8601 strings, ratio band expressed as an
-/// explicit `ratioTightened` boolean (the backend derives 50:50 ±10 vs
-/// 55:45 from it), price in whole rupees, and photos sent as ids only on
-/// write with the full `{id, url}` shape coming back on read.
+/// Request/response shape for `POST /api/v1/host/events`, confirmed
+/// against a real response. A few backend concepts are richer than this
+/// screen's UI, so they're collapsed to/from simpler domain fields:
+/// - `ratioConfig.toleranceBandPoints` <-> [HostEvent.ratioTightened]
+///   (10 points = 50:50 ±10, 5 points = 55:45; `targetPercent` is always
+///   50, this screen has no way to shift the target itself).
+/// - `ratioConfig.releaseSchedule.minFemaleSeatsBeforeMaleRelease` <->
+///   [HostEvent.holdbackEnabled] (0 = off, [kHoldbackFemaleSeatsThreshold]
+///   = on).
+/// - `ticketTypes` (a list of named tiers) <-> a single
+///   [HostEvent.ticketPriceRupees] — this screen only offers one price, so
+///   on write it's sent as one "General admission" tier covering the full
+///   `capacity`; on read, the first ticket type's price is used and any
+///   others are ignored (there are none yet since this is create-only).
+/// - `startsAt`/`endsAt`/`doorsOpenAt` are sent as `yyyy-MM-dd HH:mm` in
+///   the pilot's fixed `Asia/Kolkata` timezone (no timezone offset in the
+///   request — the backend assumes Kolkata and returns UTC ISO strings).
+/// - `coverPhotoId` (write) / `coverPhoto: {id, url} | null` (read) <->
+///   [HostEvent.coverPhoto] — the single primary image.
+/// - `photos` is the gallery: ids only on write (max 5, and a `PATCH`
+///   replaces the whole array, not a merge), full `{id, url}` objects on
+///   read.
 class HostEventDto {
   const HostEventDto({
     required this.id,
@@ -15,45 +31,61 @@ class HostEventDto {
     required this.format,
     required this.startAt,
     required this.endAt,
+    required this.doorsOpenAt,
     required this.venueId,
     required this.venueAddress,
+    required this.neighbourhood,
     required this.capacity,
     required this.ticketPriceRupees,
     required this.ratioTightened,
     required this.holdbackEnabled,
     required this.cancellationTerms,
+    required this.refundCutoffHoursBeforeStart,
+    required this.coverPhoto,
     required this.photos,
   });
 
   factory HostEventDto.fromJson(Map<String, dynamic> json) {
-    final venueJson = json['venue'];
-    final String venueId;
-    final String venueAddress;
-    if (venueJson is Map<String, dynamic>) {
-      venueId = (venueJson['id'] ?? venueJson['_id'] ?? '').toString();
-      venueAddress = (venueJson['address'] ?? '').toString();
-    } else {
-      venueId = (venueJson ?? '').toString();
-      venueAddress = '';
-    }
+    final ratioConfig = json['ratioConfig'] as Map<String, dynamic>?;
+    final toleranceBandPoints =
+        (ratioConfig?['toleranceBandPoints'] as num?)?.toInt() ?? 10;
+    final releaseSchedule =
+        ratioConfig?['releaseSchedule'] as Map<String, dynamic>?;
+    final minFemaleSeatsBeforeMaleRelease =
+        (releaseSchedule?['minFemaleSeatsBeforeMaleRelease'] as num?)
+            ?.toInt() ??
+        0;
+
+    final ticketTypes = json['ticketTypes'] as List<dynamic>?;
+    final firstTicketType = ticketTypes != null && ticketTypes.isNotEmpty
+        ? ticketTypes.first as Map<String, dynamic>
+        : null;
+    final ticketPricePaise =
+        (firstTicketType?['pricePaise'] as num?)?.toInt() ?? 0;
+
     return HostEventDto(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String? ?? '',
-      format: json['format'] as String? ?? '',
-      startAt: json['startAt'] == null
+      id: (json['id'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      description: (json['description'] ?? '').toString(),
+      format: (json['format'] ?? '').toString(),
+      startAt: _parseApiDateTime(json['startsAt']),
+      endAt: _parseApiDateTime(json['endsAt']),
+      doorsOpenAt: _parseApiDateTime(json['doorsOpenAt']),
+      venueId: (json['venueId'] ?? '').toString(),
+      venueAddress: (json['venueExactAddress'] ?? '').toString(),
+      neighbourhood: (json['neighbourhood'] ?? '').toString(),
+      capacity: (json['capacity'] as num?)?.toInt() ?? 0,
+      ticketPriceRupees: (ticketPricePaise / 100).round(),
+      ratioTightened: toleranceBandPoints < 10,
+      holdbackEnabled: minFemaleSeatsBeforeMaleRelease > 0,
+      cancellationTerms: (json['cancellationTerms'] ?? '').toString(),
+      refundCutoffHoursBeforeStart:
+          (json['refundCutoffHoursBeforeStart'] as num?)?.toInt() ?? 24,
+      coverPhoto: json['coverPhoto'] == null
           ? null
-          : DateTime.parse(json['startAt'] as String),
-      endAt: json['endAt'] == null
-          ? null
-          : DateTime.parse(json['endAt'] as String),
-      venueId: venueId,
-      venueAddress: venueAddress,
-      capacity: (json['capacity'] as num).toInt(),
-      ticketPriceRupees: (json['ticketPriceRupees'] as num).toInt(),
-      ratioTightened: json['ratioTightened'] as bool? ?? false,
-      holdbackEnabled: json['holdbackEnabled'] as bool? ?? false,
-      cancellationTerms: json['cancellationTerms'] as String? ?? '',
+          : HostEventPhotoDto.fromJson(
+              json['coverPhoto'] as Map<String, dynamic>,
+            ),
       photos: (json['photos'] as List<dynamic>? ?? [])
           .map((e) => HostEventPhotoDto.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -68,13 +100,22 @@ class HostEventDto {
       format: event.format,
       startAt: event.startAt,
       endAt: event.endAt,
+      doorsOpenAt: event.doorsOpenAt,
       venueId: event.venueId,
       venueAddress: event.venueAddress,
+      neighbourhood: event.neighbourhood,
       capacity: event.capacity,
       ticketPriceRupees: event.ticketPriceRupees,
       ratioTightened: event.ratioTightened,
       holdbackEnabled: event.holdbackEnabled,
       cancellationTerms: event.cancellationTerms,
+      refundCutoffHoursBeforeStart: event.refundCutoffHoursBeforeStart,
+      coverPhoto: event.coverPhoto == null
+          ? null
+          : HostEventPhotoDto(
+              id: event.coverPhoto!.id,
+              url: event.coverPhoto!.url,
+            ),
       photos: event.photos
           .map((p) => HostEventPhotoDto(id: p.id, url: p.url))
           .toList(),
@@ -87,31 +128,56 @@ class HostEventDto {
   final String format;
   final DateTime? startAt;
   final DateTime? endAt;
+  final DateTime? doorsOpenAt;
   final String venueId;
   final String venueAddress;
+  final String neighbourhood;
   final int capacity;
   final int ticketPriceRupees;
   final bool ratioTightened;
   final bool holdbackEnabled;
   final String cancellationTerms;
+  final int refundCutoffHoursBeforeStart;
+  final HostEventPhotoDto? coverPhoto;
   final List<HostEventPhotoDto> photos;
 
-  /// Write payload for `POST /api/v1/events`. `venue` is sent as the bare
-  /// venue id — `venueAddress` is UI-only display copy filled from the
-  /// venue record and never sent. Photos are sent as ids only, mirroring
-  /// `HostVenueDto.toJson`.
+  /// Write payload for `POST`/`PATCH /api/v1/host/events`. `format` is
+  /// sent as the backend's lowercase/underscored slug (e.g. "Board games"
+  /// -> "board_games") — only "dinner" has been confirmed against a real
+  /// response, so this transform is inferred, not verified for every
+  /// value in `kEventTypeOptions`. `coverPhotoId`/`photos` mirror
+  /// `HostVenueDto.toJson`'s photo-id convention; `photos` always sends
+  /// the full desired gallery list since `PATCH` replaces it wholesale.
   Map<String, dynamic> toJson() => {
     'title': title,
     'description': description,
-    'format': format,
-    if (startAt != null) 'startAt': startAt!.toIso8601String(),
-    if (endAt != null) 'endAt': endAt!.toIso8601String(),
-    'venue': venueId,
+    'format': _formatSlug(format),
+    if (startAt != null) 'startsAt': _formatApiDateTime(startAt!),
+    if (endAt != null) 'endsAt': _formatApiDateTime(endAt!),
+    if (doorsOpenAt != null) 'doorsOpenAt': _formatApiDateTime(doorsOpenAt!),
+    'venueId': venueId,
+    'neighbourhood': neighbourhood,
     'capacity': capacity,
-    'ticketPriceRupees': ticketPriceRupees,
-    'ratioTightened': ratioTightened,
-    'holdbackEnabled': holdbackEnabled,
+    'ratioConfig': {
+      'targetPercent': 50,
+      'toleranceBandPoints': ratioTightened ? 5 : 10,
+      'releaseSchedule': {
+        'minFemaleSeatsBeforeMaleRelease': holdbackEnabled
+            ? kHoldbackFemaleSeatsThreshold
+            : 0,
+      },
+    },
+    'ticketTypes': [
+      {
+        'name': 'General admission',
+        'pricePaise': ticketPriceRupees * 100,
+        'quantity': capacity,
+        'active': true,
+      },
+    ],
     'cancellationTerms': cancellationTerms,
+    'refundCutoffHoursBeforeStart': refundCutoffHoursBeforeStart,
+    if (coverPhoto != null) 'coverPhotoId': coverPhoto!.id,
     'photos': photos.map((p) => p.id).toList(),
   };
 
@@ -123,14 +189,37 @@ class HostEventDto {
       format: format,
       startAt: startAt,
       endAt: endAt,
+      doorsOpenAt: doorsOpenAt,
       venueId: venueId,
       venueAddress: venueAddress,
+      neighbourhood: neighbourhood,
       capacity: capacity,
       ticketPriceRupees: ticketPriceRupees,
       ratioTightened: ratioTightened,
       holdbackEnabled: holdbackEnabled,
       cancellationTerms: cancellationTerms,
+      refundCutoffHoursBeforeStart: refundCutoffHoursBeforeStart,
+      coverPhoto: coverPhoto?.toDomain(),
       photos: photos.map((p) => p.toDomain()).toList(),
     );
   }
+}
+
+String _formatSlug(String label) =>
+    label.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '_');
+
+/// `yyyy-MM-dd HH:mm`, matching the request example exactly (no timezone
+/// offset — the backend assumes `Asia/Kolkata`).
+String _formatApiDateTime(DateTime dt) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${dt.year.toString().padLeft(4, '0')}-${two(dt.month)}-${two(dt.day)} '
+      '${two(dt.hour)}:${two(dt.minute)}';
+}
+
+/// The response returns full UTC ISO-8601 strings (e.g.
+/// `2026-10-10T13:00:00.000Z`) — converted back to local time so a
+/// resumed/read-back form shows the same wall-clock time the host entered.
+DateTime? _parseApiDateTime(Object? value) {
+  if (value == null) return null;
+  return DateTime.parse(value as String).toLocal();
 }

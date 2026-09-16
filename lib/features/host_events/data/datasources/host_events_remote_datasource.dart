@@ -15,8 +15,6 @@ abstract class HostEventsRemoteDatasource {
   });
 }
 
-/// Placeholder REST shape, mirroring `HostVenuesRestDatasource` before its
-/// real contract existed — no backend endpoint spec for events exists yet.
 class HostEventsRestDatasource implements HostEventsRemoteDatasource {
   HostEventsRestDatasource(this._client);
 
@@ -24,8 +22,10 @@ class HostEventsRestDatasource implements HostEventsRemoteDatasource {
 
   @override
   Future<HostEventDto> createEvent(HostEventDto event) async {
-    // Intended endpoint: POST /api/v1/events
-    final response = await _client.post('/api/v1/events', data: event.toJson());
+    final response = await _client.post(
+      '/api/v1/host/events',
+      data: event.toJson(),
+    );
     final body = response.data as Map<String, dynamic>;
     return HostEventDto.fromJson(body['data'] as Map<String, dynamic>);
   }
@@ -44,7 +44,8 @@ class HostEventsRestDatasource implements HostEventsRemoteDatasource {
     });
     final response = await _client.post(
       '/api/v1/uploads',
-      queryParameters: {'fileType': 'event_photo'},
+      // Same fileType for both the cover image and gallery photos.
+      queryParameters: {'fileType': 'event_cover_media'},
       data: formData,
     );
     final body = response.data as Map<String, dynamic>;
@@ -58,6 +59,8 @@ class HostEventsRestDatasource implements HostEventsRemoteDatasource {
       case '.jpg':
       case '.jpeg':
         return MediaType('image', 'jpeg');
+      case '.webp':
+        return MediaType('image', 'webp');
       default:
         return MediaType('application', 'octet-stream');
     }

@@ -125,7 +125,7 @@ class HostLandingPage extends StatelessWidget {
                     label: 'I already have an account',
                     variant: AhButtonVariant.tertiary,
                     fullWidth: true,
-                    onPressed: () => context.go('/auth/phone'),
+                    onPressed: () => context.push('/auth/phone'),
                   ),
                 ],
               ),

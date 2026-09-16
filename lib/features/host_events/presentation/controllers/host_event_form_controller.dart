@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/document_compressor_providers.dart';
 import '../../../../core/files/document_compressor.dart';
+import '../../../../shared/constants/event_types.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../host_venues/domain/entities/host_venue.dart';
 import '../../../host_venues/presentation/controllers/host_venues_api_providers.dart';
@@ -13,19 +14,21 @@ import 'host_events_api_providers.dart';
 
 part 'host_event_form_controller.g.dart';
 
-/// Minimum number of successfully uploaded cover photos required before an
-/// event can be submitted, per H-08's "Minimum 3 photos" helper copy.
+/// Minimum number of successfully uploaded photos (cover + gallery
+/// combined) required before an event can be submitted, per H-08's
+/// "Minimum 3 photos" helper copy — the backend itself treats both as
+/// optional.
 const kMinEventPhotos = 3;
 
-/// No explicit maximum is shown in the design (only "Minimum 3 photos") —
-/// capped at the same 3 slots the design mocks up, since there's no
-/// affordance in the markup to add a 4th. Revisit if a real backend
-/// contract specifies otherwise.
-const kMaxEventPhotos = 3;
+/// The first uploaded photo becomes [HostEvent.coverPhoto] and is also
+/// included in [HostEvent.photos] (the backend expects the cover to be a
+/// member of the gallery, not separate from it) — so this is the
+/// gallery's own max of 5, not 5 plus a cover slot.
+const kMaxEventPhotos = 5;
 
 /// Capacity stepper bounds, per H-08's `StepperInput` — deliberately
 /// different from a venue's own `maxCapacity` field (min 1, no fixed step).
-const kEventCapacityMin = 8;
+const kEventCapacityMin = 10;
 const kEventCapacityMax = 200;
 const kEventCapacityStep = 2;
 
@@ -40,6 +43,7 @@ class HostEventFormState {
     this.fieldErrors = const {},
     this.saved = false,
     this.photoSlots = const [],
+    this.uploadedPhotos = const [],
   });
 
   final HostEvent draft;
@@ -60,6 +64,12 @@ class HostEventFormState {
   /// `HostVenueFormState.photoSlots`.
   final List<AhPhotoSlotData> photoSlots;
 
+  /// The actual uploaded [HostEventPhoto] per slot index, parallel to
+  /// [photoSlots] (null for a slot that isn't uploaded yet). Kept separate
+  /// from [draft] until [save] splits index 0 into `coverPhoto` and the
+  /// rest into the gallery `photos` list the backend expects.
+  final List<HostEventPhoto?> uploadedPhotos;
+
   /// The currently selected venue, if any — drives the format options list
   /// and the read-only address box.
   HostVenue? get selectedVenue {
@@ -70,11 +80,12 @@ class HostEventFormState {
     return null;
   }
 
-  /// Format options come from the selected venue's `allowedEventTypes` —
-  /// a venue only ever hosts the event types it was configured for in
-  /// H-07. Empty (no options, dropdown disabled) until a venue is chosen.
-  List<String> get formatOptions =>
-      selectedVenue?.allowedEventTypes ?? const [];
+  /// Format options are the same shared `kEventTypeOptions` vocabulary
+  /// H-07 uses for a venue's `allowedEventTypes` — not scoped to the
+  /// selected venue's own subset, since `GET /api/v1/venues` (the list
+  /// endpoint this screen's venue picker is populated from) never
+  /// includes `allowedEventTypes` in the first place.
+  List<String> get formatOptions => kEventTypeOptions;
 
   HostEventFormState copyWith({
     HostEvent? draft,
@@ -86,6 +97,7 @@ class HostEventFormState {
     Map<String, String>? fieldErrors,
     bool? saved,
     List<AhPhotoSlotData>? photoSlots,
+    List<HostEventPhoto?>? uploadedPhotos,
   }) {
     return HostEventFormState(
       draft: draft ?? this.draft,
@@ -97,6 +109,7 @@ class HostEventFormState {
       fieldErrors: fieldErrors ?? this.fieldErrors,
       saved: saved ?? this.saved,
       photoSlots: photoSlots ?? this.photoSlots,
+      uploadedPhotos: uploadedPhotos ?? this.uploadedPhotos,
     );
   }
 }
@@ -152,24 +165,63 @@ class HostEventFormController extends _$HostEventFormController {
     state = state.copyWith(draft: state.draft.copyWith(endAt: value));
   }
 
-  /// Selecting a venue also fills the read-only address box and clears a
-  /// format choice that no longer belongs to the newly-selected venue's
-  /// `allowedEventTypes`, and clamps capacity to the new venue's
-  /// `maxCapacity` if it's currently above it.
-  void updateVenue(HostVenue venue) {
-    final formatStillValid = venue.allowedEventTypes.contains(
-      state.draft.format,
+  void updateDoorsOpenAt(DateTime value) {
+    state = state.copyWith(draft: state.draft.copyWith(doorsOpenAt: value));
+  }
+
+  void updateRefundCutoffHours(int value) {
+    state = state.copyWith(
+      draft: state.draft.copyWith(refundCutoffHoursBeforeStart: value),
     );
-    final clampedCapacity = state.draft.capacity > venue.maxCapacity
-        ? _roundDownToStep(venue.maxCapacity)
-        : state.draft.capacity;
+  }
+
+  /// Selecting a venue fills the read-only address/neighbourhood box
+  /// immediately. Format isn't touched — it's the same shared
+  /// `kEventTypeOptions` list regardless of venue (see [formatOptions]).
+  ///
+  /// Capacity is *not* clamped here: [venue] comes from `GET
+  /// /api/v1/venues` (the list this screen's dropdown is populated from),
+  /// which never includes `maxCapacity` — it's always 0 on a list-sourced
+  /// venue. Clamping against that would incorrectly floor every event's
+  /// capacity to [kEventCapacityMin] the instant a venue is picked. The
+  /// real `maxCapacity` is fetched in the background by
+  /// [_refreshVenueDetail] and only clamps capacity once it's known.
+  void updateVenue(HostVenue venue) {
     state = state.copyWith(
       draft: state.draft.copyWith(
         venueId: venue.id,
         venueAddress: venue.address,
-        format: formatStillValid ? state.draft.format : '',
-        capacity: clampedCapacity,
+        neighbourhood: venue.locality,
       ),
+    );
+    unawaited(_refreshVenueDetail(venue.id));
+  }
+
+  /// Fetches the full venue (with its real `maxCapacity`) and patches it
+  /// into [HostEventFormState.venues] in place, so [selectedVenue] and
+  /// every capacity calculation that reads it become accurate once this
+  /// resolves. Best-effort: on failure the list-sourced venue (with
+  /// `maxCapacity: 0`) is left as-is rather than blocking the form.
+  Future<void> _refreshVenueDetail(String venueId) async {
+    final useCase = ref.read(getHostVenueByIdUseCaseProvider);
+    final result = await useCase(venueId);
+    result.when(
+      ok: (detailed) {
+        // The host may have picked a different venue while this was in
+        // flight — only apply the result if it's still the selected one.
+        if (state.draft.venueId != venueId) return;
+        final venues = [
+          for (final v in state.venues) v.id == venueId ? detailed : v,
+        ];
+        final clampedCapacity = state.draft.capacity > detailed.maxCapacity
+            ? _roundDownToStep(detailed.maxCapacity)
+            : state.draft.capacity;
+        state = state.copyWith(
+          venues: venues,
+          draft: state.draft.copyWith(capacity: clampedCapacity),
+        );
+      },
+      err: (_) {},
     );
   }
 
@@ -184,10 +236,14 @@ class HostEventFormController extends _$HostEventFormController {
     // The event capacity stepper (8-200 step 2) is deliberately separate
     // from a venue's own `maxCapacity` field, but it's an easy, obviously
     // correct constraint to also cap at the venue's own ceiling so a host
-    // can't sell more seats than the room holds.
-    final capped = venue == null
-        ? value
-        : value.clamp(kEventCapacityMin, venue.maxCapacity);
+    // can't sell more seats than the room holds. The venue's maxCapacity
+    // is clamped into the stepper's own [min, max] range first — a venue
+    // can have maxCapacity below kEventCapacityMin (venues allow as low
+    // as 1), and `int.clamp` throws if its own bounds are out of order.
+    final effectiveMax = venue == null
+        ? kEventCapacityMax
+        : venue.maxCapacity.clamp(kEventCapacityMin, kEventCapacityMax);
+    final capped = value.clamp(kEventCapacityMin, effectiveMax);
     state = state.copyWith(draft: state.draft.copyWith(capacity: capped));
   }
 
@@ -293,17 +349,14 @@ class HostEventFormController extends _$HostEventFormController {
     }
     slots[index] = value;
 
-    var photos = [...state.draft.photos];
+    final uploaded = [...state.uploadedPhotos];
     if (photo != null) {
-      while (photos.length <= index) {
-        photos.add(photo);
+      while (uploaded.length <= index) {
+        uploaded.add(null);
       }
-      photos[index] = photo;
+      uploaded[index] = photo;
     }
-    state = state.copyWith(
-      photoSlots: slots,
-      draft: state.draft.copyWith(photos: photos),
-    );
+    state = state.copyWith(photoSlots: slots, uploadedPhotos: uploaded);
   }
 
   int _successfulPhotoUploadCount() {
@@ -350,6 +403,20 @@ class HostEventFormController extends _$HostEventFormController {
       errors['endAt'] = 'End must be after the start time.';
     }
 
+    if (draft.doorsOpenAt == null) {
+      errors['doorsOpenAt'] = 'Doors open time is required.';
+    } else if (draft.startAt != null) {
+      final doors = draft.doorsOpenAt!;
+      final start = draft.startAt!;
+      if (doors.isAfter(start)) {
+        errors['doorsOpenAt'] = 'Doors must open before the start time.';
+      } else if (doors.year != start.year ||
+          doors.month != start.month ||
+          doors.day != start.day) {
+        errors['doorsOpenAt'] = 'Doors must open on the same day as start.';
+      }
+    }
+
     if (draft.venueId.trim().isEmpty) {
       errors['venue'] = 'Venue is required.';
     }
@@ -370,6 +437,22 @@ class HostEventFormController extends _$HostEventFormController {
           'Cancellation terms must be 1000 characters or fewer.';
     }
 
+    // The computed refund cutoff (start minus this many hours) can't
+    // already be in the past — an event starting soon with a long cutoff
+    // would mean refunds were never actually possible. Confirmed against
+    // the real API: every request with a near-term start and a cutoff
+    // longer than the lead time to that start was rejected.
+    if (draft.startAt != null) {
+      final cutoff = draft.startAt!.subtract(
+        Duration(hours: draft.refundCutoffHoursBeforeStart),
+      );
+      if (cutoff.isBefore(DateTime.now())) {
+        errors['refundCutoffHoursBeforeStart'] =
+            'Refund cutoff would already have passed — pick a later start '
+            'time or a shorter cutoff.';
+      }
+    }
+
     return errors;
   }
 
@@ -380,18 +463,32 @@ class HostEventFormController extends _$HostEventFormController {
       return false;
     }
 
-    final successfulPhotos = <HostEventPhoto>[
-      for (var i = 0; i < state.photoSlots.length; i++)
-        if (state.photoSlots[i].status == AhPhotoSlotStatus.uploaded &&
-            i < state.draft.photos.length)
-          state.draft.photos[i],
-    ].take(kMaxEventPhotos).toList();
+    // Slot 0 becomes the single coverPhotoId. Every successfully uploaded
+    // slot — including slot 0 — also goes into the gallery `photos` array:
+    // the backend expects the cover photo to be a member of the gallery,
+    // not a wholly separate image (confirmed against a real working
+    // request, where coverPhotoId and photos[0] were the same id).
+    HostEventPhoto? coverPhoto;
+    final allPhotos = <HostEventPhoto>[];
+    for (var i = 0; i < state.photoSlots.length; i++) {
+      if (state.photoSlots[i].status != AhPhotoSlotStatus.uploaded ||
+          i >= state.uploadedPhotos.length) {
+        continue;
+      }
+      final photo = state.uploadedPhotos[i];
+      if (photo == null) continue;
+      if (i == 0) coverPhoto = photo;
+      allPhotos.add(photo);
+    }
 
     state = state.copyWith(
       isSaving: true,
       fieldErrors: const {},
       errorMessage: null,
-      draft: state.draft.copyWith(photos: successfulPhotos),
+      draft: state.draft.copyWith(
+        coverPhoto: coverPhoto,
+        photos: allPhotos.take(5).toList(),
+      ),
     );
     final useCase = ref.read(saveHostEventUseCaseProvider);
     final result = await useCase(state.draft);

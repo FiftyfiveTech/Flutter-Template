@@ -41,17 +41,27 @@ class AhDropdownField extends StatelessWidget {
         AppSpacing.spacerXs,
         DropdownButtonFormField<String>(
           initialValue: options.contains(value) ? value : null,
+          isExpanded: true,
           hint: hint == null
               ? null
               : Text(
                   hint!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: typography.body.copyWith(
                     color: AppColors.textTertiary,
                   ),
                 ),
           items: [
             for (final option in options)
-              DropdownMenuItem(value: option, child: Text(option)),
+              DropdownMenuItem(
+                value: option,
+                child: Text(
+                  option,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
           ],
           onChanged: (selected) {
             if (selected != null) onChanged(selected);

@@ -6,6 +6,7 @@ import '../../../../core/di/document_picker_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/constants/event_types.dart';
 import '../../../../shared/widgets/ah_alert_banner.dart';
 import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
@@ -21,17 +22,6 @@ import '../controllers/host_venue_form_controller.dart'
         hostVenueFormControllerProvider,
         kMaxVenuePhotos,
         kMinVenuePhotos;
-
-/// The backend's fixed event-type vocabulary for venues — the only values
-/// `allowedEventTypes` accepts.
-const kVenueEventTypeOptions = [
-  'Dinner',
-  'Tasting',
-  'Board games',
-  'Live music',
-  'Workshop',
-  'Pottery',
-];
 
 const _imagePickerExtensions = ['jpg', 'jpeg', 'png'];
 
@@ -232,7 +222,7 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                               ),
                               AppSpacing.spacerSm,
                               AhChipSelect(
-                                options: kVenueEventTypeOptions,
+                                options: kEventTypeOptions,
                                 selected: draft.allowedEventTypes,
                                 onToggle: notifier.toggleEventType,
                               ),

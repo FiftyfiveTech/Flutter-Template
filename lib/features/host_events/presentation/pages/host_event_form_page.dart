@@ -173,9 +173,7 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                       value: draft.format,
                       options: state.formatOptions,
                       onChanged: notifier.updateFormat,
-                      hint: selectedVenue == null
-                          ? 'Pick a venue first'
-                          : 'Select a format',
+                      hint: 'Select a format',
                       errorText: fieldErrors['format'],
                     ),
                     AppSpacing.spacerMd,
@@ -191,6 +189,13 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                       value: draft.endAt,
                       onChanged: notifier.updateEndAt,
                       errorText: fieldErrors['endAt'],
+                    ),
+                    AppSpacing.spacerMd,
+                    AhDateTimeField(
+                      label: 'Doors open time',
+                      value: draft.doorsOpenAt,
+                      onChanged: notifier.updateDoorsOpenAt,
+                      errorText: fieldErrors['doorsOpenAt'],
                     ),
                     AppSpacing.spacerMd,
                     AhDropdownField(
@@ -221,11 +226,8 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                       min: kEventCapacityMin,
                       max: selectedVenue == null
                           ? kEventCapacityMax
-                          : kEventCapacityMax
-                                .clamp(
-                                  kEventCapacityMin,
-                                  selectedVenue.maxCapacity,
-                                )
+                          : selectedVenue.maxCapacity
+                                .clamp(kEventCapacityMin, kEventCapacityMax)
                                 .toInt(),
                       step: kEventCapacityStep,
                       suffix: 'seats',
@@ -279,6 +281,17 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                       controller: _cancellationTermsController,
                       onChanged: notifier.updateCancellationTerms,
                       errorText: fieldErrors['cancellationTerms'],
+                    ),
+                    AppSpacing.spacerMd,
+                    AhStepperInput(
+                      label: 'Refund cutoff',
+                      value: draft.refundCutoffHoursBeforeStart,
+                      min: 0,
+                      max: 168,
+                      step: 1,
+                      suffix: 'hours before start',
+                      onChanged: notifier.updateRefundCutoffHours,
+                      errorText: fieldErrors['refundCutoffHoursBeforeStart'],
                     ),
                   ],
                 ),

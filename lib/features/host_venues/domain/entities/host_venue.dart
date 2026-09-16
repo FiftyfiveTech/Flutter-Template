@@ -46,7 +46,7 @@ class HostVenue {
   final int maxCapacity;
 
   /// One or more of the backend's fixed event-type vocabulary (see
-  /// `kVenueEventTypeOptions`).
+  /// `kEventTypeOptions` in `lib/shared/constants/event_types.dart`).
   final List<String> allowedEventTypes;
 
   /// Already-uploaded photos for this venue. Optional, max 5. Note: the

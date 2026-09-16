@@ -32,13 +32,17 @@ void main() {
     format: 'Tasting',
     startAt: null,
     endAt: null,
+    doorsOpenAt: null,
     venueId: 'venue-1',
     venueAddress: '12, 100 Feet Road, Indiranagar, Bangalore',
+    neighbourhood: 'Indiranagar',
     capacity: 40,
     ticketPriceRupees: 1299,
     ratioTightened: false,
     holdbackEnabled: false,
     cancellationTerms: 'No refunds within 24h of doors.',
+    refundCutoffHoursBeforeStart: 24,
+    coverPhoto: null,
     photos: [],
   );
 

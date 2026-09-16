@@ -1,5 +1,11 @@
 import 'host_event_photo.dart';
 
+/// Default "hold back male seats" threshold shown in H-08's copy ("until 8
+/// women have booked") — the backend's `releaseSchedule` config is a raw
+/// seat count, not a boolean, so this is the value sent when the switch is
+/// on (0 when off).
+const kHoldbackFemaleSeatsThreshold = 8;
+
 /// A single event authored by a host at one of their saved venues. This
 /// entity currently only supports the H-08 create flow — editing an
 /// existing event (with its "locked after first sale" rules) is H-E1,
@@ -12,13 +18,17 @@ class HostEvent {
     required this.format,
     required this.startAt,
     required this.endAt,
+    required this.doorsOpenAt,
     required this.venueId,
     required this.venueAddress,
+    required this.neighbourhood,
     required this.capacity,
     required this.ticketPriceRupees,
     required this.ratioTightened,
     required this.holdbackEnabled,
     required this.cancellationTerms,
+    required this.refundCutoffHoursBeforeStart,
+    required this.coverPhoto,
     required this.photos,
   });
 
@@ -30,12 +40,16 @@ class HostEvent {
   /// 1 to 2000 characters.
   final String description;
 
-  /// One of the selected venue's `allowedEventTypes` — the format vocabulary
-  /// is per-venue, not a separate fixed list (see H-07's `allowedEventTypes`).
+  /// One of the shared `kEventTypeOptions` vocabulary (see
+  /// `lib/shared/constants/event_types.dart`) — the same fixed list a
+  /// venue's `allowedEventTypes` draws from in H-07.
   final String format;
 
   final DateTime? startAt;
   final DateTime? endAt;
+
+  /// When doors open for check-in — may be before [startAt].
+  final DateTime? doorsOpenAt;
 
   /// The backend venue id this event is held at.
   final String venueId;
@@ -44,24 +58,39 @@ class HostEvent {
   /// from the venue record and never edited on this screen.
   final String venueAddress;
 
+  /// Read-only copy of the selected venue's locality/neighbourhood — filled
+  /// from the venue record, same as [venueAddress].
+  final String neighbourhood;
+
   /// 8 to 200, in steps of 2. May additionally be capped by the venue's
   /// `maxCapacity` in the UI layer.
   final int capacity;
 
-  /// Price per seat, in whole rupees.
+  /// Price per seat, in whole rupees. The backend models multiple named
+  /// ticket tiers (`ticketTypes`); this screen only offers a single price,
+  /// sent as one "General admission" tier covering the full capacity.
   final int ticketPriceRupees;
 
   /// Whether the host narrowed the default 50:50 ±10 ratio band to 55:45.
   /// The band can only be tightened, never widened, per platform policy.
   final bool ratioTightened;
 
-  /// Whether male seats are held back until 8 women have booked.
+  /// Whether male seats are held back until
+  /// [kHoldbackFemaleSeatsThreshold] women have booked.
   final bool holdbackEnabled;
 
   /// 1 to 2000 characters.
   final String cancellationTerms;
 
-  /// Cover photos for this event. Minimum 3 required to publish.
+  /// Hours before [startAt] after which no refund is offered.
+  final int refundCutoffHoursBeforeStart;
+
+  /// The event's single primary/cover image — optional per the backend,
+  /// but this screen's own UX requires at least 3 photos total across
+  /// [coverPhoto] and [photos] before submitting.
+  final HostEventPhoto? coverPhoto;
+
+  /// Gallery photos for this event, beyond [coverPhoto]. Optional, max 5.
   final List<HostEventPhoto> photos;
 
   /// The ratio band's female:male tolerance in percentage points, derived
@@ -75,13 +104,17 @@ class HostEvent {
     String? format,
     DateTime? startAt,
     DateTime? endAt,
+    DateTime? doorsOpenAt,
     String? venueId,
     String? venueAddress,
+    String? neighbourhood,
     int? capacity,
     int? ticketPriceRupees,
     bool? ratioTightened,
     bool? holdbackEnabled,
     String? cancellationTerms,
+    int? refundCutoffHoursBeforeStart,
+    HostEventPhoto? coverPhoto,
     List<HostEventPhoto>? photos,
   }) {
     return HostEvent(
@@ -91,13 +124,18 @@ class HostEvent {
       format: format ?? this.format,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
+      doorsOpenAt: doorsOpenAt ?? this.doorsOpenAt,
       venueId: venueId ?? this.venueId,
       venueAddress: venueAddress ?? this.venueAddress,
+      neighbourhood: neighbourhood ?? this.neighbourhood,
       capacity: capacity ?? this.capacity,
       ticketPriceRupees: ticketPriceRupees ?? this.ticketPriceRupees,
       ratioTightened: ratioTightened ?? this.ratioTightened,
       holdbackEnabled: holdbackEnabled ?? this.holdbackEnabled,
       cancellationTerms: cancellationTerms ?? this.cancellationTerms,
+      refundCutoffHoursBeforeStart:
+          refundCutoffHoursBeforeStart ?? this.refundCutoffHoursBeforeStart,
+      coverPhoto: coverPhoto ?? this.coverPhoto,
       photos: photos ?? this.photos,
     );
   }
@@ -110,13 +148,17 @@ class HostEvent {
     format: '',
     startAt: null,
     endAt: null,
+    doorsOpenAt: null,
     venueId: '',
     venueAddress: '',
+    neighbourhood: '',
     capacity: 20,
     ticketPriceRupees: 0,
     ratioTightened: false,
     holdbackEnabled: false,
     cancellationTerms: '',
+    refundCutoffHoursBeforeStart: 24,
+    coverPhoto: null,
     photos: [],
   );
 }
