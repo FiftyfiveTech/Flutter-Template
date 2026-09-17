@@ -5,7 +5,7 @@ import 'host_event_photo_dto.dart';
 /// Request/response shape for `POST /api/v1/host/events`, confirmed
 /// against a real response. A few backend concepts are richer than this
 /// screen's UI, so they're collapsed to/from simpler domain fields:
-/// - `ratioConfig.toleranceBandPoints` <-> [HostEvent.ratioTightened]
+/// - `ratioConfig.toleranceBandPoints` <-> [HostEvent.toleranceBandPoints]
 ///   (10 points = 50:50 ±10, 5 points = 55:45; `targetPercent` is always
 ///   50, this screen has no way to shift the target itself).
 /// - `ratioConfig.releaseSchedule.minFemaleSeatsBeforeMaleRelease` <->
@@ -39,7 +39,7 @@ class HostEventDto {
     required this.neighbourhood,
     required this.capacity,
     required this.ticketPriceRupees,
-    required this.ratioTightened,
+    required this.toleranceBandPoints,
     required this.holdbackEnabled,
     required this.cancellationTerms,
     required this.refundCutoffHoursBeforeStart,
@@ -51,7 +51,9 @@ class HostEventDto {
   factory HostEventDto.fromJson(Map<String, dynamic> json) {
     final ratioConfig = json['ratioConfig'] as Map<String, dynamic>?;
     final toleranceBandPoints =
-        (ratioConfig?['toleranceBandPoints'] as num?)?.toInt() ?? 10;
+        ((ratioConfig?['toleranceBandPoints'] as num?)?.toInt() ??
+                kRatioBandMaxPoints)
+            .clamp(kRatioBandMinPoints, kRatioBandMaxPoints);
     final releaseSchedule =
         ratioConfig?['releaseSchedule'] as Map<String, dynamic>?;
     final minFemaleSeatsBeforeMaleRelease =
@@ -80,7 +82,7 @@ class HostEventDto {
       neighbourhood: (json['neighbourhood'] ?? '').toString(),
       capacity: (json['capacity'] as num?)?.toInt() ?? 0,
       ticketPriceRupees: (ticketPricePaise / 100).round(),
-      ratioTightened: toleranceBandPoints < 10,
+      toleranceBandPoints: toleranceBandPoints,
       holdbackEnabled: minFemaleSeatsBeforeMaleRelease > 0,
       cancellationTerms: (json['cancellationTerms'] ?? '').toString(),
       refundCutoffHoursBeforeStart:
@@ -112,7 +114,7 @@ class HostEventDto {
       neighbourhood: event.neighbourhood,
       capacity: event.capacity,
       ticketPriceRupees: event.ticketPriceRupees,
-      ratioTightened: event.ratioTightened,
+      toleranceBandPoints: event.toleranceBandPoints,
       holdbackEnabled: event.holdbackEnabled,
       cancellationTerms: event.cancellationTerms,
       refundCutoffHoursBeforeStart: event.refundCutoffHoursBeforeStart,
@@ -142,7 +144,7 @@ class HostEventDto {
   final String neighbourhood;
   final int capacity;
   final int ticketPriceRupees;
-  final bool ratioTightened;
+  final int toleranceBandPoints;
   final bool holdbackEnabled;
   final String cancellationTerms;
   final int refundCutoffHoursBeforeStart;
@@ -169,7 +171,7 @@ class HostEventDto {
     'capacity': capacity,
     'ratioConfig': {
       'targetPercent': 50,
-      'toleranceBandPoints': ratioTightened ? 5 : 10,
+      'toleranceBandPoints': toleranceBandPoints,
       'releaseSchedule': {
         'minFemaleSeatsBeforeMaleRelease': holdbackEnabled
             ? kHoldbackFemaleSeatsThreshold
@@ -205,7 +207,7 @@ class HostEventDto {
       neighbourhood: neighbourhood,
       capacity: capacity,
       ticketPriceRupees: ticketPriceRupees,
-      ratioTightened: ratioTightened,
+      toleranceBandPoints: toleranceBandPoints,
       holdbackEnabled: holdbackEnabled,
       cancellationTerms: cancellationTerms,
       refundCutoffHoursBeforeStart: refundCutoffHoursBeforeStart,

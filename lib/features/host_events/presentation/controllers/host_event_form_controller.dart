@@ -336,8 +336,13 @@ class HostEventFormController extends _$HostEventFormController {
     );
   }
 
-  void toggleTightenRatio(bool value) {
-    state = state.copyWith(draft: state.draft.copyWith(ratioTightened: value));
+  /// Clamped to [kRatioBandMinPoints]-[kRatioBandMaxPoints] — the band can
+  /// only be narrowed, never widened past the platform default.
+  void updateToleranceBandPoints(int value) {
+    final clamped = value.clamp(kRatioBandMinPoints, kRatioBandMaxPoints);
+    state = state.copyWith(
+      draft: state.draft.copyWith(toleranceBandPoints: clamped),
+    );
   }
 
   void toggleHoldback(bool value) {

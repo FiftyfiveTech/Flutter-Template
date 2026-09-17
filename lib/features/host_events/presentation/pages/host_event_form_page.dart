@@ -13,10 +13,13 @@ import '../../../../shared/widgets/ah_date_time_field.dart';
 import '../../../../shared/widgets/ah_dropdown_field.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../../shared/widgets/ah_ratio_meter.dart';
+import '../../../../shared/widgets/ah_slider.dart';
 import '../../../../shared/widgets/ah_stepper_input.dart';
 import '../../../../shared/widgets/ah_switch_tile.dart';
 import '../../../../shared/widgets/ah_text_area.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
+import '../../domain/entities/host_event.dart'
+    show kRatioBandMaxPoints, kRatioBandMinPoints;
 import '../controllers/host_event_form_controller.dart';
 
 const _imagePickerExtensions = ['jpg', 'jpeg', 'png'];
@@ -286,9 +289,9 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                           ),
                           AppSpacing.spacerMd,
                           _RatioBandCard(
-                            tightened: draft.ratioTightened,
+                            toleranceBandPoints: draft.toleranceBandPoints,
                             bandLabel: draft.ratioBandLabel,
-                            onToggleTighten: notifier.toggleTightenRatio,
+                            onChanged: notifier.updateToleranceBandPoints,
                           ),
                           AppSpacing.spacerMd,
                           AhCard(
@@ -455,14 +458,14 @@ class _LockedAddressCard extends StatelessWidget {
 
 class _RatioBandCard extends StatelessWidget {
   const _RatioBandCard({
-    required this.tightened,
+    required this.toleranceBandPoints,
     required this.bandLabel,
-    required this.onToggleTighten,
+    required this.onChanged,
   });
 
-  final bool tightened;
+  final int toleranceBandPoints;
   final String bandLabel;
-  final ValueChanged<bool> onToggleTighten;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -500,11 +503,17 @@ class _RatioBandCard extends StatelessWidget {
             style: typography.caption.copyWith(color: AppColors.textTertiary),
           ),
           AppSpacing.spacerMd,
-          AhSwitchTile(
-            label: 'Tighten to 55:45',
-            description: 'Slower to fill, tighter room.',
-            value: tightened,
-            onChanged: onToggleTighten,
+          AhSlider(
+            label: 'Tolerance',
+            value: toleranceBandPoints,
+            min: kRatioBandMinPoints,
+            max: kRatioBandMaxPoints,
+            valueLabel: bandLabel,
+            helperText:
+                'Drag left to tighten the band — slower to fill, tighter '
+                'room. Can never widen past the ±$kRatioBandMaxPoints '
+                'default.',
+            onChanged: onChanged,
           ),
         ],
       ),

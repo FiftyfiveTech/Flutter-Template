@@ -12,6 +12,12 @@ const kHoldbackFemaleSeatsThreshold = 8;
 /// adds later that the client doesn't recognize yet, rather than crashing.
 enum HostEventLifecycleStatus { draft, submitted, published, unknown }
 
+/// The platform-default, widest-allowed ratio band tolerance (50:50 ±10).
+const kRatioBandMaxPoints = 10;
+
+/// The tightest ratio band tolerance a host may pick (55:45).
+const kRatioBandMinPoints = 5;
+
 /// A single event authored by a host at one of their saved venues. This
 /// entity currently only supports the H-08 create flow — editing an
 /// existing event (with its "locked after first sale" rules) is H-E1,
@@ -31,7 +37,7 @@ class HostEvent {
     required this.neighbourhood,
     required this.capacity,
     required this.ticketPriceRupees,
-    required this.ratioTightened,
+    required this.toleranceBandPoints,
     required this.holdbackEnabled,
     required this.cancellationTerms,
     required this.refundCutoffHoursBeforeStart,
@@ -84,9 +90,11 @@ class HostEvent {
   /// sent as one "General admission" tier covering the full capacity.
   final int ticketPriceRupees;
 
-  /// Whether the host narrowed the default 50:50 ±10 ratio band to 55:45.
-  /// The band can only be tightened, never widened, per platform policy.
-  final bool ratioTightened;
+  /// The ratio band's tolerance in percentage points, from
+  /// [kRatioBandMinPoints] (tightest, "55:45") to [kRatioBandMaxPoints]
+  /// (the platform default, "50:50 ±10") — can only be narrowed, never
+  /// widened past the default.
+  final int toleranceBandPoints;
 
   /// Whether male seats are held back until
   /// [kHoldbackFemaleSeatsThreshold] women have booked.
@@ -110,9 +118,9 @@ class HostEvent {
   /// when reading an existing event back.
   final HostEventLifecycleStatus status;
 
-  /// The ratio band's female:male tolerance in percentage points, derived
-  /// from [ratioTightened] — 50:50 ±10 by default, tightened to 55:45.
-  String get ratioBandLabel => ratioTightened ? '55:45' : '50:50 ±10';
+  String get ratioBandLabel => toleranceBandPoints <= kRatioBandMinPoints
+      ? '55:45'
+      : '50:50 ±$toleranceBandPoints';
 
   HostEvent copyWith({
     String? id,
@@ -128,7 +136,7 @@ class HostEvent {
     String? neighbourhood,
     int? capacity,
     int? ticketPriceRupees,
-    bool? ratioTightened,
+    int? toleranceBandPoints,
     bool? holdbackEnabled,
     String? cancellationTerms,
     int? refundCutoffHoursBeforeStart,
@@ -150,7 +158,7 @@ class HostEvent {
       neighbourhood: neighbourhood ?? this.neighbourhood,
       capacity: capacity ?? this.capacity,
       ticketPriceRupees: ticketPriceRupees ?? this.ticketPriceRupees,
-      ratioTightened: ratioTightened ?? this.ratioTightened,
+      toleranceBandPoints: toleranceBandPoints ?? this.toleranceBandPoints,
       holdbackEnabled: holdbackEnabled ?? this.holdbackEnabled,
       cancellationTerms: cancellationTerms ?? this.cancellationTerms,
       refundCutoffHoursBeforeStart:
@@ -176,7 +184,7 @@ class HostEvent {
     neighbourhood: '',
     capacity: 20,
     ticketPriceRupees: 0,
-    ratioTightened: false,
+    toleranceBandPoints: kRatioBandMaxPoints,
     holdbackEnabled: false,
     cancellationTerms: '',
     refundCutoffHoursBeforeStart: 24,

@@ -54,7 +54,7 @@ void main() {
       expect(event.neighbourhood, 'Indiranagar');
       expect(event.capacity, 60);
       expect(event.ticketPriceRupees, 1500);
-      expect(event.ratioTightened, isFalse);
+      expect(event.toleranceBandPoints, 10);
       expect(event.holdbackEnabled, isFalse);
       expect(event.refundCutoffHoursBeforeStart, 48);
       expect(event.status, HostEventLifecycleStatus.draft);
@@ -100,24 +100,37 @@ void main() {
       expect(dto.toDomain().status, HostEventLifecycleStatus.unknown);
     });
 
-    test(
-      'a tightened tolerance band (5 points) maps to ratioTightened true',
-      () {
-        final dto = HostEventDto.fromJson({
-          'id': 'event-1',
-          'title': 'Test',
-          'venueId': 'venue-1',
-          'capacity': 40,
-          'ratioConfig': {
-            'targetPercent': 50,
-            'toleranceBandPoints': 5,
-            'releaseSchedule': {'minFemaleSeatsBeforeMaleRelease': 0},
-          },
-        });
+    test('reads toleranceBandPoints straight through', () {
+      final dto = HostEventDto.fromJson({
+        'id': 'event-1',
+        'title': 'Test',
+        'venueId': 'venue-1',
+        'capacity': 40,
+        'ratioConfig': {
+          'targetPercent': 50,
+          'toleranceBandPoints': 5,
+          'releaseSchedule': {'minFemaleSeatsBeforeMaleRelease': 0},
+        },
+      });
 
-        expect(dto.toDomain().ratioTightened, isTrue);
-      },
-    );
+      expect(dto.toDomain().toleranceBandPoints, 5);
+    });
+
+    test('clamps an out-of-range toleranceBandPoints into 5-10', () {
+      final dto = HostEventDto.fromJson({
+        'id': 'event-1',
+        'title': 'Test',
+        'venueId': 'venue-1',
+        'capacity': 40,
+        'ratioConfig': {
+          'targetPercent': 50,
+          'toleranceBandPoints': 20,
+          'releaseSchedule': {'minFemaleSeatsBeforeMaleRelease': 0},
+        },
+      });
+
+      expect(dto.toDomain().toleranceBandPoints, 10);
+    });
 
     test('a positive minFemaleSeatsBeforeMaleRelease maps to holdbackEnabled '
         'true', () {
@@ -163,7 +176,7 @@ void main() {
       neighbourhood: 'Indiranagar',
       capacity: 60,
       ticketPriceRupees: 1500,
-      ratioTightened: false,
+      toleranceBandPoints: 10,
       holdbackEnabled: false,
       cancellationTerms: 'Full refund up to 48 hours before the event.',
       refundCutoffHoursBeforeStart: 48,
@@ -209,13 +222,13 @@ void main() {
       expect(releaseSchedule['minFemaleSeatsBeforeMaleRelease'], 0);
     });
 
-    test('a tightened ratio band narrows toleranceBandPoints to 5', () {
+    test('sends a narrowed toleranceBandPoints unchanged', () {
       final json = HostEventDto.fromDomain(
-        event.copyWith(ratioTightened: true),
+        event.copyWith(toleranceBandPoints: 7),
       ).toJson();
       final ratioConfig = json['ratioConfig'] as Map<String, dynamic>;
 
-      expect(ratioConfig['toleranceBandPoints'], 5);
+      expect(ratioConfig['toleranceBandPoints'], 7);
     });
 
     test('enabling holdback sets minFemaleSeatsBeforeMaleRelease to the '
@@ -270,7 +283,7 @@ void main() {
         neighbourhood: event.neighbourhood,
         capacity: event.capacity,
         ticketPriceRupees: event.ticketPriceRupees,
-        ratioTightened: event.ratioTightened,
+        toleranceBandPoints: event.toleranceBandPoints,
         holdbackEnabled: event.holdbackEnabled,
         cancellationTerms: event.cancellationTerms,
         refundCutoffHoursBeforeStart: event.refundCutoffHoursBeforeStart,

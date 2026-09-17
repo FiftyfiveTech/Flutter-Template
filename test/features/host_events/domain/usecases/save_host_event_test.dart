@@ -46,7 +46,7 @@ void main() {
     neighbourhood: 'Indiranagar',
     capacity: 40,
     ticketPriceRupees: 1299,
-    ratioTightened: false,
+    toleranceBandPoints: 10,
     holdbackEnabled: false,
     cancellationTerms: 'No refunds within 24h of doors.',
     refundCutoffHoursBeforeStart: 24,
