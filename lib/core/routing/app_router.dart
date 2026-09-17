@@ -68,6 +68,12 @@ final appRouter = GoRouter(
       builder: (context, state) => const HostEventFormPage(),
     ),
     GoRoute(
+      path: '/host/events/:id',
+      name: 'hostEventDetails',
+      builder: (context, state) =>
+          HostEventFormPage(eventId: state.pathParameters['id']),
+    ),
+    GoRoute(
       path: '/host/venues',
       name: 'hostVenues',
       builder: (context, state) => const HostVenuesPage(),

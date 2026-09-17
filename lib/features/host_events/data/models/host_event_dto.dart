@@ -1,3 +1,4 @@
+import '../../../../shared/constants/event_types.dart';
 import '../../domain/entities/host_event.dart';
 import 'host_event_photo_dto.dart';
 
@@ -33,6 +34,7 @@ class HostEventDto {
     required this.endAt,
     required this.doorsOpenAt,
     required this.venueId,
+    required this.venueName,
     required this.venueAddress,
     required this.neighbourhood,
     required this.capacity,
@@ -43,6 +45,7 @@ class HostEventDto {
     required this.refundCutoffHoursBeforeStart,
     required this.coverPhoto,
     required this.photos,
+    required this.status,
   });
 
   factory HostEventDto.fromJson(Map<String, dynamic> json) {
@@ -67,11 +70,12 @@ class HostEventDto {
       id: (json['id'] ?? '').toString(),
       title: (json['title'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
-      format: (json['format'] ?? '').toString(),
+      format: _unslugFormat((json['format'] ?? '').toString()),
       startAt: _parseApiDateTime(json['startsAt']),
       endAt: _parseApiDateTime(json['endsAt']),
       doorsOpenAt: _parseApiDateTime(json['doorsOpenAt']),
       venueId: (json['venueId'] ?? '').toString(),
+      venueName: (json['venueName'] ?? '').toString(),
       venueAddress: (json['venueExactAddress'] ?? '').toString(),
       neighbourhood: (json['neighbourhood'] ?? '').toString(),
       capacity: (json['capacity'] as num?)?.toInt() ?? 0,
@@ -89,6 +93,7 @@ class HostEventDto {
       photos: (json['photos'] as List<dynamic>? ?? [])
           .map((e) => HostEventPhotoDto.fromJson(e as Map<String, dynamic>))
           .toList(),
+      status: _parseStatus(json['status']),
     );
   }
 
@@ -102,6 +107,7 @@ class HostEventDto {
       endAt: event.endAt,
       doorsOpenAt: event.doorsOpenAt,
       venueId: event.venueId,
+      venueName: event.venueName,
       venueAddress: event.venueAddress,
       neighbourhood: event.neighbourhood,
       capacity: event.capacity,
@@ -119,6 +125,7 @@ class HostEventDto {
       photos: event.photos
           .map((p) => HostEventPhotoDto(id: p.id, url: p.url))
           .toList(),
+      status: event.status,
     );
   }
 
@@ -130,6 +137,7 @@ class HostEventDto {
   final DateTime? endAt;
   final DateTime? doorsOpenAt;
   final String venueId;
+  final String venueName;
   final String venueAddress;
   final String neighbourhood;
   final int capacity;
@@ -140,6 +148,7 @@ class HostEventDto {
   final int refundCutoffHoursBeforeStart;
   final HostEventPhotoDto? coverPhoto;
   final List<HostEventPhotoDto> photos;
+  final HostEventLifecycleStatus status;
 
   /// Write payload for `POST`/`PATCH /api/v1/host/events`. `format` is
   /// sent as the backend's lowercase/underscored slug (e.g. "Board games"
@@ -191,6 +200,7 @@ class HostEventDto {
       endAt: endAt,
       doorsOpenAt: doorsOpenAt,
       venueId: venueId,
+      venueName: venueName,
       venueAddress: venueAddress,
       neighbourhood: neighbourhood,
       capacity: capacity,
@@ -201,12 +211,39 @@ class HostEventDto {
       refundCutoffHoursBeforeStart: refundCutoffHoursBeforeStart,
       coverPhoto: coverPhoto?.toDomain(),
       photos: photos.map((p) => p.toDomain()).toList(),
+      status: status,
     );
   }
 }
 
+/// Maps the backend's lifecycle string to [HostEventLifecycleStatus],
+/// per `docs/features/host-app/02-host-event-publishing.md`'s
+/// `draft/submitted/published` states — anything else falls back to
+/// [HostEventLifecycleStatus.unknown] rather than crashing.
+HostEventLifecycleStatus _parseStatus(Object? value) {
+  return switch (value?.toString()) {
+    'draft' => HostEventLifecycleStatus.draft,
+    'submitted' => HostEventLifecycleStatus.submitted,
+    'published' => HostEventLifecycleStatus.published,
+    _ => HostEventLifecycleStatus.unknown,
+  };
+}
+
 String _formatSlug(String label) =>
     label.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '_');
+
+/// Reverses [_formatSlug] — the dropdown's options are the display-cased
+/// `kEventTypeOptions` labels (e.g. "Board games"), so a raw slug read
+/// back from the API (e.g. "board_games") has to be mapped to the
+/// matching label before it'll show as selected instead of blank. Falls
+/// back to the raw slug for a value that doesn't match any known option,
+/// rather than silently blanking it.
+String _unslugFormat(String slug) {
+  for (final option in kEventTypeOptions) {
+    if (_formatSlug(option) == slug) return option;
+  }
+  return slug;
+}
 
 /// `yyyy-MM-dd HH:mm`, matching the request example exactly (no timezone
 /// offset — the backend assumes `Asia/Kolkata`).

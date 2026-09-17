@@ -6,6 +6,12 @@ import 'host_event_photo.dart';
 /// on (0 when off).
 const kHoldbackFemaleSeatsThreshold = 8;
 
+/// An event's publish lifecycle, per `docs/features/host-app/
+/// 02-host-event-publishing.md`'s `Event` entity (`draft/submitted/
+/// published`). [unknown] is a safe fallback for any value the backend
+/// adds later that the client doesn't recognize yet, rather than crashing.
+enum HostEventLifecycleStatus { draft, submitted, published, unknown }
+
 /// A single event authored by a host at one of their saved venues. This
 /// entity currently only supports the H-08 create flow — editing an
 /// existing event (with its "locked after first sale" rules) is H-E1,
@@ -20,6 +26,7 @@ class HostEvent {
     required this.endAt,
     required this.doorsOpenAt,
     required this.venueId,
+    required this.venueName,
     required this.venueAddress,
     required this.neighbourhood,
     required this.capacity,
@@ -30,6 +37,7 @@ class HostEvent {
     required this.refundCutoffHoursBeforeStart,
     required this.coverPhoto,
     required this.photos,
+    required this.status,
   });
 
   final String id;
@@ -53,6 +61,11 @@ class HostEvent {
 
   /// The backend venue id this event is held at.
   final String venueId;
+
+  /// The venue's display name, as returned by the backend — not sent on
+  /// write, only populated when reading an existing event back (e.g. for
+  /// the H-05 Home event list).
+  final String venueName;
 
   /// Read-only display copy of the selected venue's full address — filled
   /// from the venue record and never edited on this screen.
@@ -93,6 +106,10 @@ class HostEvent {
   /// Gallery photos for this event, beyond [coverPhoto]. Optional, max 5.
   final List<HostEventPhoto> photos;
 
+  /// The event's publish lifecycle — not sent on write, only populated
+  /// when reading an existing event back.
+  final HostEventLifecycleStatus status;
+
   /// The ratio band's female:male tolerance in percentage points, derived
   /// from [ratioTightened] — 50:50 ±10 by default, tightened to 55:45.
   String get ratioBandLabel => ratioTightened ? '55:45' : '50:50 ±10';
@@ -106,6 +123,7 @@ class HostEvent {
     DateTime? endAt,
     DateTime? doorsOpenAt,
     String? venueId,
+    String? venueName,
     String? venueAddress,
     String? neighbourhood,
     int? capacity,
@@ -116,6 +134,7 @@ class HostEvent {
     int? refundCutoffHoursBeforeStart,
     HostEventPhoto? coverPhoto,
     List<HostEventPhoto>? photos,
+    HostEventLifecycleStatus? status,
   }) {
     return HostEvent(
       id: id ?? this.id,
@@ -126,6 +145,7 @@ class HostEvent {
       endAt: endAt ?? this.endAt,
       doorsOpenAt: doorsOpenAt ?? this.doorsOpenAt,
       venueId: venueId ?? this.venueId,
+      venueName: venueName ?? this.venueName,
       venueAddress: venueAddress ?? this.venueAddress,
       neighbourhood: neighbourhood ?? this.neighbourhood,
       capacity: capacity ?? this.capacity,
@@ -137,6 +157,7 @@ class HostEvent {
           refundCutoffHoursBeforeStart ?? this.refundCutoffHoursBeforeStart,
       coverPhoto: coverPhoto ?? this.coverPhoto,
       photos: photos ?? this.photos,
+      status: status ?? this.status,
     );
   }
 
@@ -150,6 +171,7 @@ class HostEvent {
     endAt: null,
     doorsOpenAt: null,
     venueId: '',
+    venueName: '',
     venueAddress: '',
     neighbourhood: '',
     capacity: 20,
@@ -160,5 +182,6 @@ class HostEvent {
     refundCutoffHoursBeforeStart: 24,
     coverPhoto: null,
     photos: [],
+    status: HostEventLifecycleStatus.draft,
   );
 }

@@ -7,7 +7,13 @@ import '../models/host_event_dto.dart';
 import '../models/host_event_photo_dto.dart';
 
 abstract class HostEventsRemoteDatasource {
+  Future<List<HostEventDto>> getEvents();
+
+  Future<HostEventDto> getEventById(String eventId);
+
   Future<HostEventDto> createEvent(HostEventDto event);
+
+  Future<HostEventDto> updateEvent(String eventId, HostEventDto event);
 
   Future<HostEventPhotoDto> uploadEventPhoto({
     required String filePath,
@@ -21,9 +27,36 @@ class HostEventsRestDatasource implements HostEventsRemoteDatasource {
   final BaseApiClient _client;
 
   @override
+  Future<List<HostEventDto>> getEvents() async {
+    final response = await _client.get('/api/v1/host/events');
+    final body = response.data as Map<String, dynamic>;
+    final data = body['data'] as List<dynamic>;
+    return data
+        .map((e) => HostEventDto.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<HostEventDto> getEventById(String eventId) async {
+    final response = await _client.get('/api/v1/host/events/$eventId');
+    final body = response.data as Map<String, dynamic>;
+    return HostEventDto.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  @override
   Future<HostEventDto> createEvent(HostEventDto event) async {
     final response = await _client.post(
       '/api/v1/host/events',
+      data: event.toJson(),
+    );
+    final body = response.data as Map<String, dynamic>;
+    return HostEventDto.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<HostEventDto> updateEvent(String eventId, HostEventDto event) async {
+    final response = await _client.patch(
+      '/api/v1/host/events/$eventId',
       data: event.toJson(),
     );
     final body = response.data as Map<String, dynamic>;

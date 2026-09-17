@@ -64,6 +64,12 @@ void main() {
           builder: (context, state) =>
               const Scaffold(body: Text('New event page')),
         ),
+        GoRoute(
+          path: '/host/events/:id',
+          builder: (context, state) => Scaffold(
+            body: Text('Event details page ${state.pathParameters['id']}'),
+          ),
+        ),
       ],
     );
     return ProviderScope(
@@ -110,14 +116,16 @@ void main() {
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
   });
 
-  testWidgets('tapping event card shows message', (tester) async {
+  testWidgets('tapping event card navigates to its event details screen', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Blind Wine & Bad Takes'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.text('Edit Blind Wine & Bad Takes'), findsOneWidget);
+    expect(find.text('Event details page evt-1'), findsOneWidget);
   });
 
   testWidgets('tapping Add Event button navigates to the new event screen', (

@@ -12,6 +12,13 @@ class _FakeHostEventsRepository implements HostEventsRepository {
   HostEvent? lastEvent;
 
   @override
+  Future<Result<List<HostEvent>>> getEvents() => throw UnimplementedError();
+
+  @override
+  Future<Result<HostEvent>> getEventById(String eventId) =>
+      throw UnimplementedError();
+
+  @override
   Future<Result<HostEvent>> saveEvent(HostEvent event) async {
     lastEvent = event;
     return _result;
@@ -34,6 +41,7 @@ void main() {
     endAt: null,
     doorsOpenAt: null,
     venueId: 'venue-1',
+    venueName: 'Toit, Indiranagar',
     venueAddress: '12, 100 Feet Road, Indiranagar, Bangalore',
     neighbourhood: 'Indiranagar',
     capacity: 40,
@@ -44,6 +52,7 @@ void main() {
     refundCutoffHoursBeforeStart: 24,
     coverPhoto: null,
     photos: [],
+    status: HostEventLifecycleStatus.draft,
   );
 
   test(

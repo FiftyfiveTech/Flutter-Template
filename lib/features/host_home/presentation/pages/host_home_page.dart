@@ -7,6 +7,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_alert_banner.dart';
 import '../../../../shared/widgets/ah_card.dart';
+import '../../../../shared/widgets/ah_shimmer.dart';
 import '../controllers/host_home_controller.dart';
 import '../widgets/host_home_bottom_nav.dart';
 import '../widgets/host_home_event_card.dart';
@@ -102,11 +103,14 @@ class HostHomePage extends ConsumerWidget {
 
                       // Venues Card
                       if (summary != null) ...[
-                        _VenuesCard(
-                          count: summary.savedVenuesCount,
-                          onTap: () =>
-                              _pushAndRefresh(context, ref, '/host/venues'),
-                        ),
+                        if (state.isLoadingDetails)
+                          const _VenuesCardShimmer()
+                        else
+                          _VenuesCard(
+                            count: summary.savedVenuesCount,
+                            onTap: () =>
+                                _pushAndRefresh(context, ref, '/host/venues'),
+                          ),
                         const SizedBox(height: AppSpacing.lg),
                       ],
 
@@ -131,12 +135,24 @@ class HostHomePage extends ConsumerWidget {
                             ),
                           ),
                         )
+                      else if (state.isLoadingDetails) ...[
+                        const _EventCardShimmer(),
+                        const SizedBox(height: AppSpacing.cardGap),
+                        const _EventCardShimmer(),
+                      ] else if (summary != null && summary.events.isEmpty)
+                        _NoEventsMessage(
+                          onAddEvent: () =>
+                              _pushAndRefresh(context, ref, '/host/events/new'),
+                        )
                       else if (summary != null) ...[
                         for (final event in summary.events) ...[
                           HostHomeEventCard(
                             event: event,
-                            onTap: () =>
-                                _showMessage(context, 'Edit ${event.title}'),
+                            onTap: () => _pushAndRefresh(
+                              context,
+                              ref,
+                              '/host/events/${event.id}',
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.cardGap),
                         ],
@@ -161,6 +177,44 @@ class HostHomePage extends ConsumerWidget {
             _showMessage(context, 'Profile — coming soon');
           }
         },
+      ),
+    );
+  }
+}
+
+class _NoEventsMessage extends StatelessWidget {
+  const _NoEventsMessage({required this.onAddEvent});
+
+  final VoidCallback onAddEvent;
+
+  @override
+  Widget build(BuildContext context) {
+    final typography = Theme.of(context).extension<AppTypography>()!;
+
+    return AhCard(
+      onTap: onAddEvent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.event_note_outlined,
+            size: 28,
+            color: AppColors.textTertiary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'No events yet',
+            style: typography.body.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Tap here or the + button above to list your first night.',
+            style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+          ),
+        ],
       ),
     );
   }
@@ -192,6 +246,63 @@ class _AddEventButton extends StatelessWidget {
             size: 24,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _VenuesCardShimmer extends StatelessWidget {
+  const _VenuesCardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return const AhCard(
+      child: Row(
+        children: [
+          AhShimmerBox(width: 20, height: 20),
+          SizedBox(width: AppSpacing.sm + 2),
+          Expanded(child: AhShimmerBox(height: 18)),
+          SizedBox(width: AppSpacing.sm),
+          AhShimmerBox(width: 18, height: 18),
+        ],
+      ),
+    );
+  }
+}
+
+class _EventCardShimmer extends StatelessWidget {
+  const _EventCardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+        border: Border.all(color: AppColors.borderDefault),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AhShimmerBox(
+                width: 72,
+                height: 20,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(AppSpacing.radiusPill),
+                ),
+              ),
+              Spacer(),
+              AhShimmerBox(width: 60, height: 14),
+            ],
+          ),
+          SizedBox(height: AppSpacing.md),
+          AhShimmerBox(width: 180, height: 20),
+          SizedBox(height: AppSpacing.xs),
+          AhShimmerBox(width: 140, height: 14),
+        ],
       ),
     );
   }

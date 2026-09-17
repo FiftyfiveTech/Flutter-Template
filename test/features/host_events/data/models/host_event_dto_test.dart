@@ -15,6 +15,7 @@ void main() {
         'endsAt': '2026-10-10T16:00:00.000Z',
         'doorsOpenAt': '2026-10-10T12:30:00.000Z',
         'venueId': 'venue-1',
+        'venueName': 'Toit, Indiranagar',
         'venueExactAddress': '100 Ft Road, Indiranagar, 560038',
         'neighbourhood': 'Indiranagar',
         'capacity': 60,
@@ -39,7 +40,16 @@ void main() {
 
       final event = dto.toDomain();
       expect(event.title, 'Wine & Cheese Night');
+      expect(
+        event.format,
+        'Dinner',
+        reason:
+            'the raw slug "dinner" from the API must map back to the '
+            'display-cased label the Format dropdown\'s options use, or '
+            'it will never show as selected',
+      );
       expect(event.venueId, 'venue-1');
+      expect(event.venueName, 'Toit, Indiranagar');
       expect(event.venueAddress, '100 Ft Road, Indiranagar, 560038');
       expect(event.neighbourhood, 'Indiranagar');
       expect(event.capacity, 60);
@@ -47,10 +57,47 @@ void main() {
       expect(event.ratioTightened, isFalse);
       expect(event.holdbackEnabled, isFalse);
       expect(event.refundCutoffHoursBeforeStart, 48);
+      expect(event.status, HostEventLifecycleStatus.draft);
       expect(
         event.startAt,
         DateTime.parse('2026-10-10T13:00:00.000Z').toLocal(),
       );
+    });
+
+    test('maps a multi-word format slug back to its display label', () {
+      final dto = HostEventDto.fromJson({
+        'id': 'event-1',
+        'title': 'Test',
+        'venueId': 'venue-1',
+        'capacity': 40,
+        'format': 'board_games',
+      });
+
+      expect(dto.toDomain().format, 'Board games');
+    });
+
+    test('keeps an unrecognized format slug as-is rather than blanking it', () {
+      final dto = HostEventDto.fromJson({
+        'id': 'event-1',
+        'title': 'Test',
+        'venueId': 'venue-1',
+        'capacity': 40,
+        'format': 'karaoke_night',
+      });
+
+      expect(dto.toDomain().format, 'karaoke_night');
+    });
+
+    test('falls back to unknown for an unrecognized status', () {
+      final dto = HostEventDto.fromJson({
+        'id': 'event-1',
+        'title': 'Test',
+        'venueId': 'venue-1',
+        'capacity': 40,
+        'status': 'something_new',
+      });
+
+      expect(dto.toDomain().status, HostEventLifecycleStatus.unknown);
     });
 
     test(
@@ -111,6 +158,7 @@ void main() {
       endAt: DateTime(2026, 10, 10, 21, 30),
       doorsOpenAt: DateTime(2026, 10, 10, 18),
       venueId: 'venue-1',
+      venueName: 'Toit, Indiranagar',
       venueAddress: 'ignored on write',
       neighbourhood: 'Indiranagar',
       capacity: 60,
@@ -126,6 +174,7 @@ void main() {
       photos: const [
         HostEventPhoto(id: 'p1', url: 'https://example.com/p1.jpg'),
       ],
+      status: HostEventLifecycleStatus.draft,
     );
 
     test('formats dates as yyyy-MM-dd HH:mm with no timezone offset', () {
@@ -216,6 +265,7 @@ void main() {
         endAt: event.endAt,
         doorsOpenAt: event.doorsOpenAt,
         venueId: event.venueId,
+        venueName: event.venueName,
         venueAddress: event.venueAddress,
         neighbourhood: event.neighbourhood,
         capacity: event.capacity,
@@ -226,6 +276,7 @@ void main() {
         refundCutoffHoursBeforeStart: event.refundCutoffHoursBeforeStart,
         coverPhoto: null,
         photos: const [],
+        status: event.status,
       );
       final json = HostEventDto.fromDomain(noCoverEvent).toJson();
 

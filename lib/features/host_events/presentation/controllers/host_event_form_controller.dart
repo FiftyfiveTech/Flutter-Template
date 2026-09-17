@@ -35,6 +35,9 @@ const kEventCapacityStep = 2;
 class HostEventFormState {
   const HostEventFormState({
     required this.draft,
+    required this.isEdit,
+    this.isLoadingEvent = false,
+    this.loadError,
     this.venues = const [],
     this.isLoadingVenues = false,
     this.venuesLoadError,
@@ -47,6 +50,14 @@ class HostEventFormState {
   });
 
   final HostEvent draft;
+  final bool isEdit;
+
+  /// True while the full event is being fetched for edit mode.
+  final bool isLoadingEvent;
+
+  /// Set when fetching the event for edit mode fails; [retryLoadEvent]
+  /// clears it.
+  final String? loadError;
 
   /// The host's saved venues, for the Venue dropdown. Reuses
   /// `host_venues`'s existing `GetHostVenuesUseCase` rather than a
@@ -87,8 +98,13 @@ class HostEventFormState {
   /// includes `allowedEventTypes` in the first place.
   List<String> get formatOptions => kEventTypeOptions;
 
+  String get saveLabel => isEdit ? 'Save changes' : 'Submit';
+
   HostEventFormState copyWith({
     HostEvent? draft,
+    bool? isEdit,
+    bool? isLoadingEvent,
+    String? loadError,
     List<HostVenue>? venues,
     bool? isLoadingVenues,
     String? venuesLoadError,
@@ -101,6 +117,9 @@ class HostEventFormState {
   }) {
     return HostEventFormState(
       draft: draft ?? this.draft,
+      isEdit: isEdit ?? this.isEdit,
+      isLoadingEvent: isLoadingEvent ?? this.isLoadingEvent,
+      loadError: loadError,
       venues: venues ?? this.venues,
       isLoadingVenues: isLoadingVenues ?? this.isLoadingVenues,
       venuesLoadError: venuesLoadError,
@@ -114,18 +133,76 @@ class HostEventFormState {
   }
 }
 
-/// H-08 · New event — create-only. There is no existing event to lock
-/// price/date/capacity against yet (that's H-E1, editing an existing,
-/// already-selling event — out of scope here).
+/// H-08 · New event — also backs the H-E1 "edit event" mode when [eventId]
+/// is non-null, mirroring `HostVenueFormController`. The full event
+/// (including its cover/gallery photos) is fetched fresh on every open
+/// rather than passed via navigation `extra`, since the H-05 Home list
+/// response may not carry everything this form needs.
 @riverpod
 class HostEventFormController extends _$HostEventFormController {
   @override
-  HostEventFormState build() {
+  HostEventFormState build(String? eventId) {
     Future.microtask(_loadVenues);
+    if (eventId == null) {
+      return const HostEventFormState(draft: HostEvent.empty, isEdit: false);
+    }
+    Future.microtask(_loadEvent);
     return const HostEventFormState(
       draft: HostEvent.empty,
-      isLoadingVenues: true,
+      isEdit: true,
+      isLoadingEvent: true,
     );
+  }
+
+  Future<void> _loadEvent() async {
+    final id = eventId;
+    if (id == null) return;
+    state = state.copyWith(isLoadingEvent: true, loadError: null);
+    final useCase = ref.read(getHostEventByIdUseCaseProvider);
+    final result = await useCase(id);
+    state = result.when(
+      ok: (event) => state.copyWith(
+        draft: event,
+        isLoadingEvent: false,
+        photoSlots: _photoSlotsFor(event),
+        uploadedPhotos: _uploadedPhotosFor(event),
+      ),
+      err: (failure) =>
+          state.copyWith(isLoadingEvent: false, loadError: failure.message),
+    );
+    // The venue backing this event comes from the same list-sourced
+    // dropdown data (maxCapacity always 0) until refreshed — same fix as
+    // updateVenue's fresh-pick path.
+    if (state.draft.venueId.isNotEmpty) {
+      unawaited(_refreshVenueDetail(state.draft.venueId));
+    }
+  }
+
+  /// Retries the initial fetch after [HostEventFormState.loadError] —
+  /// surfaced so the screen never has to stay blank on a failed load.
+  void retryLoadEvent() {
+    Future.microtask(_loadEvent);
+  }
+
+  /// Seeds per-slot upload state from an existing event's cover + gallery
+  /// photos — slot 0 is the cover (if any), the rest are the gallery,
+  /// mirroring how [save] splits them back apart on write.
+  List<AhPhotoSlotData> _photoSlotsFor(HostEvent event) {
+    final photos = [
+      if (event.coverPhoto != null) event.coverPhoto!,
+      ...event.photos,
+    ];
+    return [
+      for (final photo in photos)
+        AhPhotoSlotData(
+          status: AhPhotoSlotStatus.uploaded,
+          networkUrl: photo.url,
+        ),
+    ];
+  }
+
+  List<HostEventPhoto?> _uploadedPhotosFor(HostEvent event) {
+    return [if (event.coverPhoto != null) event.coverPhoto!, ...event.photos];
   }
 
   Future<void> _loadVenues() async {

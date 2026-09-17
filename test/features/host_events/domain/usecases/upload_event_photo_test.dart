@@ -23,6 +23,13 @@ class _FakeHostEventsRepository implements HostEventsRepository {
   }
 
   @override
+  Future<Result<List<HostEvent>>> getEvents() => throw UnimplementedError();
+
+  @override
+  Future<Result<HostEvent>> getEventById(String eventId) =>
+      throw UnimplementedError();
+
+  @override
   Future<Result<HostEvent>> saveEvent(HostEvent event) =>
       throw UnimplementedError();
 }

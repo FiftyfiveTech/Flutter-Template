@@ -13,38 +13,20 @@ class HostHomeRestDatasource implements HostHomeRemoteDatasource {
 
   @override
   Future<HostHomeSummaryDto> getHomeSummary() async {
-    // In production, this calls GET /api/v1/host/home-summary.
-    // For now, it provides initial seed data matching the design system.
+    // No real GET /api/v1/host/home-summary endpoint exists yet — this
+    // used to return hardcoded demo data (a fake org name, a "verified"
+    // badge, and 3 fake events), which meant the home screen showed fake
+    // content even fully offline, since this call never actually touches
+    // the network and so can never fail. It now returns honest empty
+    // defaults instead; `HostHomeController.loadSummary` overwrites
+    // savedVenuesCount/events with the real venues/events APIs when they
+    // succeed, and leaves these empty defaults in place — never fake
+    // data — when the device has no connection.
     return const HostHomeSummaryDto(
-      hostName: 'Cellar Door Collective',
-      isVerified: true,
-      savedVenuesCount: 2,
-      events: [
-        HostHomeEventDto(
-          id: 'evt-1',
-          title: 'Blind Wine & Bad Takes',
-          formattedSchedule: 'Thu, 12 Sep · 8:00 PM · Toit, Indiranagar',
-          status: 'upcoming',
-          soldCount: 12,
-          capacity: 32,
-        ),
-        HostHomeEventDto(
-          id: 'evt-2',
-          title: 'Pottery & Small Talk',
-          formattedSchedule: 'Sat, 14 Sep · 6:30 PM · Vasanth Nagar',
-          status: 'draft',
-          soldCount: 8,
-          capacity: 24,
-        ),
-        HostHomeEventDto(
-          id: 'evt-3',
-          title: 'Board Game Night',
-          formattedSchedule: 'Sun, 30 Aug · 7:00 PM · Koramangala',
-          status: 'completed',
-          soldCount: 28,
-          capacity: 28,
-        ),
-      ],
+      hostName: '',
+      isVerified: false,
+      savedVenuesCount: 0,
+      events: [],
     );
   }
 }

@@ -13,10 +13,36 @@ class HostEventsRepositoryImpl implements HostEventsRepository {
   final HostEventsRemoteDatasource _remoteDatasource;
 
   @override
+  Future<Result<List<HostEvent>>> getEvents() async {
+    try {
+      final dtos = await _remoteDatasource.getEvents();
+      return Ok(dtos.map((dto) => dto.toDomain()).toList());
+    } on NetworkException catch (e) {
+      return Err(NetworkFailure(message: e.message));
+    } catch (_) {
+      return const Err(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Result<HostEvent>> getEventById(String eventId) async {
+    try {
+      final dto = await _remoteDatasource.getEventById(eventId);
+      return Ok(dto.toDomain());
+    } on NetworkException catch (e) {
+      return Err(NetworkFailure(message: e.message));
+    } catch (_) {
+      return const Err(UnexpectedFailure());
+    }
+  }
+
+  @override
   Future<Result<HostEvent>> saveEvent(HostEvent event) async {
     try {
       final dto = HostEventDto.fromDomain(event);
-      final saved = await _remoteDatasource.createEvent(dto);
+      final saved = event.id.isEmpty
+          ? await _remoteDatasource.createEvent(dto)
+          : await _remoteDatasource.updateEvent(event.id, dto);
       return Ok(saved.toDomain());
     } on NetworkException catch (e) {
       return Err(NetworkFailure(message: e.message));
