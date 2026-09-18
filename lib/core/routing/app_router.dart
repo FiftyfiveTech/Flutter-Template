@@ -9,6 +9,7 @@ import '../../features/host_onboarding/presentation/pages/host_landing_page.dart
 import '../../features/host_onboarding/presentation/pages/host_signup_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_type_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_verification_page.dart';
+import '../../features/host_profile/presentation/pages/host_you_page.dart';
 import '../../features/host_venues/presentation/pages/host_venue_details_page.dart';
 import '../../features/host_venues/presentation/pages/host_venues_page.dart';
 import 'host_bootstrap_page.dart';
@@ -72,6 +73,11 @@ final appRouter = GoRouter(
       name: 'hostEventDetails',
       builder: (context, state) =>
           HostEventFormPage(eventId: state.pathParameters['id']),
+    ),
+    GoRoute(
+      path: '/host/you',
+      name: 'hostYou',
+      builder: (context, state) => const HostYouPage(),
     ),
     GoRoute(
       path: '/host/venues',

@@ -4,7 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 
 /// Button style variants mirroring the design system's `Button` component.
-enum AhButtonVariant { primary, secondary, tertiary }
+enum AhButtonVariant { primary, secondary, tertiary, destructive }
 
 /// The app's standard button — primary (filled accent), secondary (filled
 /// neutral) or tertiary (text-only). Used for every CTA across the app so
@@ -55,6 +55,15 @@ class AhButton extends StatelessWidget {
         onPressed: onPressed,
         style: TextButton.styleFrom(
           foregroundColor: AppColors.actionTertiaryFg,
+          shape: shape,
+        ),
+        child: Text(label),
+      ),
+      AhButtonVariant.destructive => ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.actionDestructive,
+          foregroundColor: AppColors.actionPrimaryFg,
           shape: shape,
         ),
         child: Text(label),

@@ -170,12 +170,15 @@ class HostHomePage extends ConsumerWidget {
       bottomNavigationBar: HostHomeBottomNav(
         currentIndex: state.selectedTabIndex,
         onTap: (index) {
-          notifier.selectTab(index);
           if (index == 1) {
             _showMessage(context, 'Payouts — coming soon');
-          } else if (index == 2) {
-            _showMessage(context, 'Profile — coming soon');
+            return;
           }
+          if (index == 2) {
+            context.push('/host/you');
+            return;
+          }
+          notifier.selectTab(index);
         },
       ),
     );
