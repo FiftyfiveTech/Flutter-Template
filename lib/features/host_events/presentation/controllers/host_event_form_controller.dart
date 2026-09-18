@@ -32,6 +32,9 @@ const kEventCapacityMin = 10;
 const kEventCapacityMax = 200;
 const kEventCapacityStep = 2;
 
+/// Doors may open no earlier than this far before the event's start time.
+const kMaxDoorsOpenLeadTime = Duration(hours: 1, minutes: 30);
+
 class HostEventFormState {
   const HostEventFormState({
     required this.draft,
@@ -492,10 +495,10 @@ class HostEventFormController extends _$HostEventFormController {
       final start = draft.startAt!;
       if (doors.isAfter(start)) {
         errors['doorsOpenAt'] = 'Doors must open before the start time.';
-      } else if (doors.year != start.year ||
-          doors.month != start.month ||
-          doors.day != start.day) {
-        errors['doorsOpenAt'] = 'Doors must open on the same day as start.';
+      } else if (start.difference(doors) > kMaxDoorsOpenLeadTime) {
+        errors['doorsOpenAt'] =
+            'Doors can open at most ${kMaxDoorsOpenLeadTime.inMinutes / 60} '
+            'hours before the start time.';
       }
     }
 
