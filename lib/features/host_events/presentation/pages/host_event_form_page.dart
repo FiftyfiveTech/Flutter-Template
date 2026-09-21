@@ -44,6 +44,27 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
 
   late final _provider = hostEventFormControllerProvider(widget.eventId);
 
+  /// Keys the field widgets below so a failed submit can scroll the first
+  /// erroring one into view, in the same top-to-bottom order they appear
+  /// on screen.
+  final _fieldKeys = {
+    for (final field in const [
+      'photos',
+      'title',
+      'description',
+      'format',
+      'startAt',
+      'endAt',
+      'doorsOpenAt',
+      'venue',
+      'capacity',
+      'ticketPrice',
+      'cancellationTerms',
+      'refundCutoffHoursBeforeStart',
+    ])
+      field: GlobalKey(),
+  };
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -81,17 +102,45 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
   }
 
   Future<void> _onSubmit() async {
+    final wasEdit = ref.read(_provider).isEdit;
     final saved = await ref.read(_provider.notifier).save();
     if (!mounted) return;
     if (saved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            wasEdit
+                ? 'Event updated successfully'
+                : 'New event created successfully',
+          ),
+        ),
+      );
       context.pop();
-    } else {
-      final error = ref.read(_provider).errorMessage;
-      if (error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
-      }
+      return;
+    }
+
+    final state = ref.read(_provider);
+    final error = state.errorMessage;
+    if (error != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+    }
+    _scrollToFirstError(state.fieldErrors);
+  }
+
+  void _scrollToFirstError(Map<String, String> fieldErrors) {
+    for (final field in _fieldKeys.keys) {
+      if (!fieldErrors.containsKey(field)) continue;
+      final fieldContext = _fieldKeys[field]!.currentContext;
+      if (fieldContext == null) continue;
+      Scrollable.ensureVisible(
+        fieldContext,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: 0.2,
+      );
+      return;
     }
   }
 
@@ -158,12 +207,15 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          AhPhotoSlots(
-                            count: _visiblePhotoSlotCount(
-                              state.photoSlots.length,
+                          KeyedSubtree(
+                            key: _fieldKeys['photos'],
+                            child: AhPhotoSlots(
+                              count: _visiblePhotoSlotCount(
+                                state.photoSlots.length,
+                              ),
+                              slots: state.photoSlots,
+                              onTapSlot: _pickPhoto,
                             ),
-                            slots: state.photoSlots,
-                            onTapSlot: _pickPhoto,
                           ),
                           AppSpacing.spacerXs,
                           Text(
@@ -176,90 +228,115 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                             ),
                           ),
                           AppSpacing.spacerMd,
-                          AhTextField(
-                            label: 'Title',
-                            placeholder: 'e.g. Blind Wine & Bad Takes',
-                            controller: _titleController,
-                            onChanged: notifier.updateTitle,
-                            errorText: fieldErrors['title'],
+                          KeyedSubtree(
+                            key: _fieldKeys['title'],
+                            child: AhTextField(
+                              label: 'Title',
+                              placeholder: 'e.g. Blind Wine & Bad Takes',
+                              controller: _titleController,
+                              onChanged: notifier.updateTitle,
+                              errorText: fieldErrors['title'],
+                            ),
                           ),
                           AppSpacing.spacerMd,
-                          AhTextArea(
-                            label: 'Description',
-                            placeholder: 'What should guests expect?',
-                            controller: _descriptionController,
-                            onChanged: notifier.updateDescription,
-                            errorText: fieldErrors['description'],
+                          KeyedSubtree(
+                            key: _fieldKeys['description'],
+                            child: AhTextArea(
+                              label: 'Description',
+                              placeholder: 'What should guests expect?',
+                              controller: _descriptionController,
+                              onChanged: notifier.updateDescription,
+                              errorText: fieldErrors['description'],
+                            ),
                           ),
                           AppSpacing.spacerMd,
-                          AhDropdownField(
-                            label: 'Format',
-                            value: draft.format,
-                            options: state.formatOptions,
-                            onChanged: notifier.updateFormat,
-                            hint: 'Select a format',
-                            errorText: fieldErrors['format'],
+                          KeyedSubtree(
+                            key: _fieldKeys['format'],
+                            child: AhDropdownField(
+                              label: 'Format',
+                              value: draft.format,
+                              options: state.formatOptions,
+                              onChanged: notifier.updateFormat,
+                              hint: 'Select a format',
+                              errorText: fieldErrors['format'],
+                            ),
                           ),
                           AppSpacing.spacerMd,
-                          AhDateTimeField(
-                            label: 'Start date & time',
-                            value: draft.startAt,
-                            onChanged: notifier.updateStartAt,
-                            errorText: fieldErrors['startAt'],
+                          KeyedSubtree(
+                            key: _fieldKeys['startAt'],
+                            child: AhDateTimeField(
+                              label: 'Start date & time',
+                              value: draft.startAt,
+                              onChanged: notifier.updateStartAt,
+                              errorText: fieldErrors['startAt'],
+                            ),
                           ),
                           AppSpacing.spacerMd,
-                          AhDateTimeField(
-                            label: 'End date & time',
-                            value: draft.endAt,
-                            onChanged: notifier.updateEndAt,
-                            errorText: fieldErrors['endAt'],
+                          KeyedSubtree(
+                            key: _fieldKeys['endAt'],
+                            child: AhDateTimeField(
+                              label: 'End date & time',
+                              value: draft.endAt,
+                              onChanged: notifier.updateEndAt,
+                              errorText: fieldErrors['endAt'],
+                            ),
                           ),
                           AppSpacing.spacerMd,
-                          AhDateTimeField(
-                            label: 'Doors open time',
-                            value: draft.doorsOpenAt,
-                            onChanged: notifier.updateDoorsOpenAt,
-                            errorText: fieldErrors['doorsOpenAt'],
+                          KeyedSubtree(
+                            key: _fieldKeys['doorsOpenAt'],
+                            child: AhDateTimeField(
+                              label: 'Doors open time',
+                              value: draft.doorsOpenAt,
+                              onChanged: notifier.updateDoorsOpenAt,
+                              errorText: fieldErrors['doorsOpenAt'],
+                            ),
                           ),
                           AppSpacing.spacerMd,
-                          AhDropdownField(
-                            label: 'Venue',
-                            value: selectedVenue?.name ?? '',
-                            options: [for (final v in state.venues) v.name],
-                            onChanged: (name) {
-                              final venue = state.venues.firstWhere(
-                                (v) => v.name == name,
-                              );
-                              notifier.updateVenue(venue);
-                            },
-                            hint: state.venues.isEmpty
-                                ? (state.isLoadingVenues
-                                      ? 'Loading your venues…'
-                                      : 'No saved venues yet — add one first')
-                                : 'Pick a saved venue, or add a new one.',
-                            errorText: fieldErrors['venue'],
+                          KeyedSubtree(
+                            key: _fieldKeys['venue'],
+                            child: AhDropdownField(
+                              label: 'Venue',
+                              value: selectedVenue?.name ?? '',
+                              options: [for (final v in state.venues) v.name],
+                              onChanged: (name) {
+                                final venue = state.venues.firstWhere(
+                                  (v) => v.name == name,
+                                );
+                                notifier.updateVenue(venue);
+                              },
+                              hint: state.venues.isEmpty
+                                  ? (state.isLoadingVenues
+                                        ? 'Loading your venues…'
+                                        : 'No saved venues yet — add one '
+                                              'first')
+                                  : 'Pick a saved venue, or add a new one.',
+                              errorText: fieldErrors['venue'],
+                            ),
                           ),
                           if (selectedVenue != null) ...[
                             AppSpacing.spacerMd,
                             _LockedAddressCard(address: selectedVenue.address),
                           ],
                           AppSpacing.spacerMd,
-                          AhStepperInput(
-                            label: 'Capacity',
-                            value: draft.capacity,
-                            min: kEventCapacityMin,
-                            max: selectedVenue == null
-                                ? kEventCapacityMax
-                                : selectedVenue.maxCapacity
-                                      .clamp(
-                                        kEventCapacityMin,
-                                        kEventCapacityMax,
-                                      )
-                                      .toInt(),
-                            step: kEventCapacityStep,
-                            suffix: 'seats',
-                            onChanged: notifier.updateCapacity,
-                            errorText: fieldErrors['capacity'],
+                          KeyedSubtree(
+                            key: _fieldKeys['capacity'],
+                            child: AhStepperInput(
+                              label: 'Capacity',
+                              value: draft.capacity,
+                              min: kEventCapacityMin,
+                              max: selectedVenue == null
+                                  ? kEventCapacityMax
+                                  : selectedVenue.maxCapacity
+                                        .clamp(
+                                          kEventCapacityMin,
+                                          kEventCapacityMax,
+                                        )
+                                        .toInt(),
+                              step: kEventCapacityStep,
+                              suffix: 'seats',
+                              onChanged: notifier.updateCapacity,
+                              errorText: fieldErrors['capacity'],
+                            ),
                           ),
                           AppSpacing.spacerXs,
                           Text(
@@ -269,23 +346,26 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                             ),
                           ),
                           AppSpacing.spacerMd,
-                          AhTextField(
-                            label: 'Ticket price',
-                            placeholder: 'e.g. 1,299',
-                            icon: Icons.currency_rupee,
-                            controller: _ticketPriceController,
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              final digits = value.replaceAll(
-                                RegExp(r'[^0-9]'),
-                                '',
-                              );
-                              notifier.updateTicketPrice(
-                                int.tryParse(digits) ?? 0,
-                              );
-                            },
-                            errorText: fieldErrors['ticketPrice'],
-                            helperText: 'Locked once the first ticket sells.',
+                          KeyedSubtree(
+                            key: _fieldKeys['ticketPrice'],
+                            child: AhTextField(
+                              label: 'Ticket price',
+                              placeholder: 'e.g. 1,299',
+                              icon: Icons.currency_rupee,
+                              controller: _ticketPriceController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                final digits = value.replaceAll(
+                                  RegExp(r'[^0-9]'),
+                                  '',
+                                );
+                                notifier.updateTicketPrice(
+                                  int.tryParse(digits) ?? 0,
+                                );
+                              },
+                              errorText: fieldErrors['ticketPrice'],
+                              helperText: 'Locked once the first ticket sells.',
+                            ),
                           ),
                           AppSpacing.spacerMd,
                           _RatioBandCard(
@@ -307,24 +387,31 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                             ),
                           ),
                           AppSpacing.spacerMd,
-                          AhTextArea(
-                            label: 'Cancellation terms',
-                            placeholder: 'e.g. No refunds within 24h of doors.',
-                            controller: _cancellationTermsController,
-                            onChanged: notifier.updateCancellationTerms,
-                            errorText: fieldErrors['cancellationTerms'],
+                          KeyedSubtree(
+                            key: _fieldKeys['cancellationTerms'],
+                            child: AhTextArea(
+                              label: 'Cancellation terms',
+                              placeholder:
+                                  'e.g. No refunds within 24h of doors.',
+                              controller: _cancellationTermsController,
+                              onChanged: notifier.updateCancellationTerms,
+                              errorText: fieldErrors['cancellationTerms'],
+                            ),
                           ),
                           AppSpacing.spacerMd,
-                          AhStepperInput(
-                            label: 'Refund cutoff',
-                            value: draft.refundCutoffHoursBeforeStart,
-                            min: 0,
-                            max: 168,
-                            step: 1,
-                            suffix: 'hours before start',
-                            onChanged: notifier.updateRefundCutoffHours,
-                            errorText:
-                                fieldErrors['refundCutoffHoursBeforeStart'],
+                          KeyedSubtree(
+                            key: _fieldKeys['refundCutoffHoursBeforeStart'],
+                            child: AhStepperInput(
+                              label: 'Refund cutoff',
+                              value: draft.refundCutoffHoursBeforeStart,
+                              min: 0,
+                              max: 168,
+                              step: 1,
+                              suffix: 'hours before start',
+                              onChanged: notifier.updateRefundCutoffHours,
+                              errorText:
+                                  fieldErrors['refundCutoffHoursBeforeStart'],
+                            ),
                           ),
                         ],
                       ),

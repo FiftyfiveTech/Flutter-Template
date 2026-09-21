@@ -51,6 +51,24 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
 
   late final _provider = hostVenueFormControllerProvider(widget.venueId);
 
+  /// Keys the field widgets below so a failed save can scroll the first
+  /// erroring one into view, in the same top-to-bottom order they appear
+  /// on screen.
+  final _fieldKeys = {
+    for (final field in const [
+      'photos',
+      'eventTypes',
+      'name',
+      'addLine1',
+      'addLine2',
+      'locality',
+      'city',
+      'pincode',
+      'maxCapacity',
+    ])
+      field: GlobalKey(),
+  };
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -103,17 +121,45 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
   }
 
   Future<void> _onSave() async {
+    final wasEdit = ref.read(_provider).isEdit;
     final saved = await ref.read(_provider.notifier).save();
     if (!mounted) return;
     if (saved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            wasEdit
+                ? 'Venue updated successfully'
+                : 'Venue created successfully',
+          ),
+        ),
+      );
       context.pop();
-    } else {
-      final error = ref.read(_provider).errorMessage;
-      if (error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
-      }
+      return;
+    }
+
+    final state = ref.read(_provider);
+    final error = state.errorMessage;
+    if (error != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+    }
+    _scrollToFirstError(state.fieldErrors);
+  }
+
+  void _scrollToFirstError(Map<String, String> fieldErrors) {
+    for (final field in _fieldKeys.keys) {
+      if (!fieldErrors.containsKey(field)) continue;
+      final fieldContext = _fieldKeys[field]!.currentContext;
+      if (fieldContext == null) continue;
+      Scrollable.ensureVisible(
+        fieldContext,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: 0.2,
+      );
+      return;
     }
   }
 
@@ -196,10 +242,13 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                                 ),
                               ),
                               AppSpacing.spacerSm,
-                              AhPhotoSlots(
-                                count: _visiblePhotoSlotCount(state),
-                                slots: state.photoSlots,
-                                onTapSlot: _pickPhoto,
+                              KeyedSubtree(
+                                key: _fieldKeys['photos'],
+                                child: AhPhotoSlots(
+                                  count: _visiblePhotoSlotCount(state),
+                                  slots: state.photoSlots,
+                                  onTapSlot: _pickPhoto,
+                                ),
                               ),
                               AppSpacing.spacerXs,
                               Text(
@@ -221,10 +270,13 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                                 ),
                               ),
                               AppSpacing.spacerSm,
-                              AhChipSelect(
-                                options: kEventTypeOptions,
-                                selected: draft.allowedEventTypes,
-                                onToggle: notifier.toggleEventType,
+                              KeyedSubtree(
+                                key: _fieldKeys['eventTypes'],
+                                child: AhChipSelect(
+                                  options: kEventTypeOptions,
+                                  selected: draft.allowedEventTypes,
+                                  onToggle: notifier.toggleEventType,
+                                ),
                               ),
                               AppSpacing.spacerXs,
                               Text(
@@ -238,67 +290,89 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                                 ),
                               ),
                               AppSpacing.spacerMd,
-                              AhTextField(
-                                label: 'Venue name',
-                                placeholder: 'e.g. Toit, Indiranagar',
-                                controller: _nameController,
-                                onChanged: notifier.updateName,
-                                errorText: fieldErrors['name'],
-                              ),
-                              AppSpacing.spacerMd,
-                              AhTextField(
-                                label: 'Address line 1',
-                                placeholder: 'e.g. 12, 100 Feet Road',
-                                controller: _addLine1Controller,
-                                onChanged: notifier.updateAddLine1,
-                                errorText: fieldErrors['addLine1'],
-                              ),
-                              AppSpacing.spacerMd,
-                              AhTextField(
-                                label: 'Address line 2',
-                                placeholder: '(optional)',
-                                controller: _addLine2Controller,
-                                onChanged: notifier.updateAddLine2,
-                                errorText: fieldErrors['addLine2'],
-                              ),
-                              AppSpacing.spacerMd,
-                              AhTextField(
-                                label: 'Locality',
-                                placeholder: 'e.g. Indiranagar',
-                                controller: _localityController,
-                                onChanged: notifier.updateLocality,
-                                errorText: fieldErrors['locality'],
-                              ),
-                              AppSpacing.spacerMd,
-                              AhAsyncSearchField<City>(
-                                label: 'City',
-                                value: draft.cityName,
-                                placeholder: 'Search for a city',
-                                search: (query) => ref.read(
-                                  citySearchResultsProvider(query).future,
+                              KeyedSubtree(
+                                key: _fieldKeys['name'],
+                                child: AhTextField(
+                                  label: 'Venue name',
+                                  placeholder: 'e.g. Toit, Indiranagar',
+                                  controller: _nameController,
+                                  onChanged: notifier.updateName,
+                                  errorText: fieldErrors['name'],
                                 ),
-                                displayStringForOption: (city) => city.name,
-                                onSelected: notifier.updateCity,
-                                errorText: fieldErrors['city'],
                               ),
                               AppSpacing.spacerMd,
-                              AhTextField(
-                                label: 'Pincode',
-                                placeholder: 'e.g. 560038',
-                                controller: _pincodeController,
-                                onChanged: notifier.updatePincode,
-                                keyboardType: TextInputType.number,
-                                errorText: fieldErrors['pincode'],
+                              KeyedSubtree(
+                                key: _fieldKeys['addLine1'],
+                                child: AhTextField(
+                                  label: 'Address line 1',
+                                  placeholder: 'e.g. 12, 100 Feet Road',
+                                  controller: _addLine1Controller,
+                                  onChanged: notifier.updateAddLine1,
+                                  errorText: fieldErrors['addLine1'],
+                                ),
                               ),
                               AppSpacing.spacerMd,
-                              AhStepperInput(
-                                label: 'Max capacity at this venue',
-                                value: draft.maxCapacity,
-                                min: 1,
-                                max: 300,
-                                step: 1,
-                                suffix: 'seats',
-                                onChanged: notifier.updateMaxCapacity,
+                              KeyedSubtree(
+                                key: _fieldKeys['addLine2'],
+                                child: AhTextField(
+                                  label: 'Address line 2',
+                                  placeholder: '(optional)',
+                                  controller: _addLine2Controller,
+                                  onChanged: notifier.updateAddLine2,
+                                  errorText: fieldErrors['addLine2'],
+                                ),
+                              ),
+                              AppSpacing.spacerMd,
+                              KeyedSubtree(
+                                key: _fieldKeys['locality'],
+                                child: AhTextField(
+                                  label: 'Locality',
+                                  placeholder: 'e.g. Indiranagar',
+                                  controller: _localityController,
+                                  onChanged: notifier.updateLocality,
+                                  errorText: fieldErrors['locality'],
+                                ),
+                              ),
+                              AppSpacing.spacerMd,
+                              KeyedSubtree(
+                                key: _fieldKeys['city'],
+                                child: AhAsyncSearchField<City>(
+                                  label: 'City',
+                                  value: draft.cityName,
+                                  placeholder: 'Search for a city',
+                                  search: (query) => ref.read(
+                                    citySearchResultsProvider(query).future,
+                                  ),
+                                  displayStringForOption: (city) => city.name,
+                                  onSelected: notifier.updateCity,
+                                  errorText: fieldErrors['city'],
+                                ),
+                              ),
+                              AppSpacing.spacerMd,
+                              KeyedSubtree(
+                                key: _fieldKeys['pincode'],
+                                child: AhTextField(
+                                  label: 'Pincode',
+                                  placeholder: 'e.g. 560038',
+                                  controller: _pincodeController,
+                                  onChanged: notifier.updatePincode,
+                                  keyboardType: TextInputType.number,
+                                  errorText: fieldErrors['pincode'],
+                                ),
+                              ),
+                              AppSpacing.spacerMd,
+                              KeyedSubtree(
+                                key: _fieldKeys['maxCapacity'],
+                                child: AhStepperInput(
+                                  label: 'Max capacity at this venue',
+                                  value: draft.maxCapacity,
+                                  min: 1,
+                                  max: 300,
+                                  step: 1,
+                                  suffix: 'seats',
+                                  onChanged: notifier.updateMaxCapacity,
+                                  errorText: fieldErrors['maxCapacity'],
+                                ),
                               ),
                               AppSpacing.spacerMd,
                               const AhAlertBanner(
