@@ -9,7 +9,9 @@ class PhoneValidationFailure extends ValidationFailure {
   final Map<String, String> fieldErrors;
 }
 
-final _phonePattern = RegExp(r'^\+?[0-9]{10,13}$');
+/// Indian mobile numbers: 10 digits starting 6-9, with an optional +91
+/// (or bare 91) prefix — the pilot is Bangalore-only.
+final _phonePattern = RegExp(r'^(?:\+?91)?[6-9][0-9]{9}$');
 
 /// Validates the phone number entered on the "I already have an account"
 /// login flow before requesting an OTP.

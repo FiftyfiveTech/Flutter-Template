@@ -54,6 +54,19 @@ void main() {
     );
   });
 
+  test('flags a 10-digit phone number that does not start 6-9', () {
+    final result = useCase(validDraft.copyWith(contactPhone: '5876543210'));
+
+    result.when(
+      ok: (_) => fail('expected Err'),
+      err: (failure) {
+        final fieldErrors =
+            (failure as HostSignupValidationFailure).fieldErrors;
+        expect(fieldErrors, containsPair('contactPhone', isNotEmpty));
+      },
+    );
+  });
+
   test('flags an invalid email address', () {
     final result = useCase(validDraft.copyWith(contactEmail: 'not-an-email'));
 

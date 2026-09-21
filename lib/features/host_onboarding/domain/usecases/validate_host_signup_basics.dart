@@ -12,7 +12,10 @@ class HostSignupValidationFailure extends ValidationFailure {
 }
 
 final _emailPattern = RegExp(r'^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$');
-final _phonePattern = RegExp(r'^\+?[0-9]{10,13}$');
+
+/// Indian mobile numbers: 10 digits starting 6-9, with an optional +91
+/// (or bare 91) prefix — the pilot is Bangalore-only.
+final _phonePattern = RegExp(r'^(?:\+?91)?[6-9][0-9]{9}$');
 
 /// Validates the H-01 signup basics: a business/organiser name, contact
 /// phone and email, and the operating city. Draft creation is always
