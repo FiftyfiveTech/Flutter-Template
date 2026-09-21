@@ -48,7 +48,6 @@ class _AhAsyncSearchFieldState<T extends Object>
 
   Future<List<T>> _debouncedSearch(String query) {
     _debounceTimer?.cancel();
-    if (query.isEmpty) return Future.value(const []);
     final completer = Completer<List<T>>();
     _debounceTimer = Timer(widget.debounce, () {
       widget

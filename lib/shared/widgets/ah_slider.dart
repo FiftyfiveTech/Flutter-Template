@@ -49,9 +49,7 @@ class AhSlider extends StatelessWidget {
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: AppColors.actionPrimary,
             thumbColor: AppColors.actionPrimary,
-            inactiveTrackColor: AppColors.actionPrimary.withValues(
-              alpha: 0.2,
-            ),
+            inactiveTrackColor: AppColors.actionPrimary.withValues(alpha: 0.2),
           ),
           child: Slider(
             value: value.toDouble(),

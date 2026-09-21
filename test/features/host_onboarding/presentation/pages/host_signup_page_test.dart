@@ -9,7 +9,7 @@ import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/city.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_signup_result.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_signup_repository.dart';
-import 'package:host_mobile_app/features/host_onboarding/domain/usecases/search_cities.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/usecases/get_cities.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/city_search_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_onboarding_progress_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_signup_api_providers.dart';
@@ -17,11 +17,11 @@ import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host
 
 import '../../../../support/fakes.dart';
 
-class _FakeSearchCitiesUseCase implements SearchCitiesUseCase {
-  const _FakeSearchCitiesUseCase();
+class _FakeGetCitiesUseCase implements GetCitiesUseCase {
+  const _FakeGetCitiesUseCase();
 
   @override
-  Future<Result<List<City>>> call(String query) async {
+  Future<Result<List<City>>> call() async {
     return const Ok([
       City(
         id: 'city-1',
@@ -53,8 +53,8 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
-        searchCitiesUseCaseProvider.overrideWithValue(
-          const _FakeSearchCitiesUseCase(),
+        getCitiesUseCaseProvider.overrideWithValue(
+          const _FakeGetCitiesUseCase(),
         ),
         hostSignupRepositoryProvider.overrideWithValue(
           _FakeHostSignupRepository(signupResult),
@@ -92,8 +92,8 @@ void main() {
     );
     return ProviderScope(
       overrides: [
-        searchCitiesUseCaseProvider.overrideWithValue(
-          const _FakeSearchCitiesUseCase(),
+        getCitiesUseCaseProvider.overrideWithValue(
+          const _FakeGetCitiesUseCase(),
         ),
         hostSignupRepositoryProvider.overrideWithValue(
           _FakeHostSignupRepository(signupResult),

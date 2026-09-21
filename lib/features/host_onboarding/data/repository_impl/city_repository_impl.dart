@@ -11,9 +11,9 @@ class CityRepositoryImpl implements CityRepository {
   final CityRemoteDatasource _remoteDatasource;
 
   @override
-  Future<Result<List<City>>> searchCities(String query) async {
+  Future<Result<List<City>>> getCities() async {
     try {
-      final dtos = await _remoteDatasource.searchCities(query);
+      final dtos = await _remoteDatasource.getCities();
       return Ok(dtos.map((dto) => dto.toEntity()).toList());
     } on NetworkException catch (e) {
       return Err(NetworkFailure(message: e.message));

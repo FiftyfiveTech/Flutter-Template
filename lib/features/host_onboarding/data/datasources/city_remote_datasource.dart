@@ -2,7 +2,7 @@ import '../../../../core/network/base_api_client.dart';
 import '../models/city_dto.dart';
 
 abstract interface class CityRemoteDatasource {
-  Future<List<CityDto>> searchCities(String query);
+  Future<List<CityDto>> getCities();
 }
 
 class CityRestDatasource implements CityRemoteDatasource {
@@ -10,11 +10,8 @@ class CityRestDatasource implements CityRemoteDatasource {
   final BaseApiClient _client;
 
   @override
-  Future<List<CityDto>> searchCities(String query) async {
-    final response = await _client.get(
-      '/api/v1/cities',
-      queryParameters: {'search': query},
-    );
+  Future<List<CityDto>> getCities() async {
+    final response = await _client.get('/api/v1/cities');
     final body = response.data as Map<String, dynamic>;
     final data = body['data'] as List<dynamic>? ?? const [];
     return data
