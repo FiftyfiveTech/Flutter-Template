@@ -23,6 +23,7 @@ class DriftHostSessionLocalDatasource implements HostSessionLocalDatasource {
       accessToken: row.accessToken,
       userId: row.userId,
       accountStatus: row.accountStatus,
+      businessName: row.businessName,
     );
   }
 
@@ -36,6 +37,7 @@ class DriftHostSessionLocalDatasource implements HostSessionLocalDatasource {
             accessToken: session.accessToken,
             userId: session.userId,
             accountStatus: session.accountStatus,
+            businessName: Value(session.businessName),
           ),
         );
   }

@@ -108,6 +108,12 @@ class OtpEntryController extends _$OtpEntryController {
     final result = await useCase(phoneNumber, code);
     return result.when(
       ok: (loginResult) {
+        // The login/OTP-verify response has no businessName field (only
+        // signup returns one) — keep whatever name is already persisted
+        // from a prior signup on this device rather than wiping it.
+        final existingBusinessName = ref
+            .read(hostSessionControllerProvider)
+            ?.businessName;
         ref
             .read(hostSessionControllerProvider.notifier)
             .setSession(
@@ -115,6 +121,7 @@ class OtpEntryController extends _$OtpEntryController {
                 accessToken: loginResult.accessToken,
                 userId: loginResult.userId,
                 accountStatus: loginResult.accountStatus,
+                businessName: existingBusinessName ?? '',
               ),
             );
         state = state.copyWith(isSubmitting: false);

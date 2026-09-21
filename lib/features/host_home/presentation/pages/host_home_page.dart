@@ -333,7 +333,7 @@ class _VenuesCard extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm + 2),
           Expanded(
             child: Text(
-              count == 0 ? 'No venues yet — add one' : 'Venues · $count saved',
+              count == 0 ? 'No venues yet — Add one' : 'Venues · $count saved',
               style: typography.body.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,

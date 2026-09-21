@@ -105,6 +105,7 @@ class HostSignupController extends _$HostSignupController {
                 accessToken: result.accessToken,
                 userId: result.userId,
                 accountStatus: result.accountStatus,
+                businessName: validated.businessName,
               ),
             );
         // Seeds the resumable wizard step now, before the user has made

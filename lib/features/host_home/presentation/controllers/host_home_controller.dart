@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/session_providers.dart';
 import '../../../host_events/domain/entities/host_event.dart';
 import '../../../host_events/presentation/controllers/host_events_api_providers.dart';
 import '../../../host_venues/presentation/controllers/host_venues_api_providers.dart';
@@ -61,8 +62,18 @@ class HostHomeController extends _$HostHomeController {
     state = state.copyWith(isLoading: true, errorMessage: null);
     final useCase = ref.read(getHostHomeSummaryUseCaseProvider);
     final result = await useCase();
+    // The home-summary endpoint's hostName is placeholder seed data (no
+    // real backend field for it yet) — fall back to the business name
+    // saved locally at H-01 signup, if any.
+    final sessionBusinessName =
+        ref.read(hostSessionControllerProvider)?.businessName ?? '';
     state = result.when(
-      ok: (summary) => state.copyWith(summary: summary, isLoading: false),
+      ok: (summary) => state.copyWith(
+        summary: summary.hostName.isEmpty && sessionBusinessName.isNotEmpty
+            ? summary.copyWith(hostName: sessionBusinessName)
+            : summary,
+        isLoading: false,
+      ),
       err: (failure) =>
           state.copyWith(isLoading: false, errorMessage: failure.message),
     );

@@ -8,6 +8,13 @@ class HostSessionTable extends Table {
   TextColumn get userId => text()();
   TextColumn get accountStatus => text()();
 
+  /// The business/organiser name entered at H-01 signup — the backend has
+  /// no session/profile field for this yet, so it's persisted locally to
+  /// show on Home ("hi, $businessName") without a network round trip.
+  /// Empty for hosts who signed in via OTP login rather than signup on
+  /// this device.
+  TextColumn get businessName => text().withDefault(const Constant(''))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
