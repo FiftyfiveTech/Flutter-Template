@@ -6,7 +6,6 @@ import '../../../../core/di/document_picker_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../shared/widgets/ah_alert_banner.dart';
 import '../../../../shared/widgets/ah_badge.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_card.dart';
@@ -259,8 +258,6 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                     AhTextField(
                       label: 'UPI ID for payouts',
                       placeholder: 'business@upi',
-                      helperText:
-                          'Verified with a penny-drop before your first payout.',
                       controller: _upiIdController,
                       onChanged: notifier.updateUpiId,
                       errorText: fieldErrors['upiId'],
@@ -285,7 +282,6 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                       AppSpacing.spacerMd,
                       AhSwitchTile(
                         label: 'We serve food',
-                        description: 'Requires an FSSAI registration.',
                         value: formState.draft.servesFood,
                         onChanged: notifier.setServesFood,
                       ),
@@ -322,7 +318,6 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                       AppSpacing.spacerMd,
                       AhSwitchTile(
                         label: 'We serve alcohol',
-                        description: 'Requires the state excise licence.',
                         value: formState.draft.servesAlcohol,
                         onChanged: notifier.setServesAlcohol,
                       ),
@@ -355,14 +350,6 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                             ),
                           ),
                         ],
-                      ),
-                    ] else ...[
-                      AppSpacing.spacerLg,
-                      const AhAlertBanner(
-                        message:
-                            'Clubs, communities and individual operators '
-                            'skip the address proof, FSSAI and excise '
-                            'steps.',
                       ),
                     ],
                   ],

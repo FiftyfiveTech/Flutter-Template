@@ -110,7 +110,7 @@ void main() {
           FakeHostOnboardingProgressRepository(),
         ),
       ],
-      child: MaterialApp(theme: AppTheme.dark, home: const HostDocumentsPage()),
+      child: MaterialApp(theme: AppTheme.light, home: const HostDocumentsPage()),
     );
   }
 
@@ -159,21 +159,15 @@ void main() {
           FakeHostOnboardingProgressRepository(),
         ),
       ],
-      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
+      child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     );
   }
 
-  testWidgets('a non-venue host sees the scoping banner, not venue fields', (
-    tester,
-  ) async {
+  testWidgets('a non-venue host does not see venue fields', (tester) async {
     await tester.pumpWidget(buildSubject(HostType.club));
 
     expect(find.text('Verification documents'), findsOneWidget);
     expect(find.text('UPI ID for payouts'), findsOneWidget);
-    expect(
-      find.textContaining('skip the address proof, FSSAI and excise'),
-      findsOneWidget,
-    );
     expect(find.text('Premises address proof'), findsNothing);
   });
 

@@ -85,14 +85,6 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const StepProgressDots(currentStep: 1, totalSteps: 4),
-                    AppSpacing.spacerMd,
-                    Text(
-                      "Tell us who's hosting. We'll ask for documents next, "
-                      'based on what kind of host you are.',
-                      style: typography.body.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
                     AppSpacing.spacerLg,
                     AhTextField(
                       label: 'Business or organiser name',

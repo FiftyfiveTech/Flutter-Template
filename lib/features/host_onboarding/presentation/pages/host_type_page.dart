@@ -25,25 +25,22 @@ const _hostTypeOptions = [
   _HostTypeOption(
     HostType.club,
     Icons.nightlife,
-    'Recurring parties and pop-ups. Business registration or organiser '
-    'ID, PAN, and payout details.',
+    'Recurring parties and pop-ups.',
   ),
   _HostTypeOption(
     HostType.community,
     Icons.groups_outlined,
-    'Interest groups and collectives. Same document set as clubs — no '
-    'venue paperwork.',
+    'Interest groups and collectives.',
   ),
   _HostTypeOption(
     HostType.venue,
     Icons.storefront_outlined,
-    'A licensed premises you operate. Adds address proof, FSSAI and '
-    'excise licence on top of the standard set.',
+    'A licensed premises you operate.',
   ),
   _HostTypeOption(
     HostType.individualOperator,
     Icons.person_outline,
-    'Hosting solo. Organiser ID, PAN, and payout details only.',
+    'Hosting solo.',
   ),
 ];
 
@@ -97,13 +94,6 @@ class HostTypePage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const StepProgressDots(currentStep: 2, totalSteps: 4),
-                    AppSpacing.spacerMd,
-                    Text(
-                      "This decides which documents we'll ask for next.",
-                      style: typography.body.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
                     AppSpacing.spacerLg,
                     for (final option in _hostTypeOptions) ...[
                       AhCard(

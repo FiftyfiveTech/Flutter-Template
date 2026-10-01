@@ -81,8 +81,7 @@ class HostLandingPage extends StatelessWidget {
                     ),
                     AppSpacing.spacerMd,
                     Text(
-                      'List a night, set the price, and let verified members book. '
-                      'We check IDs, hold the gender balance and scan the door — you run the room.',
+                      'List a night, set the price, let verified members book.',
                       style: typography.body.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -90,17 +89,17 @@ class HostLandingPage extends StatelessWidget {
                     const SizedBox(height: AppSpacing.lg),
                     const HostLandingFeatureRow(
                       icon: Icons.balance,
-                      label: 'Ratio held automatically, batch by batch',
+                      label: 'Ratio held automatically',
                     ),
                     AppSpacing.spacerMd,
                     const HostLandingFeatureRow(
                       icon: Icons.verified_user,
-                      label: 'Every attendee ID-verified before they can pay',
+                      label: 'ID-verified attendees',
                     ),
                     AppSpacing.spacerMd,
                     const HostLandingFeatureRow(
                       icon: Icons.qr_code_scanner,
-                      label: 'Door scanning, offline-capable',
+                      label: 'Offline-capable door scanning',
                     ),
                   ],
                 ),
