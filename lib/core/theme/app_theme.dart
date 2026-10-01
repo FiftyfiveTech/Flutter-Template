@@ -4,15 +4,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
-/// Assembles `AppColors`/`AppTypography` into `ThemeData`. `dark` is the app's
-/// canonical theme — see `docs/design_systems/tokens/colors.css`'s `:root` block.
+/// Assembles `AppColors`/`AppTypography` into `ThemeData`. `light` is the app's
+/// default theme — see `docs/design_systems/tokens/colors.css`'s `.theme-light`
+/// block.
 abstract final class AppTheme {
-  static ThemeData get dark {
+  static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.backgroundPrimary,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.actionPrimary,
         onPrimary: AppColors.actionPrimaryFg,
         secondary: AppColors.actionSecondary,

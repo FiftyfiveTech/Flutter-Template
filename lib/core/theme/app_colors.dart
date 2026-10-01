@@ -1,63 +1,48 @@
 import 'package:flutter/material.dart';
 
-/// Semantic color tokens for the Host app's dark theme.
+/// Semantic color tokens for the Host app's light theme.
 ///
-/// The Host app renders with the violet/rose-tinted override that
-/// `After Hours - Host screens.dc.html` applies on top of the shared
-/// `docs/design_systems/tokens/colors.css` tokens (`#dc-root,.theme-dark`
-/// block) — background, surface, text and the action-primary accent all
-/// shift together, consistently, across every Host screen in that file.
-/// Tokens not touched by that override (secondary/tertiary actions, status,
-/// trust) fall back to the shared coal/cobalt/teal system unchanged.
+/// Background/surface/text/status tokens mirror the `.theme-light` block in
+/// `docs/design_systems/tokens/colors.css` (the shared paper/ink/teal/sun/
+/// rose system). Action tokens instead carry the Host app's own dusty-rose
+/// brand accent (replacing the shared system's cobalt) — the same brand hue
+/// the dark theme applies, shifted darker here for contrast against light
+/// surfaces and white button text.
 abstract final class AppColors {
   // Background
-  static const backgroundPrimary = Color(0xFF0B0A0D);
-  static const backgroundSecondary = Color(
-    0xFF0E0E0D,
-  ); // --coal-950 (not overridden)
+  static const backgroundPrimary = Color(0xFFF2F1EE); // --paper-100
+  static const backgroundSecondary = Color(0xFFEBEAE6); // --paper-200
 
   // Surface
-  // True token is a radial gradient (#332a44 -> #241f33 -> #1a1626 -> #130f1c);
-  // this is a flat approximation for call sites that don't render a gradient yet.
-  static const surfaceCard = Color(0xFF241F33);
-  static const surfaceRaised = Color(0xFF2A2A28); // --coal-700 (not overridden)
+  static const surfaceCard = Color(0xFFFBFBFA); // --paper-050
+  static const surfaceRaised = Color(0xFFFFFFFF);
 
   // Border
-  static const borderDefault = Color(0x1AFFFFFF); // rgba(255,255,255,.1)
-  static const borderStrong = Color(
-    0x29FFFFFF,
-  ); // rgba(255,255,255,.16) (not overridden)
+  static const borderDefault = Color(0x121A1A18); // rgba(26,26,24,.07)
+  static const borderStrong = Color(0x291A1A18); // rgba(26,26,24,.16)
 
   // Text
-  static const textPrimary = Color(0xFFF4EFF9);
-  static const textSecondary = Color(0xADF4EFF9); // rgba(244,239,249,.68)
-  static const textTertiary = Color(0x80F4EFF9); // rgba(244,239,249,.5)
+  static const textPrimary = Color(0xFF1A1A18); // --ink-900
+  static const textSecondary = Color(0xFF66655F); // --ink-500
+  static const textTertiary = Color(0xFF8A8983); // --ink-400
   static const textOnAction = Color(0xFFFFFFFF);
 
-  // Action
-  static const actionPrimary = Color(0xFFC17B90);
-  static const actionPrimaryHover = Color(0xFFD497A8);
-  static const actionPrimaryPressed = Color(
-    0xFFA3677A,
-  ); // darkened; no explicit token override
+  // Action — Host brand accent (dusty rose), not the shared system's cobalt.
+  static const actionPrimary = Color(0xFF8B4F63);
+  static const actionPrimaryHover = Color(0xFFA3677A);
+  static const actionPrimaryPressed = Color(0xFF6B3A4D);
   static const actionPrimaryFg = Color(0xFFFFFFFF);
-  static const actionSecondary = Color(
-    0xFF2A2A28,
-  ); // --coal-700 (not overridden)
-  static const actionSecondaryFg = Color(0xFFF5F5F2);
-  static const actionTertiaryFg = Color(
-    0xFF8B97EE,
-  ); // --cobalt-300 (not overridden)
-  static const actionDestructive = Color(
-    0xFFF2637E,
-  ); // --rose-300 (not overridden)
+  static const actionSecondary = Color(0xFFEBEAE6); // --paper-200
+  static const actionSecondaryFg = Color(0xFF1A1A18); // --ink-900
+  static const actionTertiaryFg = Color(0xFF6B3A4D);
+  static const actionDestructive = Color(0xFFC0344E); // --rose-500
 
   // Status
-  static const statusSuccess = Color(0xFF5BD1B0); // --teal-300
-  static const statusWarning = Color(0xFFE9C46A); // --sun-300
-  static const statusError = Color(0xFFF2637E); // --rose-300
-  static const statusInfo = Color(0xFF8B97EE); // --cobalt-300
+  static const statusSuccess = Color(0xFF0F766E); // --teal-600
+  static const statusWarning = Color(0xFFA16207); // --sun-600
+  static const statusError = Color(0xFFC0344E); // --rose-500
+  static const statusInfo = Color(0xFF8B4F63);
 
   // Trust
-  static const trustVerified = Color(0xFF5BD1B0); // --teal-300
+  static const trustVerified = Color(0xFF0F766E); // --teal-600
 }

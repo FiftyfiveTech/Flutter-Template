@@ -52,7 +52,7 @@ void main() {
         hostLoginRepositoryProvider.overrideWithValue(repository),
       ],
       child: MaterialApp(
-        theme: AppTheme.dark,
+        theme: AppTheme.light,
         home: OtpEntryPage(phoneNumber: phoneNumber),
       ),
     );

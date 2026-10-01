@@ -66,7 +66,7 @@ void main() {
           FakeHostOnboardingProgressRepository(),
         ),
       ],
-      child: MaterialApp(theme: AppTheme.dark, home: const HostSignupPage()),
+      child: MaterialApp(theme: AppTheme.light, home: const HostSignupPage()),
     );
   }
 
@@ -105,7 +105,7 @@ void main() {
           FakeHostOnboardingProgressRepository(),
         ),
       ],
-      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
+      child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     );
   }
 

@@ -15,7 +15,7 @@ import '../controllers/host_you_controller.dart';
 
 /// H-12 · You — account summary, appearance, venues shortcut and session
 /// actions. Appearance is shown read-only (locked to System) since the app
-/// currently ships a single dark theme only — no ThemeMode infra exists yet.
+/// currently ships a single light theme only — no ThemeMode infra exists yet.
 class HostYouPage extends ConsumerWidget {
   const HostYouPage({super.key});
 

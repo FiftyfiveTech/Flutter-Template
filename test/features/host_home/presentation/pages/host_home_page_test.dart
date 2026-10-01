@@ -74,7 +74,7 @@ void main() {
     );
     return ProviderScope(
       overrides: [hostHomeRepositoryProvider.overrideWithValue(repo)],
-      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
+      child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     );
   }
 
