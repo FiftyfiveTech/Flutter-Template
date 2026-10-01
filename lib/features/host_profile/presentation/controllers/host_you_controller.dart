@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/session_providers.dart';
+import '../../../../core/utils/host_name_fallback.dart';
 import '../../../host_home/presentation/controllers/host_home_api_providers.dart';
 
 part 'host_you_controller.g.dart';
@@ -53,16 +54,11 @@ class HostYouController extends _$HostYouController {
     state = state.copyWith(isLoading: true, errorMessage: null);
     final useCase = ref.read(getHostHomeSummaryUseCaseProvider);
     final result = await useCase();
-    // Same placeholder-hostName fallback as HostHomeController: the
-    // home-summary endpoint has no real name field yet, so fall back to
-    // the business name saved locally at H-01 signup, if any.
     final sessionBusinessName =
         ref.read(hostSessionControllerProvider)?.businessName ?? '';
     state = result.when(
       ok: (summary) => state.copyWith(
-        hostName: summary.hostName.isEmpty
-            ? sessionBusinessName
-            : summary.hostName,
+        hostName: resolveHostName(summary.hostName, sessionBusinessName),
         isVerified: summary.isVerified,
         savedVenuesCount: summary.savedVenuesCount,
         isLoading: false,

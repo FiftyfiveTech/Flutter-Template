@@ -18,6 +18,7 @@ import '../../../../shared/widgets/ah_stepper_input.dart';
 import '../../../../shared/widgets/ah_switch_tile.dart';
 import '../../../../shared/widgets/ah_text_area.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
+import '../../../../shared/utils/scroll_to_first_error.dart';
 import '../../domain/entities/host_event.dart'
     show kRatioBandMaxPoints, kRatioBandMinPoints;
 import '../controllers/host_event_form_controller.dart';
@@ -130,18 +131,7 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
   }
 
   void _scrollToFirstError(Map<String, String> fieldErrors) {
-    for (final field in _fieldKeys.keys) {
-      if (!fieldErrors.containsKey(field)) continue;
-      final fieldContext = _fieldKeys[field]!.currentContext;
-      if (fieldContext == null) continue;
-      Scrollable.ensureVisible(
-        fieldContext,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        alignment: 0.2,
-      );
-      return;
-    }
+    scrollToFirstError(_fieldKeys, fieldErrors);
   }
 
   @override

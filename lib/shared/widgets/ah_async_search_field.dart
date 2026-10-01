@@ -21,6 +21,7 @@ class AhAsyncSearchField<T extends Object> extends StatefulWidget {
     this.placeholder,
     this.errorText,
     this.debounce = const Duration(milliseconds: 300),
+    this.searchOnEmptyQuery = false,
   });
 
   final String label;
@@ -31,6 +32,12 @@ class AhAsyncSearchField<T extends Object> extends StatefulWidget {
   final String? placeholder;
   final String? errorText;
   final Duration debounce;
+
+  /// Whether [search] is called when the field is cleared (empty query).
+  /// Defaults to false so clearing the field just closes the options list,
+  /// matching every other field's behavior — opt in only when [search]
+  /// is meant to return a default/full list for an empty query.
+  final bool searchOnEmptyQuery;
 
   @override
   State<AhAsyncSearchField<T>> createState() => _AhAsyncSearchFieldState<T>();
@@ -47,6 +54,9 @@ class _AhAsyncSearchFieldState<T extends Object>
   }
 
   Future<List<T>> _debouncedSearch(String query) {
+    if (query.isEmpty && !widget.searchOnEmptyQuery) {
+      return Future.value(const []);
+    }
     _debounceTimer?.cancel();
     final completer = Completer<List<T>>();
     _debounceTimer = Timer(widget.debounce, () {

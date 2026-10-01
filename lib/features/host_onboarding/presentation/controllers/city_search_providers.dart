@@ -31,7 +31,7 @@ GetCitiesUseCase getCitiesUseCase(Ref ref) {
 Future<List<City>> allCities(Ref ref) async {
   final useCase = ref.watch(getCitiesUseCaseProvider);
   final result = await useCase();
-  return result.when(ok: (cities) => cities, err: (_) => const []);
+  return result.when(ok: (cities) => cities, err: (failure) => throw failure);
 }
 
 /// Filters the cached [allCitiesProvider] list by [query] (case-insensitive

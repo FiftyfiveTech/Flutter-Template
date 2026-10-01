@@ -131,6 +131,7 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
                       displayStringForOption: (city) => city.name,
                       onSelected: notifier.updateCity,
                       errorText: formState.fieldErrors['city'],
+                      searchOnEmptyQuery: true,
                     ),
                   ],
                 ),

@@ -14,6 +14,7 @@ import '../../../../shared/widgets/ah_chip_select.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../../shared/widgets/ah_stepper_input.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
+import '../../../../shared/utils/scroll_to_first_error.dart';
 import '../../../host_onboarding/domain/entities/city.dart';
 import '../../../host_onboarding/presentation/controllers/city_search_providers.dart';
 import '../controllers/host_venue_form_controller.dart'
@@ -149,18 +150,7 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
   }
 
   void _scrollToFirstError(Map<String, String> fieldErrors) {
-    for (final field in _fieldKeys.keys) {
-      if (!fieldErrors.containsKey(field)) continue;
-      final fieldContext = _fieldKeys[field]!.currentContext;
-      if (fieldContext == null) continue;
-      Scrollable.ensureVisible(
-        fieldContext,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        alignment: 0.2,
-      );
-      return;
-    }
+    scrollToFirstError(_fieldKeys, fieldErrors);
   }
 
   Future<void> _onConfirmDelete() async {
@@ -346,6 +336,7 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                                   displayStringForOption: (city) => city.name,
                                   onSelected: notifier.updateCity,
                                   errorText: fieldErrors['city'],
+                                  searchOnEmptyQuery: true,
                                 ),
                               ),
                               AppSpacing.spacerMd,
