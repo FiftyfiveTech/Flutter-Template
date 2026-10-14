@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:host_mobile_app/core/error/failures.dart';
 import 'package:host_mobile_app/core/error/result.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/features/host_home/domain/entities/host_home_event.dart';
@@ -9,13 +10,19 @@ import 'package:host_mobile_app/features/host_home/domain/entities/host_home_sum
 import 'package:host_mobile_app/features/host_home/domain/repositories/host_home_repository.dart';
 import 'package:host_mobile_app/features/host_home/presentation/controllers/host_home_api_providers.dart';
 import 'package:host_mobile_app/features/host_home/presentation/pages/host_home_page.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_status.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_verification_status.dart';
+import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_document_status_repository.dart';
+import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_document_status_api_providers.dart';
 
 class _FakeHostHomeRepository implements HostHomeRepository {
   _FakeHostHomeRepository();
 
   final HostHomeSummary summary = const HostHomeSummary(
     hostName: 'Cellar Door Collective',
-    isVerified: true,
+    // Mirrors the real placeholder datasource — verification must come
+    // from the document-review status, not this flag.
+    isVerified: false,
     savedVenuesCount: 2,
     events: [
       HostHomeEvent(
@@ -49,8 +56,32 @@ class _FakeHostHomeRepository implements HostHomeRepository {
   Future<Result<HostHomeSummary>> getHomeSummary() async => Ok(summary);
 }
 
+class _FakeDocumentStatusRepository implements HostDocumentStatusRepository {
+  _FakeDocumentStatusRepository(this.result);
+
+  final Result<List<HostDocumentStatus>> result;
+
+  @override
+  Future<Result<List<HostDocumentStatus>>> getDocumentsStatus() async => result;
+}
+
+const _approved = HostDocumentStatus(
+  docType: null,
+  status: HostDocumentVerificationStatus.approved,
+);
+const _pending = HostDocumentStatus(
+  docType: null,
+  status: HostDocumentVerificationStatus.pending,
+);
+
 void main() {
-  Widget buildSubject({_FakeHostHomeRepository? repository}) {
+  Widget buildSubject({
+    _FakeHostHomeRepository? repository,
+    Result<List<HostDocumentStatus>> documents = const Ok([
+      _approved,
+      _approved,
+    ]),
+  }) {
     final repo = repository ?? _FakeHostHomeRepository();
     final router = GoRouter(
       initialLocation: '/host/home',
@@ -73,7 +104,12 @@ void main() {
       ],
     );
     return ProviderScope(
-      overrides: [hostHomeRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        hostHomeRepositoryProvider.overrideWithValue(repo),
+        hostDocumentStatusRepositoryProvider.overrideWithValue(
+          _FakeDocumentStatusRepository(documents),
+        ),
+      ],
       child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     );
   }
@@ -88,8 +124,8 @@ void main() {
     expect(find.text('Cellar Door Collective'), findsOneWidget);
     expect(find.byIcon(Icons.add), findsOneWidget);
 
-    // Verification banner
-    expect(find.text('Verified. You can publish new events.'), findsOneWidget);
+    // Verification badge, driven by the document-review status
+    expect(find.text('Verified'), findsOneWidget);
 
     // Section header
     expect(find.text('YOUR EVENTS — TAP TO EDIT'), findsOneWidget);
@@ -111,6 +147,29 @@ void main() {
     expect(find.text('Home'), findsOneWidget);
     expect(find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
+  });
+
+  testWidgets('shows Pending while any document is still in review', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildSubject(documents: const Ok([_approved, _pending])),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pending'), findsOneWidget);
+    expect(find.text('Verified'), findsNothing);
+  });
+
+  testWidgets('falls back to not verified when the status fetch fails', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildSubject(documents: const Err(NetworkFailure(message: 'offline'))),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pending'), findsOneWidget);
   });
 
   testWidgets('tapping event card navigates to its event details screen', (

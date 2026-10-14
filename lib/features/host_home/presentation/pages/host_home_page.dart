@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../shared/widgets/ah_alert_banner.dart';
 import '../../../../shared/widgets/ah_card.dart';
 import '../../../../shared/widgets/ah_shimmer.dart';
+import '../../../../shared/widgets/ah_verification_badge.dart';
 import '../controllers/host_home_controller.dart';
 import '../widgets/host_home_bottom_nav.dart';
 import '../widgets/host_home_event_card.dart';
@@ -73,12 +73,25 @@ class HostHomePage extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               summary?.hostName ?? '',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: typography.h2.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
                               ),
                             ),
                           ),
+                          if (summary != null) ...[
+                            const SizedBox(width: AppSpacing.sm),
+                            AhVerificationBadge(
+                              isVerified: summary.isVerified,
+                              onTap: () => _pushAndRefresh(
+                                context,
+                                ref,
+                                '/host/verification',
+                              ),
+                            ),
+                          ],
                           const SizedBox(width: AppSpacing.md),
                           _AddEventButton(
                             onTap: () => _pushAndRefresh(
@@ -90,15 +103,6 @@ class HostHomePage extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.lg),
-
-                      // Verification Banner
-                      if (summary?.isVerified ?? false) ...[
-                        const AhAlertBanner(
-                          message: 'Verified. You can publish new events.',
-                          tone: AhBannerTone.success,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                      ],
 
                       // Venues Card
                       if (summary != null) ...[

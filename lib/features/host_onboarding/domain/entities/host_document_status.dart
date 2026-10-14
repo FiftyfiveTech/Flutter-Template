@@ -19,3 +19,11 @@ class HostDocumentStatus {
   /// Set when [status] is [HostDocumentVerificationStatus.rejected].
   final String? reason;
 }
+
+extension HostDocumentStatusListX on List<HostDocumentStatus> {
+  /// The host counts as verified only once every submitted document has
+  /// been approved — the single source of truth for H-04, Home and You.
+  bool get allVerified =>
+      isNotEmpty &&
+      every((doc) => doc.status == HostDocumentVerificationStatus.approved);
+}

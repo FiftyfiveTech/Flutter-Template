@@ -8,10 +8,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_avatar.dart';
-import '../../../../shared/widgets/ah_badge.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_card.dart';
 import '../../../../shared/widgets/ah_segmented_control.dart';
+import '../../../../shared/widgets/ah_verification_badge.dart';
 import '../../../host_home/presentation/widgets/host_home_bottom_nav.dart';
 import '../controllers/host_you_controller.dart';
 import '../../../../shared/widgets/ah_message_sheet.dart';
@@ -30,6 +30,14 @@ class HostYouPage extends ConsumerWidget {
         .pickFile(allowedExtensions: _photoExtensions);
     if (picked == null) return;
     await ref.read(hostYouControllerProvider.notifier).setPhoto(picked.path);
+  }
+
+  /// Opens H-04 and reloads on return so the badge reflects any review
+  /// that completed meanwhile.
+  Future<void> _openVerification(BuildContext context, WidgetRef ref) async {
+    await context.push('/host/verification');
+    if (!context.mounted) return;
+    ref.read(hostYouControllerProvider.notifier).load();
   }
 
   void _logOut(BuildContext context, WidgetRef ref) {
@@ -172,17 +180,13 @@ class HostYouPage extends ConsumerWidget {
                                   ],
                                 ),
                               ),
+                              const SizedBox(width: AppSpacing.sm),
+                              AhVerificationBadge(
+                                isVerified: state.isVerified,
+                                onTap: () => _openVerification(context, ref),
+                              ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        AhBadge(
-                          label: state.isVerified
-                              ? 'ID verified'
-                              : 'Pending verification',
-                          tone: state.isVerified
-                              ? AhTone.trust
-                              : AhTone.warning,
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         _SectionLabel('APPEARANCE', typography: typography),

@@ -4,6 +4,7 @@ import '../../../../core/di/session_providers.dart';
 import '../../../../core/utils/host_name_fallback.dart';
 import '../../../host_events/domain/entities/host_event.dart';
 import '../../../host_events/presentation/controllers/host_events_api_providers.dart';
+import '../../../host_onboarding/presentation/controllers/host_is_verified.dart';
 import '../../../host_venues/presentation/controllers/host_venues_api_providers.dart';
 import '../../domain/entities/host_home_event.dart';
 import '../../domain/entities/host_home_summary.dart';
@@ -61,14 +62,24 @@ class HostHomeController extends _$HostHomeController {
 
   Future<void> loadSummary() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    final useCase = ref.read(getHostHomeSummaryUseCaseProvider);
-    final result = await useCase();
+    // The home-summary placeholder always reports isVerified: false, so
+    // verification comes from the real document-review status (the same
+    // source as H-04) — fetched alongside so the badge never flashes
+    // "Pending" for a verified host.
+    final summaryFuture = ref.read(getHostHomeSummaryUseCaseProvider)();
+    final verifiedFuture = fetchHostIsVerified(ref);
+    final result = await summaryFuture;
+    final isVerified = await verifiedFuture;
+    if (!ref.mounted) return;
     final sessionBusinessName =
         ref.read(hostSessionControllerProvider)?.businessName ?? '';
     state = result.when(
       ok: (summary) => state.copyWith(
         summary: summary.copyWith(
           hostName: resolveHostName(summary.hostName, sessionBusinessName),
+          // A failed status fetch keeps the last-known value on refresh.
+          isVerified:
+              isVerified ?? state.summary?.isVerified ?? summary.isVerified,
         ),
         isLoading: false,
       ),

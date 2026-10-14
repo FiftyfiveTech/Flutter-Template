@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/di/session_providers.dart';
 import '../../../../core/utils/host_name_fallback.dart';
 import '../../../host_home/presentation/controllers/host_home_api_providers.dart';
+import '../../../host_onboarding/presentation/controllers/host_is_verified.dart';
 import '../../domain/entities/host_profile.dart';
 import 'host_profile_providers.dart';
 
@@ -85,22 +86,30 @@ class HostYouController extends _$HostYouController {
       );
     }
 
-    final result = await ref.read(getHostHomeSummaryUseCaseProvider)();
+    // Verification comes from the real document-review status (same rule
+    // as H-04), not the home-summary placeholder's hardcoded `false`. If
+    // that fetch fails, keep the cached value instead of downgrading.
+    final summaryFuture = ref.read(getHostHomeSummaryUseCaseProvider)();
+    final verifiedFuture = fetchHostIsVerified(ref);
+    final result = await summaryFuture;
+    final fetchedIsVerified = await verifiedFuture;
     if (!ref.mounted) return;
     state = result.when(
       ok: (summary) {
         final hostName = resolveHostName(summary.hostName, sessionBusinessName);
+        final isVerified =
+            fetchedIsVerified ?? cached?.isVerified ?? summary.isVerified;
         ref.read(cacheHostProfileUseCaseProvider)(
           HostProfile(
             userId: _userId,
             hostName: hostName,
-            isVerified: summary.isVerified,
+            isVerified: isVerified,
             savedVenuesCount: summary.savedVenuesCount,
           ),
         );
         return state.copyWith(
           hostName: hostName,
-          isVerified: summary.isVerified,
+          isVerified: isVerified,
           savedVenuesCount: summary.savedVenuesCount,
           isLoading: false,
         );

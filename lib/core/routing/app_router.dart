@@ -58,6 +58,14 @@ final appRouter = GoRouter(
       name: 'hostVerification',
       builder: (context, state) => const HostVerificationPage(),
     ),
+    // H-04 re-opened from Home's verification badge — a regular, poppable
+    // screen rather than the final onboarding step.
+    GoRoute(
+      path: '/host/verification',
+      name: 'hostVerificationStatus',
+      builder: (context, state) =>
+          const HostVerificationPage(openedFromHome: true),
+    ),
     GoRoute(
       path: '/host/home',
       name: 'hostHome',

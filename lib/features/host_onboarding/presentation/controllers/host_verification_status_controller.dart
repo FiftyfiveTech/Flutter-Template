@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/entities/host_document_status.dart';
-import '../../domain/entities/host_document_verification_status.dart';
 import 'host_document_status_api_providers.dart';
 
 part 'host_verification_status_controller.g.dart';
@@ -30,10 +29,4 @@ class HostVerificationStatusController
       err: (failure) => throw StateError(failure.message),
     );
   }
-}
-
-extension HostDocumentStatusListX on List<HostDocumentStatus> {
-  bool get allVerified =>
-      isNotEmpty &&
-      every((doc) => doc.status == HostDocumentVerificationStatus.approved);
 }

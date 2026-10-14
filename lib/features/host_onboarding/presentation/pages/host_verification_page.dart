@@ -26,8 +26,14 @@ import '../controllers/host_verification_status_controller.dart';
 /// Mirrors the H-04 frame in the design project's
 /// `After Hours - Host screens.dc.html` — status card, banner, document
 /// list, and bottom action — token for token.
+///
+/// [openedFromHome] — reached from Home's verification badge rather than
+/// the end of the wizard: back works normally, and the bottom area
+/// explains what pending verification gates instead of locking Home.
 class HostVerificationPage extends ConsumerWidget {
-  const HostVerificationPage({super.key});
+  const HostVerificationPage({super.key, this.openedFromHome = false});
+
+  final bool openedFromHome;
 
   ({String label, AhTone tone}) _badgeFor(
     HostDocumentVerificationStatus status,
@@ -60,14 +66,15 @@ class HostVerificationPage extends ConsumerWidget {
       // The wizard is done once documents are submitted for review —
       // system back/gesture must not return to H-03 · Documents to
       // resubmit, same as the app bar already hiding its back button.
-      canPop: false,
+      // From Home it's an ordinary pushed screen, so back returns there.
+      canPop: openedFromHome,
       child: Scaffold(
         backgroundColor: AppColors.backgroundPrimary,
         appBar: AppBar(
           backgroundColor: AppColors.backgroundPrimary,
           elevation: 0,
           centerTitle: true,
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: openedFromHome,
           title: Text('Verification', style: typography.h3),
         ),
         body: SafeArea(
@@ -77,7 +84,14 @@ class HostVerificationPage extends ConsumerWidget {
               data: (documents) => _VerificationContent(
                 documents: documents,
                 badgeFor: _badgeFor,
+                openedFromHome: openedFromHome,
                 onGoHome: () {
+                  if (openedFromHome) {
+                    // Home is still underneath — pop back so it refreshes
+                    // its summary, instead of rebuilding the stack.
+                    context.pop();
+                    return;
+                  }
                   // The wizard is fully done — a restart from here should
                   // land straight on H-05 Home, not re-poll verification.
                   ref
@@ -124,8 +138,10 @@ class _VerificationContent extends StatelessWidget {
     required this.documents,
     required this.badgeFor,
     required this.onGoHome,
+    required this.openedFromHome,
   });
 
+  final bool openedFromHome;
   final List<HostDocumentStatus> documents;
   final ({String label, AhTone tone}) Function(HostDocumentVerificationStatus)
   badgeFor;
@@ -153,7 +169,7 @@ class _VerificationContent extends StatelessWidget {
                   children: [
                     Icon(
                       allVerified ? Icons.verified_user : Icons.hourglass_top,
-                      size: 28,
+                      size: 58,
                       color: allVerified
                           ? AppColors.trustVerified
                           : AppColors.actionPrimary,
@@ -164,18 +180,18 @@ class _VerificationContent extends StatelessWidget {
                       style: typography.h2,
                       textAlign: TextAlign.center,
                     ),
-                    AppSpacing.spacerXs,
-                    Text(
-                      allVerified
-                          ? 'Every document checked out. You can publish '
-                                'events and take bookings.'
-                          : "We review every host's first documents by "
-                                'hand. Usually within 1 business day.',
-                      style: typography.bodySm.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    // AppSpacing.spacerXs,
+                    // Text(
+                    //   allVerified
+                    //       ? 'Every document checked out. You can publish '
+                    //             'events and take bookings.'
+                    //       : "We review every host's first documents by "
+                    //             'hand. Usually within 1 business day.',
+                    //   style: typography.bodySm.copyWith(
+                    //     color: AppColors.textSecondary,
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
                   ],
                 ),
               ),
@@ -220,7 +236,7 @@ class _VerificationContent extends StatelessWidget {
             ),
             child: allVerified
                 ? AhButton(
-                    label: 'Go to home',
+                    label: openedFromHome ? 'Back to home' : 'Go to home',
                     fullWidth: true,
                     onPressed: onGoHome,
                   )
@@ -235,7 +251,12 @@ class _VerificationContent extends StatelessWidget {
                       AppSpacing.spacerSm,
                       Flexible(
                         child: Text(
-                          'Home unlocks once every document is verified',
+                          openedFromHome
+                              // Drafts stay open while pending — only
+                              // publishing is gated on verification.
+                              ? 'Publishing unlocks once every document is '
+                                    'verified'
+                              : 'Home unlocks once every document is verified',
                           style: typography.bodySm.copyWith(
                             color: AppColors.textTertiary,
                           ),
