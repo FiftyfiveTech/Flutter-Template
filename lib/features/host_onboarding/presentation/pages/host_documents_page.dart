@@ -22,6 +22,7 @@ import '../controllers/host_documents_controller.dart'
         hostDocumentsControllerProvider;
 import '../controllers/host_type_controller.dart';
 import '../widgets/step_progress_dots.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 
 const _documentFileExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
 
@@ -62,8 +63,10 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
           );
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Couldn't open the file picker")),
+      showAhMessageSheet(
+        context,
+        message: "Couldn't open the file picker",
+        tone: AhMessageTone.error,
       );
     }
   }
@@ -77,9 +80,11 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
     if (!submitted) {
       final submitError = ref.read(hostDocumentsControllerProvider).submitError;
       if (submitError != null && mounted) {
-        ScaffoldMessenger.of(
+        showAhMessageSheet(
           context,
-        ).showSnackBar(SnackBar(content: Text(submitError)));
+          message: submitError,
+          tone: AhMessageTone.error,
+        );
       }
       return;
     }

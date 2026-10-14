@@ -7,7 +7,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/constants/event_types.dart';
-import '../../../../shared/widgets/ah_alert_banner.dart';
 import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_chip_select.dart';
@@ -17,6 +16,7 @@ import '../../../../shared/widgets/ah_text_field.dart';
 import '../../../../shared/utils/scroll_to_first_error.dart';
 import '../../../host_onboarding/domain/entities/city.dart';
 import '../../../host_onboarding/presentation/controllers/city_search_providers.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 import '../controllers/host_venue_form_controller.dart'
     show
         HostVenueFormState,
@@ -115,8 +115,10 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
           .pickPhotoAt(index, result.path, result.fileName);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Couldn't open the photo picker")),
+      showAhMessageSheet(
+        context,
+        message: "Couldn't open the photo picker",
+        tone: AhMessageTone.error,
       );
     }
   }
@@ -126,25 +128,25 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
     final saved = await ref.read(_provider.notifier).save();
     if (!mounted) return;
     if (saved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            wasEdit
-                ? 'Venue updated successfully'
-                : 'Venue created successfully',
-          ),
-        ),
-      );
+      // Show on the navigator's context after popping, so the pop
+      // closes this page rather than the sheet.
+      final navigatorContext = Navigator.of(context).context;
       context.pop();
+      if (!navigatorContext.mounted) return;
+      showAhMessageSheet(
+        navigatorContext,
+        message: wasEdit
+            ? 'Venue updated successfully'
+            : 'Venue created successfully',
+        tone: AhMessageTone.success,
+      );
       return;
     }
 
     final state = ref.read(_provider);
     final error = state.errorMessage;
     if (error != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error)));
+      showAhMessageSheet(context, message: error, tone: AhMessageTone.error);
     }
     _scrollToFirstError(state.fieldErrors);
   }
@@ -162,9 +164,7 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
       setState(() => _confirmDelete = false);
       final error = ref.read(_provider).errorMessage;
       if (error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
+        showAhMessageSheet(context, message: error, tone: AhMessageTone.error);
       }
     }
   }
@@ -217,15 +217,6 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Saved once, reused across every event you '
-                                'create there. Editing it later updates all '
-                                'of your upcoming events at that venue.',
-                                style: typography.bodySm.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              Text(
                                 'Venue photos',
                                 style: typography.bodySm.copyWith(
                                   fontWeight: FontWeight.w600,
@@ -244,8 +235,7 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                               Text(
                                 fieldErrors['photos'] ??
                                     'Minimum $kMinVenuePhotos, up to '
-                                        '$kMaxVenuePhotos. Used as fallback '
-                                        'artwork on events at this venue.',
+                                        '$kMaxVenuePhotos.',
                                 style: typography.caption.copyWith(
                                   color: fieldErrors['photos'] != null
                                       ? AppColors.statusError
@@ -366,12 +356,12 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                                 ),
                               ),
                               AppSpacing.spacerMd,
-                              const AhAlertBanner(
-                                message:
-                                    'The exact address is only released to a '
-                                    "member after they book — this stays "
-                                    'true for every event at this venue.',
-                              ),
+                              // const AhAlertBanner(
+                              //   message:
+                              //       'The exact address is only released to a '
+                              //       "member after they book — this stays "
+                              //       'true for every event at this venue.',
+                              // ),
                               if (state.isEdit) ...[
                                 AppSpacing.spacerLg,
                                 DecoratedBox(

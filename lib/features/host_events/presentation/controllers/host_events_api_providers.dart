@@ -4,9 +4,11 @@ import '../../../../core/di/network_providers.dart';
 import '../../data/datasources/host_events_remote_datasource.dart';
 import '../../data/repository_impl/host_events_repository_impl.dart';
 import '../../domain/repositories/host_events_repository.dart';
+import '../../domain/usecases/cancel_host_event.dart';
 import '../../domain/usecases/get_host_event_by_id.dart';
 import '../../domain/usecases/get_host_events.dart';
 import '../../domain/usecases/save_host_event.dart';
+import '../../domain/usecases/submit_host_event.dart';
 import '../../domain/usecases/upload_event_photo.dart';
 
 part 'host_events_api_providers.g.dart';
@@ -41,4 +43,14 @@ SaveHostEventUseCase saveHostEventUseCase(Ref ref) {
 @riverpod
 UploadEventPhotoUseCase uploadEventPhotoUseCase(Ref ref) {
   return UploadEventPhotoUseCase(ref.watch(hostEventsRepositoryProvider));
+}
+
+@riverpod
+SubmitHostEventUseCase submitHostEventUseCase(Ref ref) {
+  return SubmitHostEventUseCase(ref.watch(hostEventsRepositoryProvider));
+}
+
+@riverpod
+CancelHostEventUseCase cancelHostEventUseCase(Ref ref) {
+  return CancelHostEventUseCase(ref.watch(hostEventsRepositoryProvider));
 }

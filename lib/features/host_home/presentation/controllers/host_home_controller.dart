@@ -168,6 +168,9 @@ HostEventStatus _toHostHomeStatus(HostEvent event) {
     case HostEventLifecycleStatus.submitted:
     case HostEventLifecycleStatus.unknown:
       return HostEventStatus.draft;
+    case HostEventLifecycleStatus.completed:
+    case HostEventLifecycleStatus.cancelled:
+      return HostEventStatus.completed;
     case HostEventLifecycleStatus.published:
       final end = event.endAt ?? event.startAt;
       if (end != null && end.isBefore(DateTime.now())) {

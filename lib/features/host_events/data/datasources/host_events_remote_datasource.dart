@@ -15,6 +15,10 @@ abstract class HostEventsRemoteDatasource {
 
   Future<HostEventDto> updateEvent(String eventId, HostEventDto event);
 
+  Future<HostEventDto> submitEvent(String eventId);
+
+  Future<HostEventDto> cancelEvent(String eventId, {required String reason});
+
   Future<HostEventPhotoDto> uploadEventPhoto({
     required String filePath,
     required String fileName,
@@ -58,6 +62,26 @@ class HostEventsRestDatasource implements HostEventsRemoteDatasource {
     final response = await _client.patch(
       '/api/v1/host/events/$eventId',
       data: event.toJson(),
+    );
+    final body = response.data as Map<String, dynamic>;
+    return HostEventDto.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<HostEventDto> submitEvent(String eventId) async {
+    final response = await _client.post('/api/v1/host/events/$eventId/submit');
+    final body = response.data as Map<String, dynamic>;
+    return HostEventDto.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<HostEventDto> cancelEvent(
+    String eventId, {
+    required String reason,
+  }) async {
+    final response = await _client.post(
+      '/api/v1/host/events/$eventId/cancel',
+      data: {'reason': reason},
     );
     final body = response.data as Map<String, dynamic>;
     return HostEventDto.fromJson(body['data'] as Map<String, dynamic>);

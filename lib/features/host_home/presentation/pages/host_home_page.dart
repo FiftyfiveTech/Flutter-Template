@@ -11,6 +11,7 @@ import '../../../../shared/widgets/ah_shimmer.dart';
 import '../controllers/host_home_controller.dart';
 import '../widgets/host_home_bottom_nav.dart';
 import '../widgets/host_home_event_card.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 
 /// H-05 · Home — the main hub for hosts to manage their events,
 /// venues, verification status, and operations.
@@ -18,9 +19,7 @@ class HostHomePage extends ConsumerWidget {
   const HostHomePage({super.key});
 
   void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    showAhMessageSheet(context, message: message, tone: AhMessageTone.info);
   }
 
   /// Venues and events are managed on separate screens with their own
@@ -65,7 +64,7 @@ class HostHomePage extends ConsumerWidget {
                     AppSpacing.lg,
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Header Row: Organization name + Add Event FAB
                       Row(
@@ -214,7 +213,7 @@ class _NoEventsMessage extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Tap here or the + button above to list your first night.',
+            'Tap to list your first night.',
             style: typography.bodySm.copyWith(color: AppColors.textSecondary),
           ),
         ],

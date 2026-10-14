@@ -78,7 +78,7 @@ void main() {
     );
   }
 
-  testWidgets('renders header, verification banner, venues, and event cards', (
+  testWidgets('renders header, verification banner, and event cards', (
     tester,
   ) async {
     await tester.pumpWidget(buildSubject());
@@ -90,9 +90,6 @@ void main() {
 
     // Verification banner
     expect(find.text('Verified. You can publish new events.'), findsOneWidget);
-
-    // Venues card
-    expect(find.text('Venues'), findsOneWidget);
 
     // Section header
     expect(find.text('YOUR EVENTS — TAP TO EDIT'), findsOneWidget);

@@ -227,6 +227,8 @@ HostEventLifecycleStatus _parseStatus(Object? value) {
     'draft' => HostEventLifecycleStatus.draft,
     'submitted' => HostEventLifecycleStatus.submitted,
     'published' => HostEventLifecycleStatus.published,
+    'cancelled' => HostEventLifecycleStatus.cancelled,
+    'completed' => HostEventLifecycleStatus.completed,
     _ => HostEventLifecycleStatus.unknown,
   };
 }

@@ -88,6 +88,23 @@ void main() {
       expect(dto.toDomain().format, 'karaoke_night');
     });
 
+    test('parses the cancelled and completed statuses', () {
+      for (final (raw, expected) in [
+        ('cancelled', HostEventLifecycleStatus.cancelled),
+        ('completed', HostEventLifecycleStatus.completed),
+        ('submitted', HostEventLifecycleStatus.submitted),
+      ]) {
+        final dto = HostEventDto.fromJson({
+          'id': 'event-1',
+          'title': 'Test',
+          'venueId': 'venue-1',
+          'capacity': 40,
+          'status': raw,
+        });
+        expect(dto.toDomain().status, expected);
+      }
+    });
+
     test('falls back to unknown for an unrecognized status', () {
       final dto = HostEventDto.fromJson({
         'id': 'event-1',

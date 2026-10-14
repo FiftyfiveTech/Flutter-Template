@@ -11,6 +11,15 @@ abstract class HostEventsRepository {
   /// existing event — mirrors `HostVenuesRepository.saveVenue`.
   Future<Result<HostEvent>> saveEvent(HostEvent event);
 
+  /// Moves a draft to `submitted` for review/publishing.
+  Future<Result<HostEvent>> submitEvent(String eventId);
+
+  /// Cancels the event and initiates attendee refunds on the backend.
+  Future<Result<HostEvent>> cancelEvent(
+    String eventId, {
+    required String reason,
+  });
+
   Future<Result<HostEventPhoto>> uploadEventPhoto({
     required String filePath,
     required String fileName,

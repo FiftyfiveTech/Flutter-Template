@@ -9,6 +9,7 @@ import '../../../../shared/widgets/ah_alert_banner.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
 import '../controllers/otp_entry_controller.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 
 /// Login · OTP entry — the second step of the "I already have an account"
 /// flow. Verifies the code against the OTP-verify API and, on success,
@@ -52,9 +53,11 @@ class _OtpEntryPageState extends ConsumerState<OtpEntryPage> {
         .read(otpEntryControllerProvider(widget.phoneNumber))
         .errorText;
     if (errorText == null && mounted) {
-      ScaffoldMessenger.of(
+      showAhMessageSheet(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Code resent')));
+        message: 'Code resent',
+        tone: AhMessageTone.success,
+      );
     }
   }
 

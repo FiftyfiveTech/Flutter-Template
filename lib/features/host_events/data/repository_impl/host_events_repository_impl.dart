@@ -52,6 +52,33 @@ class HostEventsRepositoryImpl implements HostEventsRepository {
   }
 
   @override
+  Future<Result<HostEvent>> submitEvent(String eventId) async {
+    try {
+      final dto = await _remoteDatasource.submitEvent(eventId);
+      return Ok(dto.toDomain());
+    } on NetworkException catch (e) {
+      return Err(NetworkFailure(message: e.message));
+    } catch (_) {
+      return const Err(UnexpectedFailure());
+    }
+  }
+
+  @override
+  Future<Result<HostEvent>> cancelEvent(
+    String eventId, {
+    required String reason,
+  }) async {
+    try {
+      final dto = await _remoteDatasource.cancelEvent(eventId, reason: reason);
+      return Ok(dto.toDomain());
+    } on NetworkException catch (e) {
+      return Err(NetworkFailure(message: e.message));
+    } catch (_) {
+      return const Err(UnexpectedFailure());
+    }
+  }
+
+  @override
   Future<Result<HostEventPhoto>> uploadEventPhoto({
     required String filePath,
     required String fileName,

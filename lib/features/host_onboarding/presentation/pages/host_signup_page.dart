@@ -12,6 +12,7 @@ import '../../domain/entities/city.dart';
 import '../controllers/city_search_providers.dart';
 import '../controllers/host_signup_controller.dart';
 import '../widgets/step_progress_dots.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 
 /// H-01 · Signup — the first step of the host onboarding wizard. Collects
 /// business/organiser basics; host type (H-02) decides the document set.
@@ -41,9 +42,11 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
     if (!isValid) {
       final submitError = ref.read(hostSignupControllerProvider).submitError;
       if (submitError != null && mounted) {
-        ScaffoldMessenger.of(
+        showAhMessageSheet(
           context,
-        ).showSnackBar(SnackBar(content: Text(submitError)));
+          message: submitError,
+          tone: AhMessageTone.error,
+        );
       }
       return;
     }

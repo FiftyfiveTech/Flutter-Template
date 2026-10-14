@@ -8,9 +8,17 @@ const kHoldbackFemaleSeatsThreshold = 8;
 
 /// An event's publish lifecycle, per `docs/features/host-app/
 /// 02-host-event-publishing.md`'s `Event` entity (`draft/submitted/
-/// published`). [unknown] is a safe fallback for any value the backend
-/// adds later that the client doesn't recognize yet, rather than crashing.
-enum HostEventLifecycleStatus { draft, submitted, published, unknown }
+/// published`), plus the `cancelled/completed` states the API also
+/// returns. [unknown] is a safe fallback for any value the backend adds
+/// later that the client doesn't recognize yet, rather than crashing.
+enum HostEventLifecycleStatus {
+  draft,
+  submitted,
+  published,
+  cancelled,
+  completed,
+  unknown,
+}
 
 /// The platform-default, widest-allowed ratio band tolerance (50:50 ±10).
 const kRatioBandMaxPoints = 10;

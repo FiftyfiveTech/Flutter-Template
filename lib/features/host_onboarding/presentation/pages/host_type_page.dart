@@ -12,6 +12,7 @@ import '../../domain/entities/host_type.dart';
 import '../controllers/host_onboarding_progress_controller.dart';
 import '../controllers/host_type_controller.dart';
 import '../widgets/step_progress_dots.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 
 class _HostTypeOption {
   const _HostTypeOption(this.type, this.icon, this.description);
@@ -58,9 +59,11 @@ class HostTypePage extends ConsumerWidget {
         context.push('/host/signup/host-type/documents');
       },
       err: (failure) {
-        ScaffoldMessenger.of(
+        showAhMessageSheet(
           context,
-        ).showSnackBar(SnackBar(content: Text(failure.message)));
+          message: failure.message,
+          tone: AhMessageTone.error,
+        );
       },
     );
   }

@@ -110,7 +110,10 @@ void main() {
           FakeHostOnboardingProgressRepository(),
         ),
       ],
-      child: MaterialApp(theme: AppTheme.light, home: const HostDocumentsPage()),
+      child: MaterialApp(
+        theme: AppTheme.light,
+        home: const HostDocumentsPage(),
+      ),
     );
   }
 

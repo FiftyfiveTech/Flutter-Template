@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
 import '../controllers/phone_entry_controller.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 
 /// Login · Phone entry — the first step of the "I already have an account"
 /// flow from H-00 · Landing. Requests an OTP for the entered phone number,
@@ -34,9 +35,11 @@ class _PhoneEntryPageState extends ConsumerState<PhoneEntryPage> {
     if (phoneNumber == null) {
       final submitError = ref.read(phoneEntryControllerProvider).submitError;
       if (submitError != null && mounted) {
-        ScaffoldMessenger.of(
+        showAhMessageSheet(
           context,
-        ).showSnackBar(SnackBar(content: Text(submitError)));
+          message: submitError,
+          tone: AhMessageTone.error,
+        );
       }
       return;
     }

@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/document_picker_providers.dart';
 import '../../../../core/di/session_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/ah_avatar.dart';
 import '../../../../shared/widgets/ah_badge.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_card.dart';
 import '../../../../shared/widgets/ah_segmented_control.dart';
 import '../../../host_home/presentation/widgets/host_home_bottom_nav.dart';
 import '../controllers/host_you_controller.dart';
+import '../../../../shared/widgets/ah_message_sheet.dart';
 
 /// H-12 · You — account summary, appearance, venues shortcut and session
 /// actions. Appearance is shown read-only (locked to System) since the app
@@ -19,13 +22,18 @@ import '../controllers/host_you_controller.dart';
 class HostYouPage extends ConsumerWidget {
   const HostYouPage({super.key});
 
-  String _initialsOf(String name) {
-    final words = name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
-    final initials = words.take(2).map((w) => w[0].toUpperCase()).join();
-    return initials.isEmpty ? '?' : initials;
+  static const _photoExtensions = ['jpg', 'jpeg', 'png', 'heic', 'webp'];
+
+  Future<void> _pickPhoto(WidgetRef ref) async {
+    final picked = await ref
+        .read(documentPickerProvider)
+        .pickFile(allowedExtensions: _photoExtensions);
+    if (picked == null) return;
+    await ref.read(hostYouControllerProvider.notifier).setPhoto(picked.path);
   }
 
   void _logOut(BuildContext context, WidgetRef ref) {
+    ref.read(hostYouControllerProvider.notifier).clearCache();
     ref.read(hostSessionControllerProvider.notifier).clear();
     context.go('/');
   }
@@ -55,8 +63,8 @@ class HostYouPage extends ConsumerWidget {
               Text('Delete this account?', style: typography.h2),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Any upcoming events with sold seats must be settled '
-                "first — this can't be undone.",
+                'Removes your listings and payout details. Settle events '
+                "with sold seats first. This can't be undone.",
                 style: typography.bodySm.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -89,6 +97,13 @@ class HostYouPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final typography = Theme.of(context).extension<AppTypography>()!;
     final state = ref.watch(hostYouControllerProvider);
+    ref.listen(hostYouControllerProvider.select((s) => s.errorMessage), (
+      _,
+      message,
+    ) {
+      if (message == null) return;
+      showAhMessageSheet(context, message: message, tone: AhMessageTone.error);
+    });
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -129,16 +144,11 @@ class HostYouPage extends ConsumerWidget {
                         AhCard(
                           child: Row(
                             children: [
-                              CircleAvatar(
-                                radius: 24,
-                                backgroundColor: AppColors.actionPrimary,
-                                child: Text(
-                                  _initialsOf(state.hostName ?? ''),
-                                  style: typography.body.copyWith(
-                                    color: AppColors.actionPrimaryFg,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                              _EditableAvatar(
+                                name: state.hostName ?? '',
+                                photoPath: state.photoPath,
+                                isSaving: state.isSavingPhoto,
+                                onTap: () => _pickPhoto(ref),
                               ),
                               const SizedBox(width: AppSpacing.sm + 2),
                               Expanded(
@@ -185,14 +195,10 @@ class HostYouPage extends ConsumerWidget {
                         _SectionLabel('ACCOUNT', typography: typography),
                         const SizedBox(height: AppSpacing.sm),
                         AhCard(
-                          onTap: () =>
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Payout settings — coming soon',
-                                  ),
-                                ),
-                              ),
+                          onTap: () => showAhMessageSheet(
+                            context,
+                            message: 'Payout settings — coming soon',
+                          ),
                           child: const _AccountRow(
                             icon: Icons.account_balance_outlined,
                             label: 'Payout account · HDFC ••4412',
@@ -223,15 +229,6 @@ class HostYouPage extends ConsumerWidget {
                         _DeleteAccountRow(
                           onTap: () => _confirmDeleteAccount(context, ref),
                         ),
-                        const SizedBox(height: AppSpacing.md),
-                        Text(
-                          'Deleting removes your listings and payout '
-                          'details. Events with sold seats must be settled '
-                          'first.',
-                          style: typography.caption.copyWith(
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
                       ],
                     ),
             ),
@@ -241,11 +238,64 @@ class HostYouPage extends ConsumerWidget {
                 if (index == 0) {
                   context.go('/host/home');
                 } else if (index == 1) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Payouts — coming soon')),
-                  );
+                  showAhMessageSheet(context, message: 'Payouts — coming soon');
                 }
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EditableAvatar extends StatelessWidget {
+  const _EditableAvatar({
+    required this.name,
+    required this.photoPath,
+    required this.isSaving,
+    required this.onTap,
+  });
+
+  final String name;
+  final String? photoPath;
+  final bool isSaving;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Change profile photo',
+      child: GestureDetector(
+        onTap: isSaving ? null : onTap,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AhAvatar(name: name, photoPath: photoPath),
+            if (isSaving)
+              const Positioned.fill(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.actionPrimaryFg,
+                ),
+              ),
+            Positioned(
+              right: -2,
+              bottom: -2,
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.xs / 2),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceCard,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderDefault),
+                ),
+                child: const Icon(
+                  Icons.photo_camera_outlined,
+                  size: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
           ],
         ),

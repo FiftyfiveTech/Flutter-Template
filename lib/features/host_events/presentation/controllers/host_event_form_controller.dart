@@ -35,6 +35,22 @@ const kEventCapacityStep = 2;
 /// Doors may open no earlier than this far before the event's start time.
 const kMaxDoorsOpenLeadTime = Duration(hours: 1, minutes: 30);
 
+/// An event may run at most this long (API rejects `endsAt` beyond it).
+const kMaxEventDuration = Duration(hours: 12);
+
+/// Result of [HostEventFormController.saveAndSubmit].
+enum HostEventSubmitOutcome {
+  /// Saved and moved to `submitted`.
+  submitted,
+
+  /// Saved as a draft, but the `/submit` call itself failed — the draft
+  /// isn't lost, and [HostEventFormState.errorMessage] says why.
+  savedAsDraftOnly,
+
+  /// Nothing was saved (validation or save error).
+  failed,
+}
+
 class HostEventFormState {
   const HostEventFormState({
     required this.draft,
@@ -45,6 +61,7 @@ class HostEventFormState {
     this.isLoadingVenues = false,
     this.venuesLoadError,
     this.isSaving = false,
+    this.isCancelling = false,
     this.errorMessage,
     this.fieldErrors = const {},
     this.saved = false,
@@ -70,6 +87,9 @@ class HostEventFormState {
   final String? venuesLoadError;
 
   final bool isSaving;
+
+  /// True while `POST /api/v1/host/events/{id}/cancel` is in flight.
+  final bool isCancelling;
   final String? errorMessage;
   final Map<String, String> fieldErrors;
   final bool saved;
@@ -101,7 +121,17 @@ class HostEventFormState {
   /// includes `allowedEventTypes` in the first place.
   List<String> get formatOptions => kEventTypeOptions;
 
-  String get saveLabel => isEdit ? 'Save changes' : 'Submit';
+  /// Only drafts can be edited (`PATCH` is draft-only) and submitted —
+  /// a new event is a draft-to-be.
+  bool get isEditable =>
+      !isEdit || draft.status == HostEventLifecycleStatus.draft;
+
+  /// Submitted (awaiting review) and published events can be cancelled.
+  bool get canCancel =>
+      draft.status == HostEventLifecycleStatus.submitted ||
+      draft.status == HostEventLifecycleStatus.published;
+
+  bool get isBusy => isSaving || isCancelling;
 
   HostEventFormState copyWith({
     HostEvent? draft,
@@ -112,6 +142,7 @@ class HostEventFormState {
     bool? isLoadingVenues,
     String? venuesLoadError,
     bool? isSaving,
+    bool? isCancelling,
     String? errorMessage,
     Map<String, String>? fieldErrors,
     bool? saved,
@@ -127,6 +158,7 @@ class HostEventFormState {
       isLoadingVenues: isLoadingVenues ?? this.isLoadingVenues,
       venuesLoadError: venuesLoadError,
       isSaving: isSaving ?? this.isSaving,
+      isCancelling: isCancelling ?? this.isCancelling,
       errorMessage: errorMessage,
       fieldErrors: fieldErrors ?? this.fieldErrors,
       saved: saved ?? this.saved,
@@ -486,6 +518,11 @@ class HostEventFormController extends _$HostEventFormController {
         draft.endAt != null &&
         !draft.endAt!.isAfter(draft.startAt!)) {
       errors['endAt'] = 'End must be after the start time.';
+    } else if (draft.startAt != null &&
+        draft.endAt != null &&
+        draft.endAt!.difference(draft.startAt!) > kMaxEventDuration) {
+      errors['endAt'] =
+          'Event can run at most ${kMaxEventDuration.inHours} hours.';
     }
 
     if (draft.doorsOpenAt == null) {
@@ -518,8 +555,7 @@ class HostEventFormController extends _$HostEventFormController {
     if (cancellationTerms.isEmpty) {
       errors['cancellationTerms'] = 'Cancellation terms are required.';
     } else if (cancellationTerms.length > 1000) {
-      errors['cancellationTerms'] =
-          'Cancellation terms must be 1000 characters or fewer.';
+      errors['cancellationTerms'] = 'Max 1000 characters.';
     }
 
     // The computed refund cutoff (start minus this many hours) can't
@@ -533,8 +569,7 @@ class HostEventFormController extends _$HostEventFormController {
       );
       if (cutoff.isBefore(DateTime.now())) {
         errors['refundCutoffHoursBeforeStart'] =
-            'Refund cutoff would already have passed — pick a later start '
-            'time or a shorter cutoff.';
+            'Cutoff has already passed — shorten it.';
       }
     }
 
@@ -583,5 +618,52 @@ class HostEventFormController extends _$HostEventFormController {
           state.copyWith(isSaving: false, errorMessage: failure.message),
     );
     return state.saved;
+  }
+
+  /// Saves the draft (create or `PATCH`), then submits it for review via
+  /// `POST /api/v1/host/events/{id}/submit`.
+  Future<HostEventSubmitOutcome> saveAndSubmit() async {
+    if (!await save()) return HostEventSubmitOutcome.failed;
+
+    state = state.copyWith(isSaving: true, errorMessage: null);
+    final useCase = ref.read(submitHostEventUseCaseProvider);
+    final result = await useCase(state.draft.id);
+    return result.when(
+      ok: (event) {
+        state = state.copyWith(draft: event, isSaving: false);
+        return HostEventSubmitOutcome.submitted;
+      },
+      err: (failure) {
+        state = state.copyWith(
+          isSaving: false,
+          errorMessage:
+              "Saved as a draft, but couldn't submit it: ${failure.message}",
+        );
+        return HostEventSubmitOutcome.savedAsDraftOnly;
+      },
+    );
+  }
+
+  /// Cancels a submitted/published event via
+  /// `POST /api/v1/host/events/{id}/cancel`, which also initiates
+  /// attendee refunds on the backend.
+  Future<bool> cancelEvent(String reason) async {
+    if (!state.canCancel || state.isBusy) return false;
+    state = state.copyWith(isCancelling: true, errorMessage: null);
+    final useCase = ref.read(cancelHostEventUseCaseProvider);
+    final result = await useCase(state.draft.id, reason: reason);
+    return result.when(
+      ok: (event) {
+        state = state.copyWith(draft: event, isCancelling: false);
+        return true;
+      },
+      err: (failure) {
+        state = state.copyWith(
+          isCancelling: false,
+          errorMessage: failure.message,
+        );
+        return false;
+      },
+    );
   }
 }

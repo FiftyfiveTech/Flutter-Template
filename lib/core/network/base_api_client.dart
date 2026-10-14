@@ -133,6 +133,8 @@ class BaseApiClient {
         final response = error.response;
         if (response != null && response.data is Map) {
           final data = response.data as Map;
+          final details = _validationDetails(data['errors']);
+          if (details != null) return details;
           final serverMsg = data['message'] ?? data['error'] ?? data['msg'];
           if (serverMsg != null) return serverMsg.toString();
         }
@@ -143,5 +145,27 @@ class BaseApiClient {
       default:
         return 'Network connection issue';
     }
+  }
+
+  /// Flattens `errors: [{field, errors: [msg, ...]}]` into a readable string,
+  /// so a 400 surfaces the specific rule (e.g. "endsAt must not exceed 12
+  /// hours after startsAt") instead of the generic "Request validation failed."
+  String? _validationDetails(Object? errors) {
+    if (errors is! List) return null;
+    final messages = <String>[];
+    for (final entry in errors) {
+      if (entry is Map) {
+        final inner = entry['errors'];
+        if (inner is List) {
+          messages.addAll(inner.map((e) => e.toString()));
+        } else if (entry['message'] != null) {
+          messages.add(entry['message'].toString());
+        }
+      } else if (entry != null) {
+        messages.add(entry.toString());
+      }
+    }
+    final nonEmpty = messages.where((m) => m.trim().isNotEmpty).toList();
+    return nonEmpty.isEmpty ? null : nonEmpty.join('\n');
   }
 }

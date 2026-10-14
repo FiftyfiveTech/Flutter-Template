@@ -29,6 +29,16 @@ class _FakeHostEventsRepository implements HostEventsRepository {
     required String filePath,
     required String fileName,
   }) => throw UnimplementedError();
+
+  @override
+  Future<Result<HostEvent>> submitEvent(String eventId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<HostEvent>> cancelEvent(
+    String eventId, {
+    required String reason,
+  }) => throw UnimplementedError();
 }
 
 void main() {

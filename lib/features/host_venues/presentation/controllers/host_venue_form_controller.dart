@@ -306,11 +306,11 @@ class HostVenueFormController extends _$HostVenueFormController {
     if (addLine1.isEmpty) {
       errors['addLine1'] = 'Address line 1 is required.';
     } else if (addLine1.length > 200) {
-      errors['addLine1'] = 'Address line 1 must be 200 characters or fewer.';
+      errors['addLine1'] = 'Max 200 characters.';
     }
 
     if (draft.addLine2.trim().length > 200) {
-      errors['addLine2'] = 'Address line 2 must be 200 characters or fewer.';
+      errors['addLine2'] = 'Max 200 characters.';
     }
 
     final locality = draft.locality.trim();
