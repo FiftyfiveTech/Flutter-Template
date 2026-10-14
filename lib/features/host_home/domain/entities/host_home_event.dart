@@ -1,4 +1,6 @@
-enum HostEventStatus { upcoming, draft, completed }
+/// What Home's event card shows. [inReview] = submitted, awaiting admin
+/// approval; [live] = published and currently between start and end.
+enum HostEventStatus { draft, inReview, upcoming, live, completed, cancelled }
 
 class HostHomeEvent {
   const HostHomeEvent({

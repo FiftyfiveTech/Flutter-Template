@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/session_providers.dart';
+import '../../../../core/time/server_clock.dart';
 import '../../../../core/utils/host_name_fallback.dart';
 import '../../../host_events/domain/entities/host_event.dart';
 import '../../../host_events/presentation/controllers/host_events_api_providers.dart';
@@ -115,9 +117,10 @@ class HostHomeController extends _$HostHomeController {
     final eventsResult = await eventsUseCase();
     eventsResult.when(
       ok: (events) {
+        final now = ref.read(serverClockProvider).now();
         state = state.copyWith(
           summary: state.summary!.copyWith(
-            events: events.map(_toHostHomeEvent).toList(),
+            events: events.map((e) => _toHostHomeEvent(e, now)).toList(),
           ),
         );
       },
@@ -166,37 +169,39 @@ String _formatSchedule(HostEvent event) {
   return event.venueName.isEmpty ? when : '$when · ${event.venueName}';
 }
 
-/// Maps the backend's publish lifecycle to the coarser upcoming/draft/
-/// completed status this card shows. `submitted` (awaiting admin
-/// approval) has no distinct visual in the current design, so it's
-/// grouped with `draft` — neither is a live, bookable event yet.
-/// `published` events are split into upcoming vs. completed by comparing
-/// their end time (falling back to start time) against now, since the
-/// backend has no separate "completed" status of its own.
-HostEventStatus _toHostHomeStatus(HostEvent event) {
+/// Maps the backend's publish lifecycle to the status Home's card shows.
+/// `published` is split by time against [now] (server-corrected, see
+/// [ServerClock]) since the backend has no live/ended status of its own:
+/// before start → upcoming, start..end → live, after end → completed.
+/// With no end time, a started event counts as completed — there's no way
+/// to tell how long it runs.
+@visibleForTesting
+HostEventStatus toHostHomeStatus(HostEvent event, DateTime now) {
   switch (event.status) {
     case HostEventLifecycleStatus.draft:
-    case HostEventLifecycleStatus.submitted:
     case HostEventLifecycleStatus.unknown:
       return HostEventStatus.draft;
-    case HostEventLifecycleStatus.completed:
+    case HostEventLifecycleStatus.submitted:
+      return HostEventStatus.inReview;
     case HostEventLifecycleStatus.cancelled:
+      return HostEventStatus.cancelled;
+    case HostEventLifecycleStatus.completed:
       return HostEventStatus.completed;
     case HostEventLifecycleStatus.published:
-      final end = event.endAt ?? event.startAt;
-      if (end != null && end.isBefore(DateTime.now())) {
-        return HostEventStatus.completed;
-      }
-      return HostEventStatus.upcoming;
+      final start = event.startAt;
+      final end = event.endAt;
+      if (start == null || now.isBefore(start)) return HostEventStatus.upcoming;
+      if (end != null && now.isBefore(end)) return HostEventStatus.live;
+      return HostEventStatus.completed;
   }
 }
 
-HostHomeEvent _toHostHomeEvent(HostEvent event) {
+HostHomeEvent _toHostHomeEvent(HostEvent event, DateTime now) {
   return HostHomeEvent(
     id: event.id,
     title: event.title,
     formattedSchedule: _formatSchedule(event),
-    status: _toHostHomeStatus(event),
+    status: toHostHomeStatus(event, now),
     // The real events API has no sold-count field yet.
     soldCount: null,
     capacity: event.capacity,

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../network/api_logging_interceptor.dart';
 import '../network/base_api_client.dart';
+import '../time/server_clock.dart';
 import 'session_providers.dart';
 
 part 'network_providers.g.dart';
@@ -39,6 +40,8 @@ BaseApiClient baseApiClient(Ref ref) {
       },
     ),
   );
+
+  dio.interceptors.add(ref.read(serverClockProvider).interceptor);
 
   if (kDebugMode) {
     dio.interceptors.add(ApiLoggingInterceptor());

@@ -41,8 +41,11 @@ class HostHomeEventDto {
   HostHomeEvent toDomain() {
     final domainStatus = switch (status.toLowerCase()) {
       'upcoming' => HostEventStatus.upcoming,
+      'live' => HostEventStatus.live,
       'draft' => HostEventStatus.draft,
+      'submitted' || 'in_review' => HostEventStatus.inReview,
       'completed' => HostEventStatus.completed,
+      'cancelled' => HostEventStatus.cancelled,
       _ => HostEventStatus.draft,
     };
 

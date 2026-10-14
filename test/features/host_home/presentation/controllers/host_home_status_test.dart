@@ -1,0 +1,132 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:host_mobile_app/features/host_events/domain/entities/host_event.dart';
+import 'package:host_mobile_app/features/host_home/domain/entities/host_home_event.dart';
+import 'package:host_mobile_app/features/host_home/presentation/controllers/host_home_controller.dart';
+
+HostEvent _event(
+  HostEventLifecycleStatus status, {
+  DateTime? startAt,
+  DateTime? endAt,
+}) {
+  return HostEvent(
+    id: 'evt-1',
+    title: 'Blind Wine & Bad Takes',
+    description: 'Six wines, labels off.',
+    format: 'Tasting',
+    startAt: startAt,
+    endAt: endAt,
+    doorsOpenAt: null,
+    venueId: 'venue-1',
+    venueName: 'Toit',
+    venueAddress: '',
+    neighbourhood: '',
+    capacity: 40,
+    ticketPriceRupees: 1299,
+    toleranceBandPoints: 10,
+    holdbackEnabled: false,
+    cancellationTerms: '',
+    refundCutoffHoursBeforeStart: 24,
+    coverPhoto: null,
+    photos: const [],
+    status: status,
+  );
+}
+
+void main() {
+  final start = DateTime(2026, 10, 14, 20);
+  final end = DateTime(2026, 10, 14, 23);
+
+  HostEventStatus published(DateTime now, {DateTime? endAt}) =>
+      toHostHomeStatus(
+        _event(
+          HostEventLifecycleStatus.published,
+          startAt: start,
+          endAt: endAt,
+        ),
+        now,
+      );
+
+  group('non-published lifecycle states', () {
+    final now = DateTime(2026, 10, 14, 21);
+
+    test('draft and unknown map to draft', () {
+      expect(
+        toHostHomeStatus(_event(HostEventLifecycleStatus.draft), now),
+        HostEventStatus.draft,
+      );
+      expect(
+        toHostHomeStatus(_event(HostEventLifecycleStatus.unknown), now),
+        HostEventStatus.draft,
+      );
+    });
+
+    test('submitted maps to in review, not draft', () {
+      expect(
+        toHostHomeStatus(_event(HostEventLifecycleStatus.submitted), now),
+        HostEventStatus.inReview,
+      );
+    });
+
+    test('cancelled stays cancelled even mid-window', () {
+      expect(
+        toHostHomeStatus(
+          _event(
+            HostEventLifecycleStatus.cancelled,
+            startAt: start,
+            endAt: end,
+          ),
+          now,
+        ),
+        HostEventStatus.cancelled,
+      );
+    });
+
+    test('completed maps to completed', () {
+      expect(
+        toHostHomeStatus(_event(HostEventLifecycleStatus.completed), now),
+        HostEventStatus.completed,
+      );
+    });
+  });
+
+  group('published, split by time', () {
+    test('before start is upcoming', () {
+      expect(
+        published(start.subtract(const Duration(minutes: 1)), endAt: end),
+        HostEventStatus.upcoming,
+      );
+    });
+
+    test('exactly at start is live', () {
+      expect(published(start, endAt: end), HostEventStatus.live);
+    });
+
+    test('between start and end is live', () {
+      expect(
+        published(start.add(const Duration(hours: 1)), endAt: end),
+        HostEventStatus.live,
+      );
+    });
+
+    test('exactly at end is completed', () {
+      expect(published(end, endAt: end), HostEventStatus.completed);
+    });
+
+    test('started with no end time is completed', () {
+      expect(
+        published(start.add(const Duration(minutes: 1))),
+        HostEventStatus.completed,
+      );
+    });
+
+    test('no start time is upcoming', () {
+      expect(
+        toHostHomeStatus(
+          _event(HostEventLifecycleStatus.published),
+          DateTime(2026, 10, 14),
+        ),
+        HostEventStatus.upcoming,
+      );
+    });
+  });
+}

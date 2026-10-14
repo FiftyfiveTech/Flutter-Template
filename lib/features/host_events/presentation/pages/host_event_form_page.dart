@@ -102,14 +102,6 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
     return (slotCount + 1).clamp(kMinEventPhotos, kMaxEventPhotos);
   }
 
-  void _onPreview() {
-    showAhMessageSheet(
-      context,
-      message: 'Preview — coming soon',
-      tone: AhMessageTone.info,
-    );
-  }
-
   /// Pops this page, then shows [message] on the navigator's context so
   /// the pop closes this page rather than the sheet.
   void _popWithMessage(String message, AhMessageTone tone) {
@@ -223,18 +215,6 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
               : 'New event',
           style: typography.h3,
         ),
-        actions: [
-          if (!state.isLoadingEvent && state.loadError == null)
-            TextButton(
-              onPressed: state.isBusy ? null : _onPreview,
-              child: Text(
-                'Preview',
-                style: typography.bodySm.copyWith(
-                  color: AppColors.actionPrimary,
-                ),
-              ),
-            ),
-        ],
       ),
       body: SafeArea(
         child: state.isLoadingEvent

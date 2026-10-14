@@ -81,26 +81,35 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
 
-    final (label, icon, color, bgColor) = switch (status) {
-      HostEventStatus.upcoming => (
-        'Upcoming',
-        Icons.schedule,
-        AppColors.statusInfo,
-        AppColors.statusInfo.withValues(alpha: 0.16),
-      ),
+    final (label, icon, color) = switch (status) {
       HostEventStatus.draft => (
         'Draft',
         Icons.edit_note,
         AppColors.textSecondary,
-        AppColors.textSecondary.withValues(alpha: 0.16),
       ),
+      HostEventStatus.inReview => (
+        'In review',
+        Icons.hourglass_top,
+        AppColors.statusWarning,
+      ),
+      HostEventStatus.upcoming => (
+        'Upcoming',
+        Icons.schedule,
+        AppColors.statusInfo,
+      ),
+      HostEventStatus.live => ('Live', Icons.sensors, AppColors.actionPrimary),
       HostEventStatus.completed => (
         'Completed',
         Icons.check_circle_outline,
         AppColors.statusSuccess,
-        AppColors.statusSuccess.withValues(alpha: 0.16),
+      ),
+      HostEventStatus.cancelled => (
+        'Cancelled',
+        Icons.cancel_outlined,
+        AppColors.statusError,
       ),
     };
+    final bgColor = color.withValues(alpha: 0.16);
 
     return Container(
       padding: const EdgeInsets.symmetric(
