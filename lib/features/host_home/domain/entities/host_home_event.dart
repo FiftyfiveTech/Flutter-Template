@@ -10,6 +10,7 @@ class HostHomeEvent {
     required this.status,
     required this.soldCount,
     required this.capacity,
+    this.canCheckIn = false,
   });
 
   final String id;
@@ -23,6 +24,11 @@ class HostHomeEvent {
   /// "0 of N sold" would be actively misleading rather than just missing.
   final int? soldCount;
   final int capacity;
+
+  /// Whether the card offers door check-in: a published event that's
+  /// live, about to start, or recently ended (so leftover offline scans
+  /// can still sync and no-shows can be reviewed).
+  final bool canCheckIn;
 
   /// `"N of M sold"` when [soldCount] is known, otherwise just the
   /// capacity — never a guessed sold count.

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/document_compressor_providers.dart';
 import '../../../../core/files/document_compressor.dart';
+import '../../../../core/time/server_clock.dart';
 import '../../../../shared/constants/event_types.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../host_venues/domain/entities/host_venue.dart';
@@ -67,9 +68,14 @@ class HostEventFormState {
     this.saved = false,
     this.photoSlots = const [],
     this.uploadedPhotos = const [],
+    this.hasEnded = false,
   });
 
   final HostEvent draft;
+
+  /// The loaded event is over (see [HostEvent.hasEndedAt]) — nothing can
+  /// be done to it any more, including cancelling.
+  final bool hasEnded;
   final bool isEdit;
 
   /// True while the full event is being fetched for edit mode.
@@ -126,10 +132,12 @@ class HostEventFormState {
   bool get isEditable =>
       !isEdit || draft.status == HostEventLifecycleStatus.draft;
 
-  /// Submitted (awaiting review) and published events can be cancelled.
+  /// Submitted (awaiting review) and published events can be cancelled,
+  /// until they've ended.
   bool get canCancel =>
-      draft.status == HostEventLifecycleStatus.submitted ||
-      draft.status == HostEventLifecycleStatus.published;
+      !hasEnded &&
+      (draft.status == HostEventLifecycleStatus.submitted ||
+          draft.status == HostEventLifecycleStatus.published);
 
   bool get isBusy => isSaving || isCancelling;
 
@@ -148,6 +156,7 @@ class HostEventFormState {
     bool? saved,
     List<AhPhotoSlotData>? photoSlots,
     List<HostEventPhoto?>? uploadedPhotos,
+    bool? hasEnded,
   }) {
     return HostEventFormState(
       draft: draft ?? this.draft,
@@ -164,6 +173,7 @@ class HostEventFormState {
       saved: saved ?? this.saved,
       photoSlots: photoSlots ?? this.photoSlots,
       uploadedPhotos: uploadedPhotos ?? this.uploadedPhotos,
+      hasEnded: hasEnded ?? this.hasEnded,
     );
   }
 }
@@ -199,6 +209,7 @@ class HostEventFormController extends _$HostEventFormController {
       ok: (event) => state.copyWith(
         draft: event,
         isLoadingEvent: false,
+        hasEnded: event.hasEndedAt(ref.read(serverClockProvider).now()),
         photoSlots: _photoSlotsFor(event),
         uploadedPhotos: _uploadedPhotosFor(event),
       ),

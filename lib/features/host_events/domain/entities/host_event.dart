@@ -73,6 +73,18 @@ class HostEvent {
   /// When doors open for check-in — may be before [startAt].
   final DateTime? doorsOpenAt;
 
+  /// Whether the event is over as of [now] (pass server-corrected time).
+  /// The backend keeps a finished event `published` rather than moving it
+  /// to `completed`, so a published event counts as ended once its end
+  /// time has passed — or its start, when it has no end time, since
+  /// there's then no way to tell how long it runs.
+  bool hasEndedAt(DateTime now) {
+    if (status == HostEventLifecycleStatus.completed) return true;
+    if (status != HostEventLifecycleStatus.published) return false;
+    final end = endAt ?? startAt;
+    return end != null && !now.isBefore(end);
+  }
+
   /// The backend venue id this event is held at.
   final String venueId;
 

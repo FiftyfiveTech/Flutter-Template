@@ -154,9 +154,9 @@ class HostEventDto {
 
   /// Write payload for `POST`/`PATCH /api/v1/host/events`. `format` is
   /// sent as the backend's lowercase/underscored slug (e.g. "Board games"
-  /// -> "board_games") — only "dinner" has been confirmed against a real
-  /// response, so this transform is inferred, not verified for every
-  /// value in `kEventTypeOptions`. `coverPhotoId`/`photos` mirror
+  /// -> "board_games"), matching the backend's event-type enum
+  /// (`dinner`, `tasting`, `pottery`, `board_games`, `party`, `music`,
+  /// `dance`, `stand_up`, `other`). `coverPhotoId`/`photos` mirror
   /// `HostVenueDto.toJson`'s photo-id convention; `photos` always sends
   /// the full desired gallery list since `PATCH` replaces it wholesale.
   Map<String, dynamic> toJson() => {

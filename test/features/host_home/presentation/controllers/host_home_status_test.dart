@@ -129,4 +129,66 @@ void main() {
       );
     });
   });
+
+  group('check-in window', () {
+    bool canCheckIn(
+      DateTime now, {
+      HostEventLifecycleStatus status = HostEventLifecycleStatus.published,
+    }) => canOpenCheckIn(_event(status, startAt: start, endAt: end), now);
+
+    test('closed until 12h before start', () {
+      expect(canCheckIn(start.subtract(const Duration(hours: 13))), isFalse);
+      expect(canCheckIn(start.subtract(const Duration(hours: 11))), isTrue);
+    });
+
+    test('open while live', () {
+      expect(canCheckIn(start.add(const Duration(hours: 1))), isTrue);
+    });
+
+    test('closes the moment the event ends', () {
+      expect(canCheckIn(end.subtract(const Duration(minutes: 1))), isTrue);
+      expect(canCheckIn(end), isFalse);
+      expect(canCheckIn(end.add(const Duration(hours: 1))), isFalse);
+    });
+
+    test('never for drafts, in-review, cancelled or completed events', () {
+      for (final status in [
+        HostEventLifecycleStatus.draft,
+        HostEventLifecycleStatus.submitted,
+        HostEventLifecycleStatus.cancelled,
+        HostEventLifecycleStatus.completed,
+      ]) {
+        expect(canCheckIn(start, status: status), isFalse, reason: '$status');
+      }
+    });
+  });
+
+  group('home ordering', () {
+    HostHomeEvent homeEvent(String id, HostEventStatus status) => HostHomeEvent(
+      id: id,
+      title: id,
+      formattedSchedule: '',
+      status: status,
+      soldCount: null,
+      capacity: 40,
+    );
+
+    test('completed events sink below the rest, order otherwise kept', () {
+      final sorted = sortForHome([
+        homeEvent('done-1', HostEventStatus.completed),
+        homeEvent('upcoming', HostEventStatus.upcoming),
+        homeEvent('done-2', HostEventStatus.completed),
+        homeEvent('live', HostEventStatus.live),
+        homeEvent('draft', HostEventStatus.draft),
+      ]);
+
+      expect(sorted.map((e) => e.id), [
+        'upcoming',
+        'live',
+        'draft',
+        'done-1',
+        'done-2',
+      ]);
+    });
+  });
 }

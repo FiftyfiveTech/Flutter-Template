@@ -3,18 +3,36 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../shared/widgets/ah_button.dart';
 import '../../domain/entities/host_home_event.dart';
 
 class HostHomeEventCard extends StatelessWidget {
-  const HostHomeEventCard({super.key, required this.event, this.onTap});
+  const HostHomeEventCard({
+    super.key,
+    required this.event,
+    this.onTap,
+    this.onCheckIn,
+  });
 
   final HostHomeEvent event;
   final VoidCallback? onTap;
+
+  /// Shown as a "Check in guests" button when [HostHomeEvent.canCheckIn].
+  final VoidCallback? onCheckIn;
 
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
     final borderRadius = BorderRadius.circular(AppSpacing.radiusCard);
+    // An ended event can't be acted on any more — the card is muted and
+    // offers no actions; tapping it only opens the read-only details.
+    final isEnded = event.status == HostEventStatus.completed;
+    final primaryText = isEnded
+        ? AppColors.textTertiary
+        : AppColors.textPrimary;
+    final secondaryText = isEnded
+        ? AppColors.textTertiary
+        : AppColors.textSecondary;
 
     return Material(
       color: Colors.transparent,
@@ -24,7 +42,9 @@ class HostHomeEventCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: isEnded
+                ? AppColors.backgroundSecondary
+                : AppColors.surfaceCard,
             borderRadius: borderRadius,
             border: Border.all(color: AppColors.borderDefault),
           ),
@@ -37,9 +57,7 @@ class HostHomeEventCard extends StatelessWidget {
                   const Spacer(),
                   Text(
                     event.soldSummary,
-                    style: typography.caption.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                    style: typography.caption.copyWith(color: secondaryText),
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   const Icon(
@@ -54,16 +72,22 @@ class HostHomeEventCard extends StatelessWidget {
                 event.title,
                 style: typography.h3.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: primaryText,
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 event.formattedSchedule,
-                style: typography.caption.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: typography.caption.copyWith(color: secondaryText),
               ),
+              if (!isEnded && event.canCheckIn && onCheckIn != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                AhButton(
+                  label: 'Check in guests',
+                  fullWidth: true,
+                  onPressed: onCheckIn,
+                ),
+              ],
             ],
           ),
         ),
@@ -101,7 +125,7 @@ class _StatusBadge extends StatelessWidget {
       HostEventStatus.completed => (
         'Completed',
         Icons.check_circle_outline,
-        AppColors.statusSuccess,
+        AppColors.textTertiary,
       ),
       HostEventStatus.cancelled => (
         'Cancelled',

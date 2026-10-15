@@ -156,6 +156,10 @@ class HostHomePage extends ConsumerWidget {
                               ref,
                               '/host/events/${event.id}',
                             ),
+                            onCheckIn: () => context.push(
+                              '/host/events/${event.id}/check-in',
+                              extra: event.title,
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.cardGap),
                         ],

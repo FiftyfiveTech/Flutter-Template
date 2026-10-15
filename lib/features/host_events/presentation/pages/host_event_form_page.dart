@@ -246,7 +246,10 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                           children: [
                             if (!state.isEditable) ...[
                               AhAlertBanner(
-                                message: _statusMessage(draft.status),
+                                message: _statusMessage(
+                                  draft.status,
+                                  hasEnded: state.hasEnded,
+                                ),
                                 tone:
                                     draft.status ==
                                         HostEventLifecycleStatus.cancelled
@@ -526,7 +529,11 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
   }
 }
 
-String _statusMessage(HostEventLifecycleStatus status) {
+String _statusMessage(
+  HostEventLifecycleStatus status, {
+  required bool hasEnded,
+}) {
+  if (hasEnded) return "This event has ended. It can't be changed any more.";
   return switch (status) {
     HostEventLifecycleStatus.submitted =>
       "Submitted for review. It goes live once it's approved, and can't be "

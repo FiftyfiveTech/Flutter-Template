@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../features/host_check_in/data/local/check_in_tables.dart';
 import '../../features/host_onboarding/data/local/host_onboarding_progress_table.dart';
 import '../../features/host_profile/data/local/host_profile_table.dart';
 import 'host_session_table.dart';
@@ -18,6 +19,10 @@ part 'app_database.g.dart';
     HostSessionTable,
     HostOnboardingProgressTable,
     HostProfileTable,
+    CheckInManifestTable,
+    CheckInPendingTable,
+    CheckInConflictTable,
+    CheckInDeviceTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -25,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -40,6 +45,12 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         await m.createTable(hostProfileTable);
+      }
+      if (from < 5) {
+        await m.createTable(checkInManifestTable);
+        await m.createTable(checkInPendingTable);
+        await m.createTable(checkInConflictTable);
+        await m.createTable(checkInDeviceTable);
       }
     },
   );

@@ -8,17 +8,20 @@ import '../../core/theme/app_typography.dart';
 /// Circular avatar showing a locally stored photo when [photoPath] is
 /// set (and the file still exists), otherwise the initials of [name] —
 /// or a generic person placeholder when there's no name to draw from.
-/// Reads from disk only, so it renders identically offline.
+/// [photoUrl] (a remote photo, e.g. a guest's at the door) is used when
+/// there's no local [photoPath]; it falls back to initials offline.
 class AhAvatar extends StatelessWidget {
   const AhAvatar({
     super.key,
     required this.name,
     this.photoPath,
+    this.photoUrl,
     this.radius = 24,
   });
 
   final String name;
   final String? photoPath;
+  final String? photoUrl;
   final double radius;
 
   static String initialsOf(String name) {
@@ -45,25 +48,37 @@ class AhAvatar extends StatelessWidget {
             ),
           );
     final size = radius * 2;
+    final cacheWidth = (size * MediaQuery.devicePixelRatioOf(context)).round();
 
     return CircleAvatar(
       radius: radius,
       backgroundColor: AppColors.actionPrimary,
-      child: photoPath == null
-          ? initials
-          : ClipOval(
+      child: photoPath != null
+          ? ClipOval(
               child: Image.file(
                 File(photoPath!),
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
-                cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
-                    .round(),
+                cacheWidth: cacheWidth,
                 // Missing/corrupt file (e.g. wiped app storage) — fall
                 // back to initials rather than a broken-image box.
                 errorBuilder: (_, _, _) => Center(child: initials),
               ),
-            ),
+            )
+          : photoUrl != null && photoUrl!.isNotEmpty
+          ? ClipOval(
+              child: Image.network(
+                photoUrl!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                cacheWidth: cacheWidth,
+                // Offline or a dead link: initials, not a broken image.
+                errorBuilder: (_, _, _) => Center(child: initials),
+              ),
+            )
+          : initials,
     );
   }
 }

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/session_providers.dart';
 import '../../../../core/time/server_clock.dart';
 import '../../../../core/utils/host_name_fallback.dart';
+import '../../../host_check_in/presentation/controllers/check_in_api_providers.dart';
 import '../../../host_events/domain/entities/host_event.dart';
 import '../../../host_events/presentation/controllers/host_events_api_providers.dart';
 import '../../../host_onboarding/presentation/controllers/host_is_verified.dart';
@@ -64,6 +67,10 @@ class HostHomeController extends _$HostHomeController {
 
   Future<void> loadSummary() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
+    // Door check-in closes when an event ends, so offline scans still
+    // queued on this phone are pushed from here. Fire-and-forget: the
+    // queue survives a failed attempt and is retried on the next load.
+    unawaited(ref.read(syncAllPendingCheckInsUseCaseProvider)());
     // The home-summary placeholder always reports isVerified: false, so
     // verification comes from the real document-review status (the same
     // source as H-04) — fetched alongside so the badge never flashes
@@ -120,7 +127,9 @@ class HostHomeController extends _$HostHomeController {
         final now = ref.read(serverClockProvider).now();
         state = state.copyWith(
           summary: state.summary!.copyWith(
-            events: events.map((e) => _toHostHomeEvent(e, now)).toList(),
+            events: sortForHome(
+              events.map((e) => _toHostHomeEvent(e, now)).toList(),
+            ),
           ),
         );
       },
@@ -188,12 +197,23 @@ HostEventStatus toHostHomeStatus(HostEvent event, DateTime now) {
     case HostEventLifecycleStatus.completed:
       return HostEventStatus.completed;
     case HostEventLifecycleStatus.published:
+      if (event.hasEndedAt(now)) return HostEventStatus.completed;
       final start = event.startAt;
-      final end = event.endAt;
       if (start == null || now.isBefore(start)) return HostEventStatus.upcoming;
-      if (end != null && now.isBefore(end)) return HostEventStatus.live;
-      return HostEventStatus.completed;
+      return HostEventStatus.live;
   }
+}
+
+/// Completed events sink below everything else (live, upcoming, drafts…)
+/// so what still needs the host's attention stays at the top. Otherwise
+/// the API's order is kept — this is a stable partition, not a re-sort.
+@visibleForTesting
+List<HostHomeEvent> sortForHome(List<HostHomeEvent> events) {
+  bool isCompleted(HostHomeEvent e) => e.status == HostEventStatus.completed;
+  return [
+    ...events.where((e) => !isCompleted(e)),
+    ...events.where(isCompleted),
+  ];
 }
 
 HostHomeEvent _toHostHomeEvent(HostEvent event, DateTime now) {
@@ -205,5 +225,23 @@ HostHomeEvent _toHostHomeEvent(HostEvent event, DateTime now) {
     // The real events API has no sold-count field yet.
     soldCount: null,
     capacity: event.capacity,
+    canCheckIn: canOpenCheckIn(event, now),
   );
+}
+
+/// Door check-in opens [checkInOpensBefore] the start (so the offline
+/// guest list can be downloaded while venue wifi still works) and closes
+/// when the event ends — nothing can be done to an ended event. Offline
+/// scans still queued at that point are synced from Home instead (see
+/// [HostHomeController.loadSummary]).
+@visibleForTesting
+const checkInOpensBefore = Duration(hours: 12);
+
+@visibleForTesting
+bool canOpenCheckIn(HostEvent event, DateTime now) {
+  if (event.status != HostEventLifecycleStatus.published) return false;
+  if (event.hasEndedAt(now)) return false;
+  final start = event.startAt;
+  if (start == null) return false;
+  return !now.isBefore(start.subtract(checkInOpensBefore));
 }

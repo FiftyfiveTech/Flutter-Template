@@ -2,8 +2,16 @@ import 'package:dio/dio.dart';
 import 'package:meta/meta.dart';
 
 class NetworkException implements Exception {
-  NetworkException(this.message);
+  NetworkException(this.message, {this.statusCode, this.code});
   final String message;
+
+  /// HTTP status of the error response; `null` when no response arrived at
+  /// all (timeout, no connection) — i.e. the server was never reached.
+  final int? statusCode;
+
+  /// The backend envelope's stable machine-readable `code` (e.g.
+  /// `MISSING_TOKEN`). Branch on this, never on [message].
+  final String? code;
 }
 
 class BaseApiClient {
@@ -31,7 +39,7 @@ class BaseApiClient {
         options: requestOptions,
       );
     } on DioException catch (e) {
-      throw NetworkException(_handleError(e));
+      throw _toNetworkException(e);
     }
   }
 
@@ -53,7 +61,7 @@ class BaseApiClient {
         options: requestOptions,
       );
     } on DioException catch (e) {
-      throw NetworkException(_handleError(e));
+      throw _toNetworkException(e);
     }
   }
 
@@ -75,7 +83,7 @@ class BaseApiClient {
         options: requestOptions,
       );
     } on DioException catch (e) {
-      throw NetworkException(_handleError(e));
+      throw _toNetworkException(e);
     }
   }
 
@@ -97,7 +105,7 @@ class BaseApiClient {
         options: requestOptions,
       );
     } on DioException catch (e) {
-      throw NetworkException(_handleError(e));
+      throw _toNetworkException(e);
     }
   }
 
@@ -119,8 +127,18 @@ class BaseApiClient {
         options: requestOptions,
       );
     } on DioException catch (e) {
-      throw NetworkException(_handleError(e));
+      throw _toNetworkException(e);
     }
+  }
+
+  NetworkException _toNetworkException(DioException error) {
+    final data = error.response?.data;
+    final code = data is Map ? data['code']?.toString() : null;
+    return NetworkException(
+      _handleError(error),
+      statusCode: error.response?.statusCode,
+      code: code,
+    );
   }
 
   String _handleError(DioException error) {

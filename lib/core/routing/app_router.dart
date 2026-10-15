@@ -1,5 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/host_check_in/presentation/pages/check_in_guest_list_page.dart';
+import '../../features/host_check_in/presentation/pages/check_in_hub_page.dart';
+import '../../features/host_check_in/presentation/pages/check_in_scanner_page.dart';
 import '../../features/host_events/presentation/pages/host_event_form_page.dart';
 import '../../features/host_home/presentation/pages/host_home_page.dart';
 import '../../features/host_login/presentation/pages/otp_entry_page.dart';
@@ -81,6 +84,28 @@ final appRouter = GoRouter(
       name: 'hostEventDetails',
       builder: (context, state) =>
           HostEventFormPage(eventId: state.pathParameters['id']),
+    ),
+    // Door check-in. `extra` carries the event title for the hub's app
+    // bar; a deep link without it falls back to a generic title.
+    GoRoute(
+      path: '/host/events/:id/check-in',
+      name: 'hostCheckIn',
+      builder: (context, state) => CheckInHubPage(
+        eventId: state.pathParameters['id']!,
+        eventTitle: state.extra as String?,
+      ),
+    ),
+    GoRoute(
+      path: '/host/events/:id/check-in/scan',
+      name: 'hostCheckInScan',
+      builder: (context, state) =>
+          CheckInScannerPage(eventId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/host/events/:id/check-in/guests',
+      name: 'hostCheckInGuests',
+      builder: (context, state) =>
+          CheckInGuestListPage(eventId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/host/you',
