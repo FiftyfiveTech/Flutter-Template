@@ -4,6 +4,7 @@ import '../../../../core/di/session_providers.dart';
 import '../../../../core/utils/host_name_fallback.dart';
 import '../../../host_home/presentation/controllers/host_home_api_providers.dart';
 import '../../../host_onboarding/presentation/controllers/host_is_verified.dart';
+import '../../../host_venues/presentation/controllers/host_venues_api_providers.dart';
 import '../../domain/entities/host_profile.dart';
 import 'host_profile_providers.dart';
 
@@ -89,28 +90,39 @@ class HostYouController extends _$HostYouController {
     // Verification comes from the real document-review status (same rule
     // as H-04), not the home-summary placeholder's hardcoded `false`. If
     // that fetch fails, keep the cached value instead of downgrading.
+    // The home-summary's savedVenuesCount is placeholder seed data (always
+    // 0), so the count comes from the real venues API — same as Home. A
+    // failed venues fetch keeps the cached count.
     final summaryFuture = ref.read(getHostHomeSummaryUseCaseProvider)();
     final verifiedFuture = fetchHostIsVerified(ref);
+    final venuesFuture = ref.read(getHostVenuesUseCaseProvider)();
     final result = await summaryFuture;
     final fetchedIsVerified = await verifiedFuture;
+    final venuesResult = await venuesFuture;
     if (!ref.mounted) return;
+    final fetchedVenuesCount = venuesResult.when(
+      ok: (venues) => venues.length,
+      err: (_) => null,
+    );
     state = result.when(
       ok: (summary) {
         final hostName = resolveHostName(summary.hostName, sessionBusinessName);
         final isVerified =
             fetchedIsVerified ?? cached?.isVerified ?? summary.isVerified;
+        final savedVenuesCount =
+            fetchedVenuesCount ?? cached?.savedVenuesCount ?? 0;
         ref.read(cacheHostProfileUseCaseProvider)(
           HostProfile(
             userId: _userId,
             hostName: hostName,
             isVerified: isVerified,
-            savedVenuesCount: summary.savedVenuesCount,
+            savedVenuesCount: savedVenuesCount,
           ),
         );
         return state.copyWith(
           hostName: hostName,
           isVerified: isVerified,
-          savedVenuesCount: summary.savedVenuesCount,
+          savedVenuesCount: savedVenuesCount,
           isLoading: false,
         );
       },

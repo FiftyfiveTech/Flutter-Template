@@ -16,8 +16,9 @@ import '../../../host_home/presentation/widgets/host_home_bottom_nav.dart';
 import '../controllers/host_you_controller.dart';
 import '../../../../shared/widgets/ah_message_sheet.dart';
 
-/// H-12 · You — account summary, appearance, venues shortcut and session
-/// actions. Appearance is shown read-only (locked to System) since the app
+/// H-12 · Profile — account summary, appearance, venues shortcut and session
+/// actions. The Account section (payout account) is hidden until payouts
+/// exist. Appearance is shown read-only (locked to System) since the app
 /// currently ships a single light theme only — no ThemeMode infra exists yet.
 class HostYouPage extends ConsumerWidget {
   const HostYouPage({super.key});
@@ -36,6 +37,14 @@ class HostYouPage extends ConsumerWidget {
   /// that completed meanwhile.
   Future<void> _openVerification(BuildContext context, WidgetRef ref) async {
     await context.push('/host/verification');
+    if (!context.mounted) return;
+    ref.read(hostYouControllerProvider.notifier).load();
+  }
+
+  /// Reloads on return so the saved-venues count reflects venues added or
+  /// removed meanwhile.
+  Future<void> _openVenues(BuildContext context, WidgetRef ref) async {
+    await context.push('/host/venues');
     if (!context.mounted) return;
     ref.read(hostYouControllerProvider.notifier).load();
   }
@@ -129,7 +138,7 @@ class HostYouPage extends ConsumerWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'You',
+                  'Profile',
                   style: typography.h1.copyWith(color: AppColors.textPrimary),
                 ),
               ),
@@ -196,21 +205,8 @@ class HostYouPage extends ConsumerWidget {
                           selectedIndex: 2,
                         ),
                         const SizedBox(height: AppSpacing.lg),
-                        _SectionLabel('ACCOUNT', typography: typography),
-                        const SizedBox(height: AppSpacing.sm),
                         AhCard(
-                          onTap: () => showAhMessageSheet(
-                            context,
-                            message: 'Payout settings — coming soon',
-                          ),
-                          child: const _AccountRow(
-                            icon: Icons.account_balance_outlined,
-                            label: 'Payout account · HDFC ••4412',
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.cardGap),
-                        AhCard(
-                          onTap: () => context.push('/host/venues'),
+                          onTap: () => _openVenues(context, ref),
                           child: _AccountRow(
                             icon: Icons.storefront_outlined,
                             label: 'Venues',
