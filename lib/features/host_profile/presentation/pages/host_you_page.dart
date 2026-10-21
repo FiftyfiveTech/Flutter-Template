@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/document_picker_providers.dart';
 import '../../../../core/di/session_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -16,21 +15,18 @@ import '../../../host_home/presentation/widgets/host_home_bottom_nav.dart';
 import '../controllers/host_you_controller.dart';
 import '../../../../shared/widgets/ah_message_sheet.dart';
 
-/// H-12 · Profile — account summary, appearance, venues shortcut and session
-/// actions. The Account section (payout account) is hidden until payouts
+/// H-12 · Profile — account summary (tap to edit), appearance, venues
+/// shortcut and session actions. The Account section (payout account) is hidden until payouts
 /// exist. Appearance is shown read-only (locked to System) since the app
 /// currently ships a single light theme only — no ThemeMode infra exists yet.
 class HostYouPage extends ConsumerWidget {
   const HostYouPage({super.key});
 
-  static const _photoExtensions = ['jpg', 'jpeg', 'png', 'heic', 'webp'];
-
-  Future<void> _pickPhoto(WidgetRef ref) async {
-    final picked = await ref
-        .read(documentPickerProvider)
-        .pickFile(allowedExtensions: _photoExtensions);
-    if (picked == null) return;
-    await ref.read(hostYouControllerProvider.notifier).setPhoto(picked.path);
+  /// Reloads on return so the card reflects the saved name/photo.
+  Future<void> _openEditProfile(BuildContext context, WidgetRef ref) async {
+    await context.push('/host/you/edit');
+    if (!context.mounted) return;
+    ref.read(hostYouControllerProvider.notifier).load();
   }
 
   /// Opens H-04 and reloads on return so the badge reflects any review
@@ -159,13 +155,12 @@ class HostYouPage extends ConsumerWidget {
                       ),
                       children: [
                         AhCard(
+                          onTap: () => _openEditProfile(context, ref),
                           child: Row(
                             children: [
                               _EditableAvatar(
                                 name: state.hostName ?? '',
                                 photoPath: state.photoPath,
-                                isSaving: state.isSavingPhoto,
-                                onTap: () => _pickPhoto(ref),
                               ),
                               const SizedBox(width: AppSpacing.sm + 2),
                               Expanded(
@@ -249,56 +244,40 @@ class HostYouPage extends ConsumerWidget {
   }
 }
 
+/// The profile card's avatar with an edit hint — the whole card is the tap
+/// target that opens Edit profile.
 class _EditableAvatar extends StatelessWidget {
-  const _EditableAvatar({
-    required this.name,
-    required this.photoPath,
-    required this.isSaving,
-    required this.onTap,
-  });
+  const _EditableAvatar({required this.name, required this.photoPath});
 
   final String name;
   final String? photoPath;
-  final bool isSaving;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      button: true,
-      label: 'Change profile photo',
-      child: GestureDetector(
-        onTap: isSaving ? null : onTap,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            AhAvatar(name: name, photoPath: photoPath),
-            if (isSaving)
-              const Positioned.fill(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.actionPrimaryFg,
-                ),
+      label: 'Edit profile',
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AhAvatar(name: name, photoPath: photoPath),
+          Positioned(
+            right: -2,
+            bottom: -2,
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.xs / 2),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceCard,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.borderDefault),
               ),
-            Positioned(
-              right: -2,
-              bottom: -2,
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.xs / 2),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceCard,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderDefault),
-                ),
-                child: const Icon(
-                  Icons.photo_camera_outlined,
-                  size: 12,
-                  color: AppColors.textSecondary,
-                ),
+              child: const Icon(
+                Icons.edit_outlined,
+                size: 12,
+                color: AppColors.textSecondary,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

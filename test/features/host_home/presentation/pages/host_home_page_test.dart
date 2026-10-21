@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:host_mobile_app/core/di/database_providers.dart';
+import 'package:host_mobile_app/core/di/session_providers.dart';
 import 'package:host_mobile_app/core/error/failures.dart';
 import 'package:host_mobile_app/core/error/result.dart';
+import 'package:host_mobile_app/core/session/host_session.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/features/host_home/domain/entities/host_home_event.dart';
 import 'package:host_mobile_app/features/host_home/domain/entities/host_home_summary.dart';
@@ -14,6 +17,8 @@ import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_do
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_verification_status.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_document_status_repository.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_document_status_api_providers.dart';
+
+import '../../../../support/fakes.dart';
 
 class _FakeHostHomeRepository implements HostHomeRepository {
   _FakeHostHomeRepository();
@@ -108,6 +113,9 @@ void main() {
         hostHomeRepositoryProvider.overrideWithValue(repo),
         hostDocumentStatusRepositoryProvider.overrideWithValue(
           _FakeDocumentStatusRepository(documents),
+        ),
+        hostSessionLocalDatasourceProvider.overrideWithValue(
+          FakeHostSessionLocalDatasource(),
         ),
       ],
       child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
@@ -206,5 +214,31 @@ void main() {
     await tester.pump();
 
     expect(find.text('Payouts — coming soon'), findsOneWidget);
+  });
+
+  testWidgets('header follows a business name changed via Edit profile', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+    expect(find.text('Cellar Door Collective'), findsOneWidget);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HostHomePage)),
+    );
+    container
+        .read(hostSessionControllerProvider.notifier)
+        .setSession(
+          const HostSession(
+            accessToken: 't',
+            userId: 'u1',
+            accountStatus: 'active',
+            businessName: 'Renamed Collective',
+          ),
+        );
+    await tester.pump();
+
+    expect(find.text('Renamed Collective'), findsOneWidget);
+    expect(find.text('Cellar Door Collective'), findsNothing);
   });
 }

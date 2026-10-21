@@ -2,7 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:meta/meta.dart';
 
 class NetworkException implements Exception {
-  NetworkException(this.message, {this.statusCode, this.code});
+  NetworkException(
+    this.message, {
+    this.statusCode,
+    this.code,
+    this.fieldErrors = const {},
+  });
   final String message;
 
   /// HTTP status of the error response; `null` when no response arrived at
@@ -12,6 +17,12 @@ class NetworkException implements Exception {
   /// The backend envelope's stable machine-readable `code` (e.g.
   /// `MISSING_TOKEN`). Branch on this, never on [message].
   final String? code;
+
+  /// First message per rejected field from a `VALIDATION_FAILED` envelope's
+  /// `errors: [{field, errors}]`, keyed by the field's dot-path (e.g.
+  /// `firstName`) — lets a form show the server's rule under the right
+  /// input. Empty for any other error.
+  final Map<String, String> fieldErrors;
 }
 
 class BaseApiClient {
@@ -138,7 +149,21 @@ class BaseApiClient {
       _handleError(error),
       statusCode: error.response?.statusCode,
       code: code,
+      fieldErrors: data is Map ? _fieldErrors(data['errors']) : const {},
     );
+  }
+
+  Map<String, String> _fieldErrors(Object? errors) {
+    if (errors is! List) return const {};
+    final result = <String, String>{};
+    for (final entry in errors) {
+      if (entry is! Map) continue;
+      final field = entry['field']?.toString();
+      final inner = entry['errors'];
+      if (field == null || inner is! List || inner.isEmpty) continue;
+      result.putIfAbsent(field, () => inner.first.toString());
+    }
+    return result;
   }
 
   String _handleError(DioException error) {

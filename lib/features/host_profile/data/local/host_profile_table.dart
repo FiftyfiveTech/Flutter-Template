@@ -11,6 +11,8 @@ class HostProfileTable extends Table {
   IntColumn get id => integer().withDefault(const Constant(0))();
   TextColumn get userId => text()();
   TextColumn get hostName => text().withDefault(const Constant(''))();
+  TextColumn get firstName => text().nullable()();
+  TextColumn get lastName => text().nullable()();
   BoolColumn get isVerified => boolean().withDefault(const Constant(false))();
   IntColumn get savedVenuesCount => integer().withDefault(const Constant(0))();
   TextColumn get photoPath => text().nullable()();

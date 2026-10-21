@@ -60,6 +60,19 @@ class HostHomeState {
 class HostHomeController extends _$HostHomeController {
   @override
   HostHomeState build() {
+    // The header name comes from the session's business name, which Edit
+    // profile updates while Home stays mounted underneath — mirror it
+    // live rather than only on the next loadSummary.
+    ref.listen(hostSessionControllerProvider, (previous, next) {
+      final businessName = next?.businessName ?? '';
+      final summary = state.summary;
+      if (businessName == (previous?.businessName ?? '') ||
+          businessName.isEmpty ||
+          summary == null) {
+        return;
+      }
+      state = state.copyWith(summary: summary.copyWith(hostName: businessName));
+    });
     // Initial fetch
     Future.microtask(loadSummary);
     return const HostHomeState(isLoading: true);

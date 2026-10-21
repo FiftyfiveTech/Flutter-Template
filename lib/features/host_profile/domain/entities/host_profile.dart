@@ -5,10 +5,15 @@
 /// app's private documents directory (never the picker's original path),
 /// so it survives restarts and works without a connection. `null` when
 /// no avatar has been picked yet — the UI falls back to initials.
+///
+/// [firstName]/[lastName] are only known once the host has saved them via
+/// Edit profile (there's no profile GET endpoint) — `null` until then.
 class HostProfile {
   const HostProfile({
     required this.userId,
     this.hostName = '',
+    this.firstName,
+    this.lastName,
     this.isVerified = false,
     this.savedVenuesCount = 0,
     this.photoPath,
@@ -16,12 +21,16 @@ class HostProfile {
 
   final String userId;
   final String hostName;
+  final String? firstName;
+  final String? lastName;
   final bool isVerified;
   final int savedVenuesCount;
   final String? photoPath;
 
   HostProfile copyWith({
     String? hostName,
+    String? firstName,
+    String? lastName,
     bool? isVerified,
     int? savedVenuesCount,
     String? photoPath,
@@ -29,6 +38,8 @@ class HostProfile {
     return HostProfile(
       userId: userId,
       hostName: hostName ?? this.hostName,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       isVerified: isVerified ?? this.isVerified,
       savedVenuesCount: savedVenuesCount ?? this.savedVenuesCount,
       photoPath: photoPath ?? this.photoPath,

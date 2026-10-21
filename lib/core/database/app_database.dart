@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -51,6 +51,11 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(checkInPendingTable);
         await m.createTable(checkInConflictTable);
         await m.createTable(checkInDeviceTable);
+      }
+      // Below 4 the table is created above with these columns already.
+      if (from >= 4 && from < 6) {
+        await m.addColumn(hostProfileTable, hostProfileTable.firstName);
+        await m.addColumn(hostProfileTable, hostProfileTable.lastName);
       }
     },
   );

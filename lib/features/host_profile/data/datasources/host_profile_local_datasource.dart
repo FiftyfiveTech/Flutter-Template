@@ -22,6 +22,8 @@ class DriftHostProfileLocalDatasource implements HostProfileLocalDatasource {
     return HostProfile(
       userId: row.userId,
       hostName: row.hostName,
+      firstName: row.firstName,
+      lastName: row.lastName,
       isVerified: row.isVerified,
       savedVenuesCount: row.savedVenuesCount,
       photoPath: row.photoPath,
@@ -37,6 +39,8 @@ class DriftHostProfileLocalDatasource implements HostProfileLocalDatasource {
             id: const Value(0),
             userId: profile.userId,
             hostName: Value(profile.hostName),
+            firstName: Value(profile.firstName),
+            lastName: Value(profile.lastName),
             isVerified: Value(profile.isVerified),
             savedVenuesCount: Value(profile.savedVenuesCount),
             photoPath: Value(profile.photoPath),

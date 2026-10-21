@@ -17,7 +17,6 @@ class HostYouState {
     this.savedVenuesCount = 0,
     this.photoPath,
     this.isLoading = false,
-    this.isSavingPhoto = false,
     this.errorMessage,
   });
 
@@ -26,7 +25,6 @@ class HostYouState {
   final int savedVenuesCount;
   final String? photoPath;
   final bool isLoading;
-  final bool isSavingPhoto;
   final String? errorMessage;
 
   HostYouState copyWith({
@@ -35,7 +33,6 @@ class HostYouState {
     int? savedVenuesCount,
     String? photoPath,
     bool? isLoading,
-    bool? isSavingPhoto,
     String? errorMessage,
   }) {
     return HostYouState(
@@ -44,7 +41,6 @@ class HostYouState {
       savedVenuesCount: savedVenuesCount ?? this.savedVenuesCount,
       photoPath: photoPath ?? this.photoPath,
       isLoading: isLoading ?? this.isLoading,
-      isSavingPhoto: isSavingPhoto ?? this.isSavingPhoto,
       errorMessage: errorMessage,
     );
   }
@@ -133,21 +129,6 @@ class HostYouController extends _$HostYouController {
         isLoading: false,
         errorMessage: cached == null ? failure.message : null,
       ),
-    );
-  }
-
-  /// Stores [sourcePath] (a just-picked image) as the host's avatar.
-  Future<void> setPhoto(String sourcePath) async {
-    state = state.copyWith(isSavingPhoto: true, errorMessage: null);
-    final result = await ref.read(setHostProfilePhotoUseCaseProvider)(
-      _userId,
-      sourcePath,
-    );
-    if (!ref.mounted) return;
-    state = result.when(
-      ok: (path) => state.copyWith(photoPath: path, isSavingPhoto: false),
-      err: (failure) =>
-          state.copyWith(isSavingPhoto: false, errorMessage: failure.message),
     );
   }
 
