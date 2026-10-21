@@ -41,6 +41,9 @@ class AhDateField extends StatelessWidget {
   final DateTime? lastDate;
 
   Future<void> _pick(BuildContext context) async {
+    // Drop focus first: the dialog hands focus back to whatever had it on
+    // close, which would reopen a search field's list or the keyboard.
+    FocusManager.instance.primaryFocus?.unfocus();
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,

@@ -46,8 +46,8 @@ class AhAsyncSearchField<T extends Object> extends StatefulWidget {
   /// is meant to return a default/full list for an empty query.
   final bool searchOnEmptyQuery;
 
-  /// Empties the field and closes the keyboard after each pick, instead of
-  /// showing the picked option — for multi-select use.
+  /// Empties the field after each pick, instead of showing the picked
+  /// option — for multi-select use.
   final bool clearOnSelect;
 
   @override
@@ -82,10 +82,12 @@ class _AhAsyncSearchFieldState<T extends Object>
     super.dispose();
   }
 
+  /// A pick completes the field, so focus is released — otherwise it
+  /// lingers here and the options list reopens whenever focus is handed
+  /// back (e.g. when a date picker dialog closes).
   void _onSelected(T option) {
     widget.onSelected(option);
-    if (!widget.clearOnSelect) return;
-    _controller.clear();
+    if (widget.clearOnSelect) _controller.clear();
     _focusNode.unfocus();
   }
 

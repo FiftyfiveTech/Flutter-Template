@@ -38,6 +38,9 @@ const _slotSize = 96.0;
 /// empty ones" (e.g. venue photos). Each slot shows the picked/uploaded
 /// image, an upload spinner, a retry affordance on error, or a camera
 /// placeholder with its 1-based label when empty.
+///
+/// A null [onTapSlot] makes the row read-only: slots can't be tapped, but
+/// the row still scrolls — unlike wrapping it in an `IgnorePointer`.
 class AhPhotoSlots extends StatelessWidget {
   const AhPhotoSlots({
     super.key,
@@ -48,7 +51,7 @@ class AhPhotoSlots extends StatelessWidget {
 
   final int count;
   final List<AhPhotoSlotData> slots;
-  final ValueChanged<int> onTapSlot;
+  final ValueChanged<int>? onTapSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +66,7 @@ class AhPhotoSlots extends StatelessWidget {
               child: _PhotoSlot(
                 index: i,
                 data: i < slots.length ? slots[i] : const AhPhotoSlotData(),
-                onTap: () => onTapSlot(i),
+                onTap: onTapSlot == null ? null : () => onTapSlot!(i),
               ),
             ),
           ],
@@ -82,7 +85,7 @@ class _PhotoSlot extends StatelessWidget {
 
   final int index;
   final AhPhotoSlotData data;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

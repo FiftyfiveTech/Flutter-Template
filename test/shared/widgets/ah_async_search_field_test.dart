@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/shared/widgets/ah_async_search_field.dart';
+import 'package:host_mobile_app/shared/widgets/ah_date_time_field.dart';
 
 const _options = ['Dinner', 'Tasting', 'Board games'];
 
@@ -71,5 +72,55 @@ void main() {
     await tester.pump();
 
     expect(find.widgetWithText(TextField, 'Dinner'), findsOneWidget);
+  });
+
+  testWidgets('closing a date picker after a pick does not reopen the list', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: Column(
+            children: [
+              AhAsyncSearchField<String>(
+                label: 'Format',
+                value: '',
+                search: (query) async => _options,
+                displayStringForOption: (o) => o,
+                onSelected: (_) {},
+                debounce: Duration.zero,
+                searchOnEmptyQuery: true,
+              ),
+              AhDateTimeField(
+                label: 'Start date & time',
+                value: null,
+                onChanged: (_) {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(TextField));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, 'Dinner'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AhDateTimeField),
+        matching: find.byType(InkWell),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(ListTile, 'Tasting'), findsNothing);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.focusNode!.hasFocus, isFalse);
   });
 }
