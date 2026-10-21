@@ -6,7 +6,8 @@ import '../../../../core/di/document_compressor_providers.dart';
 import '../../../../core/files/document_compressor.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../host_onboarding/domain/entities/city.dart';
-import '../../../../shared/constants/event_types.dart';
+import '../../../../shared/constants/venue_types.dart';
+import '../../../../shared/utils/option_filter.dart';
 import '../../domain/entities/host_venue.dart';
 import '../../domain/entities/host_venue_photo.dart';
 import 'host_venues_api_providers.dart';
@@ -168,29 +169,29 @@ class HostVenueFormController extends _$HostVenueFormController {
     state = state.copyWith(draft: state.draft.copyWith(maxCapacity: value));
   }
 
-  /// Event types still available to add, filtered by [query] — feeds the
+  /// Venue types still available to add, filtered by [query] — feeds the
   /// searchable picker, so already-picked types aren't offered twice.
-  List<String> searchEventTypes(String query) => filterEventTypes(
-    kEventTypeOptions,
+  List<String> searchVenueTypes(String query) => filterOptions(
+    kVenueTypeOptions,
     query,
-    exclude: state.draft.allowedEventTypes,
+    exclude: state.draft.allowedVenueTypes,
   );
 
-  void addEventType(String type) {
-    final current = state.draft.allowedEventTypes;
+  void addVenueType(String type) {
+    final current = state.draft.allowedVenueTypes;
     if (current.contains(type)) return;
     state = state.copyWith(
-      draft: state.draft.copyWith(allowedEventTypes: [...current, type]),
+      draft: state.draft.copyWith(allowedVenueTypes: [...current, type]),
     );
   }
 
-  void toggleEventType(String type) {
-    final current = state.draft.allowedEventTypes;
+  void toggleVenueType(String type) {
+    final current = state.draft.allowedVenueTypes;
     final updated = current.contains(type)
         ? current.where((t) => t != type).toList()
         : [...current, type];
     state = state.copyWith(
-      draft: state.draft.copyWith(allowedEventTypes: updated),
+      draft: state.draft.copyWith(allowedVenueTypes: updated),
     );
   }
 
@@ -352,8 +353,8 @@ class HostVenueFormController extends _$HostVenueFormController {
       errors['maxCapacity'] = 'Capacity must be at least 1.';
     }
 
-    if (draft.allowedEventTypes.isEmpty) {
-      errors['eventTypes'] = 'Select at least one event type.';
+    if (draft.allowedVenueTypes.isEmpty) {
+      errors['venueTypes'] = 'Select at least one venue type.';
     }
     if (_successfulPhotoUploadCount() < kMinVenuePhotos) {
       errors['photos'] = 'Add at least $kMinVenuePhotos photos.';

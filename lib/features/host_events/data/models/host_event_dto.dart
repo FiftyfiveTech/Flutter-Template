@@ -72,7 +72,7 @@ class HostEventDto {
       id: (json['id'] ?? '').toString(),
       title: (json['title'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
-      format: _unslugFormat((json['format'] ?? '').toString()),
+      format: eventTypeFromApi((json['format'] ?? '').toString()),
       startAt: _parseApiDateTime(json['startsAt']),
       endAt: _parseApiDateTime(json['endsAt']),
       doorsOpenAt: _parseApiDateTime(json['doorsOpenAt']),
@@ -162,7 +162,7 @@ class HostEventDto {
   Map<String, dynamic> toJson() => {
     'title': title,
     'description': description,
-    'format': _formatSlug(format),
+    'format': eventTypeToApi(format),
     if (startAt != null) 'startsAt': _formatApiDateTime(startAt!),
     if (endAt != null) 'endsAt': _formatApiDateTime(endAt!),
     if (doorsOpenAt != null) 'doorsOpenAt': _formatApiDateTime(doorsOpenAt!),
@@ -231,22 +231,6 @@ HostEventLifecycleStatus _parseStatus(Object? value) {
     'completed' => HostEventLifecycleStatus.completed,
     _ => HostEventLifecycleStatus.unknown,
   };
-}
-
-String _formatSlug(String label) =>
-    label.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '_');
-
-/// Reverses [_formatSlug] — the dropdown's options are the display-cased
-/// `kEventTypeOptions` labels (e.g. "Board games"), so a raw slug read
-/// back from the API (e.g. "board_games") has to be mapped to the
-/// matching label before it'll show as selected instead of blank. Falls
-/// back to the raw slug for a value that doesn't match any known option,
-/// rather than silently blanking it.
-String _unslugFormat(String slug) {
-  for (final option in kEventTypeOptions) {
-    if (_formatSlug(option) == slug) return option;
-  }
-  return slug;
 }
 
 /// `yyyy-MM-dd HH:mm`, matching the request example exactly (no timezone

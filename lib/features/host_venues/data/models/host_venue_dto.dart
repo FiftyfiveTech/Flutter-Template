@@ -1,3 +1,4 @@
+import '../../../../shared/constants/venue_types.dart';
 import '../../domain/entities/host_venue.dart';
 import 'host_venue_photo_dto.dart';
 
@@ -12,13 +13,13 @@ class HostVenueDto {
     required this.cityName,
     required this.pincode,
     required this.maxCapacity,
-    required this.allowedEventTypes,
+    required this.allowedVenueTypes,
     required this.photos,
   });
 
   /// `GET /api/v1/venues` list items are a minimal projection — they omit
   /// `photos`, and (per an observed real response) also omit
-  /// `maxCapacity`/`allowedEventTypes` entirely. Only `GET
+  /// `maxCapacity`/`allowedVenueTypes` entirely. Only `GET
   /// /api/v1/venues/:id` and the create/edit responses include the full
   /// shape. Every field here is parsed defensively (falling back to an
   /// empty/zero value rather than throwing) so a minimal list item never
@@ -51,8 +52,8 @@ class HostVenueDto {
       cityName: cityName,
       pincode: (json['pincode'] ?? '').toString(),
       maxCapacity: (json['maxCapacity'] as num?)?.toInt() ?? 0,
-      allowedEventTypes: (json['allowedEventTypes'] as List<dynamic>? ?? [])
-          .map((e) => e.toString())
+      allowedVenueTypes: (json['allowedVenueTypes'] as List<dynamic>? ?? [])
+          .map((e) => venueTypeFromApi(e.toString()))
           .toList(),
       photos: (json['photos'] as List<dynamic>? ?? [])
           .map((e) => HostVenuePhotoDto.fromJson(e as Map<String, dynamic>))
@@ -71,7 +72,7 @@ class HostVenueDto {
       cityName: venue.cityName,
       pincode: venue.pincode,
       maxCapacity: venue.maxCapacity,
-      allowedEventTypes: venue.allowedEventTypes,
+      allowedVenueTypes: venue.allowedVenueTypes,
       photos: venue.photos
           .map((p) => HostVenuePhotoDto(id: p.id, url: p.url))
           .toList(),
@@ -87,7 +88,7 @@ class HostVenueDto {
   final String cityName;
   final String pincode;
   final int maxCapacity;
-  final List<String> allowedEventTypes;
+  final List<String> allowedVenueTypes;
   final List<HostVenuePhotoDto> photos;
 
   /// Write payload for `POST`/`PATCH`. `city` is sent as the bare ObjectId
@@ -105,7 +106,8 @@ class HostVenueDto {
     'city': cityId,
     'pincode': pincode,
     'maxCapacity': maxCapacity,
-    'allowedEventTypes': allowedEventTypes,
+    // Backend enum values (e.g. `board_games`), not the display labels.
+    'allowedVenueTypes': allowedVenueTypes.map(venueTypeToApi).toList(),
     'photos': photos.map((p) => p.id).toList(),
   };
 
@@ -120,7 +122,7 @@ class HostVenueDto {
       cityName: cityName,
       pincode: pincode,
       maxCapacity: maxCapacity,
-      allowedEventTypes: allowedEventTypes,
+      allowedVenueTypes: allowedVenueTypes,
       photos: photos.map((p) => p.toDomain()).toList(),
     );
   }

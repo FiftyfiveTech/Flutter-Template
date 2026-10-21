@@ -14,7 +14,7 @@ void main() {
         'city': 'city-1',
         'pincode': '560038',
         'maxCapacity': 40,
-        'allowedEventTypes': ['Dinner'],
+        'allowedVenueTypes': ['restaurant'],
       });
 
       expect(dto.toDomain().photos, isEmpty);
@@ -29,7 +29,7 @@ void main() {
         'city': 'city-1',
         'pincode': '560038',
         'maxCapacity': 40,
-        'allowedEventTypes': ['Dinner'],
+        'allowedVenueTypes': ['restaurant'],
         'photos': [
           {'id': 'p1', 'url': 'https://example.com/p1.jpg'},
           {'id': 'p2', 'url': 'https://example.com/p2.jpg'},
@@ -52,7 +52,7 @@ void main() {
         'city': '507f1f77bcf86cd799439011',
         'pincode': '560038',
         'maxCapacity': 40,
-        'allowedEventTypes': ['Dinner'],
+        'allowedVenueTypes': ['restaurant'],
       });
 
       final venue = dto.toDomain();
@@ -70,12 +70,31 @@ void main() {
         'city': {'id': '507f1f77bcf86cd799439011', 'name': 'Bangalore'},
         'pincode': '560038',
         'maxCapacity': 40,
-        'allowedEventTypes': ['Dinner'],
+        'allowedVenueTypes': ['restaurant'],
       });
 
       final venue = dto.toDomain();
       expect(venue.cityId, '507f1f77bcf86cd799439011');
       expect(venue.cityName, 'Bangalore');
+    });
+
+    test('maps backend venue-type values to display labels', () {
+      final dto = HostVenueDto.fromJson({
+        'id': 'venue-1',
+        'name': 'Toit, Indiranagar',
+        'addLine1': '12, 100 Feet Road',
+        'locality': 'Indiranagar',
+        'city': 'city-1',
+        'pincode': '560038',
+        'maxCapacity': 40,
+        'allowedVenueTypes': ['rooftop bar', 'live music venue', 'pub'],
+      });
+
+      expect(dto.toDomain().allowedVenueTypes, [
+        'Rooftop bar',
+        'Live music venue',
+        'Pub',
+      ]);
     });
   });
 
@@ -90,12 +109,21 @@ void main() {
       cityName: 'Bangalore',
       pincode: '560038',
       maxCapacity: 40,
-      allowedEventTypes: ['Dinner'],
+      allowedVenueTypes: ['Restaurant'],
       photos: [
         HostVenuePhoto(id: 'p1', url: 'https://example.com/p1.jpg'),
         HostVenuePhoto(id: 'p2', url: 'https://example.com/p2.jpg'),
       ],
     );
+
+    test('sends allowedVenueTypes as backend enum values, not labels', () {
+      final json = HostVenueDto.fromDomain(
+        venue.copyWith(allowedVenueTypes: ['Rooftop bar', 'Pub']),
+      ).toJson();
+
+      expect(json['allowedVenueTypes'], ['rooftop bar', 'pub']);
+      expect(json.containsKey('allowedEventTypes'), isFalse);
+    });
 
     test('serializes photos as a plain list of ids, not the full object', () {
       final json = HostVenueDto.fromDomain(venue).toJson();

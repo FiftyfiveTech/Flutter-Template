@@ -12,7 +12,7 @@ class HostVenue {
     required this.cityName,
     required this.pincode,
     required this.maxCapacity,
-    required this.allowedEventTypes,
+    required this.allowedVenueTypes,
     required this.photos,
   });
 
@@ -45,9 +45,9 @@ class HostVenue {
   /// Minimum 1.
   final int maxCapacity;
 
-  /// One or more of the backend's fixed event-type vocabulary (see
-  /// `kEventTypeOptions` in `lib/shared/constants/event_types.dart`).
-  final List<String> allowedEventTypes;
+  /// One or more venue categories, as display labels (see
+  /// `kVenueTypeOptions` in `lib/shared/constants/venue_types.dart`).
+  final List<String> allowedVenueTypes;
 
   /// Already-uploaded photos for this venue. Optional, max 5. Note: the
   /// list endpoint (`GET /api/v1/venues`) never populates this — only the
@@ -76,7 +76,7 @@ class HostVenue {
     String? cityName,
     String? pincode,
     int? maxCapacity,
-    List<String>? allowedEventTypes,
+    List<String>? allowedVenueTypes,
     List<HostVenuePhoto>? photos,
   }) {
     return HostVenue(
@@ -89,7 +89,7 @@ class HostVenue {
       cityName: cityName ?? this.cityName,
       pincode: pincode ?? this.pincode,
       maxCapacity: maxCapacity ?? this.maxCapacity,
-      allowedEventTypes: allowedEventTypes ?? this.allowedEventTypes,
+      allowedVenueTypes: allowedVenueTypes ?? this.allowedVenueTypes,
       photos: photos ?? this.photos,
     );
   }
@@ -105,7 +105,7 @@ class HostVenue {
     cityName: '',
     pincode: '',
     maxCapacity: 20,
-    allowedEventTypes: [],
+    allowedVenueTypes: [],
     photos: [],
   );
 }

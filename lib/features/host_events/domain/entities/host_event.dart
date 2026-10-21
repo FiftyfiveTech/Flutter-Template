@@ -62,9 +62,8 @@ class HostEvent {
   /// 1 to 2000 characters.
   final String description;
 
-  /// One of the shared `kEventTypeOptions` vocabulary (see
-  /// `lib/shared/constants/event_types.dart`) — the same fixed list a
-  /// venue's `allowedEventTypes` draws from in H-07.
+  /// One of the `kEventTypeOptions` labels (see
+  /// `lib/shared/constants/event_types.dart`).
   final String format;
 
   final DateTime? startAt;

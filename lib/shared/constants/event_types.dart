@@ -1,32 +1,63 @@
-/// The backend's fixed event-type vocabulary — shared by H-07 (a venue's
-/// `allowedEventTypes`) and H-08 (an event's `format`) so both stay in
-/// sync from one place instead of drifting apart in two features.
+import '../utils/option_filter.dart';
+
+/// An event's `format` vocabulary (backend `EventFormat` enum), as display
+/// labels — H-08's Format picker.
 ///
-/// Each label must slugify (lowercase, whitespace -> `_`) to the backend
-/// enum value exactly — e.g. "Board games" -> `board_games`, "Stand up"
-/// -> `stand_up` — since `HostEventDto` derives the wire value from it.
+/// Each label lowercased must equal the backend value exactly — e.g.
+/// "Wine tasting" -> `wine tasting` — since [eventTypeToApi] derives the
+/// wire value from it.
 const kEventTypeOptions = [
   'Dinner',
+  'Brunch',
   'Tasting',
+  'Wine tasting',
+  'Whisky tasting',
+  'Beer tasting',
+  'Coffee tasting',
+  'Cocktail making',
+  'Cooking class',
+  'Baking class',
+  'Supper club',
   'Pottery',
+  'Painting',
+  'Sip and paint',
+  'Candle making',
+  'Terrarium making',
+  'Photography walk',
+  'Workshop',
   'Board games',
-  'Party',
+  'Trivia night',
+  'Quiz night',
+  'Murder mystery',
+  'Escape room',
+  'Bowling',
+  'Karaoke',
   'Music',
+  'Open mic',
+  'Jam session',
   'Dance',
+  'Salsa night',
   'Stand up',
+  'Improv',
+  'Poetry night',
+  'Movie screening',
+  'Party',
+  'Mixer',
+  'Speed dating',
+  'Book club',
+  'Debate night',
+  'Yoga',
+  'Run club',
+  'Hike',
+  'Cycling',
+  'Picnic',
+  'Stargazing',
   'Other',
 ];
 
-/// Case-insensitive substring filter over [options], for an event-type
-/// search field. An empty [query] returns every option, minus [exclude].
-List<String> filterEventTypes(
-  List<String> options,
-  String query, {
-  List<String> exclude = const [],
-}) {
-  final q = query.trim().toLowerCase();
-  return [
-    for (final option in options)
-      if (!exclude.contains(option) && option.toLowerCase().contains(q)) option,
-  ];
-}
+/// The backend `format` value for a [kEventTypeOptions] label.
+String eventTypeToApi(String label) => optionToApi(label);
+
+/// The [kEventTypeOptions] label for a backend `format` value.
+String eventTypeFromApi(String value) =>
+    optionFromApi(kEventTypeOptions, value);

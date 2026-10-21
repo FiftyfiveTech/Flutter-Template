@@ -69,7 +69,7 @@ void main() {
     cityName: 'Bangalore',
     pincode: '560038',
     maxCapacity: 40,
-    allowedEventTypes: ['Dinner'],
+    allowedVenueTypes: ['Restaurant'],
     photos: [],
   );
 
@@ -83,7 +83,7 @@ void main() {
     cityName: 'Bangalore',
     pincode: '560038',
     maxCapacity: 40,
-    allowedEventTypes: ['Dinner'],
+    allowedVenueTypes: ['Restaurant'],
     photos: [],
   );
 

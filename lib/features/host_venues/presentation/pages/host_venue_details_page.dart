@@ -57,7 +57,7 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
   final _fieldKeys = {
     for (final field in const [
       'photos',
-      'eventTypes',
+      'venueTypes',
       'name',
       'addLine1',
       'addLine2',
@@ -243,36 +243,36 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                               ),
                               AppSpacing.spacerMd,
                               KeyedSubtree(
-                                key: _fieldKeys['eventTypes'],
+                                key: _fieldKeys['venueTypes'],
                                 child: AhAsyncSearchField<String>(
-                                  label: 'Event types this venue can host',
+                                  label: 'Venue type',
                                   value: '',
-                                  placeholder: 'Search event types',
+                                  placeholder: 'Search venue types',
                                   search: (query) async =>
-                                      notifier.searchEventTypes(query),
+                                      notifier.searchVenueTypes(query),
                                   displayStringForOption: (type) => type,
-                                  onSelected: notifier.addEventType,
+                                  onSelected: notifier.addVenueType,
                                   debounce: Duration.zero,
                                   searchOnEmptyQuery: true,
                                   clearOnSelect: true,
                                 ),
                               ),
-                              if (draft.allowedEventTypes.isNotEmpty) ...[
+                              if (draft.allowedVenueTypes.isNotEmpty) ...[
                                 AppSpacing.spacerSm,
                                 AhChipSelect(
-                                  options: draft.allowedEventTypes,
-                                  selected: draft.allowedEventTypes,
-                                  onToggle: notifier.toggleEventType,
+                                  options: draft.allowedVenueTypes,
+                                  selected: draft.allowedVenueTypes,
+                                  onToggle: notifier.toggleVenueType,
                                   showRemoveIcon: true,
                                 ),
                               ],
                               AppSpacing.spacerXs,
                               Text(
-                                fieldErrors['eventTypes'] ??
-                                    'Only these formats are offered when you '
-                                        'create an event here.',
+                                fieldErrors['venueTypes'] ??
+                                    'Pick every type that describes this '
+                                        'venue.',
                                 style: typography.caption.copyWith(
-                                  color: fieldErrors['eventTypes'] != null
+                                  color: fieldErrors['venueTypes'] != null
                                       ? AppColors.statusError
                                       : AppColors.textTertiary,
                                 ),

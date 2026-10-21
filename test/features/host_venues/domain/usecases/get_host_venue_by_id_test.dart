@@ -46,7 +46,7 @@ void main() {
     cityName: 'Bangalore',
     pincode: '560038',
     maxCapacity: 40,
-    allowedEventTypes: ['Dinner'],
+    allowedVenueTypes: ['Restaurant'],
     photos: [HostVenuePhoto(id: 'p1', url: 'https://example.com/p1.jpg')],
   );
 

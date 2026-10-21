@@ -6,6 +6,7 @@ import '../../../../core/di/document_compressor_providers.dart';
 import '../../../../core/files/document_compressor.dart';
 import '../../../../core/time/server_clock.dart';
 import '../../../../shared/constants/event_types.dart';
+import '../../../../shared/utils/option_filter.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../host_venues/domain/entities/host_venue.dart';
 import '../../../host_venues/presentation/controllers/host_venues_api_providers.dart';
@@ -120,11 +121,8 @@ class HostEventFormState {
     return null;
   }
 
-  /// Format options are the same shared `kEventTypeOptions` vocabulary
-  /// H-07 uses for a venue's `allowedEventTypes` — not scoped to the
-  /// selected venue's own subset, since `GET /api/v1/venues` (the list
-  /// endpoint this screen's venue picker is populated from) never
-  /// includes `allowedEventTypes` in the first place.
+  /// Every event format — not scoped to the selected venue, whose
+  /// `allowedVenueTypes` describe the place, not the events it hosts.
   List<String> get formatOptions => kEventTypeOptions;
 
   /// Only drafts can be edited (`PATCH` is draft-only) and submitted —
@@ -279,7 +277,7 @@ class HostEventFormController extends _$HostEventFormController {
   /// [HostEventFormState.formatOptions] filtered by [query], for the
   /// searchable Format field.
   List<String> searchFormats(String query) =>
-      filterEventTypes(state.formatOptions, query);
+      filterOptions(state.formatOptions, query);
 
   void updateFormat(String value) {
     state = state.copyWith(draft: state.draft.copyWith(format: value));
@@ -304,7 +302,7 @@ class HostEventFormController extends _$HostEventFormController {
   }
 
   /// Selecting a venue fills the read-only address/neighbourhood box
-  /// immediately. Format isn't touched — it's the same shared
+  /// immediately. Format isn't touched — it's the same
   /// `kEventTypeOptions` list regardless of venue (see [formatOptions]).
   ///
   /// Capacity is *not* clamped here: [venue] comes from `GET

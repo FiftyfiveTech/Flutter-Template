@@ -76,6 +76,18 @@ void main() {
       expect(dto.toDomain().format, 'Board games');
     });
 
+    test('maps a spaced backend format to its label', () {
+      final dto = HostEventDto.fromJson({
+        'id': 'event-1',
+        'title': 'Test',
+        'venueId': 'venue-1',
+        'capacity': 40,
+        'format': 'wine tasting',
+      });
+
+      expect(dto.toDomain().format, 'Wine tasting');
+    });
+
     test('keeps an unrecognized format slug as-is rather than blanking it', () {
       final dto = HostEventDto.fromJson({
         'id': 'event-1',
@@ -222,10 +234,10 @@ void main() {
       expect(json.containsKey('venueAddress'), isFalse);
     });
 
-    test('slugifies format to the backend vocabulary', () {
+    test('sends format as the backend value (lowercase, spaces)', () {
       final json = HostEventDto.fromDomain(event).toJson();
 
-      expect(json['format'], 'board_games');
+      expect(json['format'], 'board games');
     });
 
     test('sends ratioConfig with a 50 target and a 10-point default band', () {
