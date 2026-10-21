@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/di/session_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'shared/widgets/ah_message_sheet.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,11 +21,28 @@ void main() {
   runApp(const ProviderScope(child: AppTemplate()));
 }
 
-class AppTemplate extends StatelessWidget {
+class AppTemplate extends ConsumerWidget {
   const AppTemplate({super.key});
 
+  /// The server rejected the session token (see the 401 handling in
+  /// `baseApiClientProvider`) — drop the whole stack and land on login.
+  void _onSessionExpired() {
+    appRouter.go('/auth/phone');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = appRouter.routerDelegate.navigatorKey.currentContext;
+      if (context == null) return;
+      showAhMessageSheet(
+        context,
+        title: 'Session expired',
+        message: 'Please log in again to continue.',
+      );
+    });
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(sessionExpiryProvider, (_, _) => _onSessionExpired());
+
     return MaterialApp.router(
       title: 'Flutter Template',
       theme: AppTheme.light,

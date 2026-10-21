@@ -111,9 +111,11 @@ class HostSignupController extends _$HostSignupController {
         // Seeds the resumable wizard step now, before the user has made
         // any H-02 choice, so a restart before then still resumes at
         // H-02 instead of falling back to H-05 Home for lack of a row.
+        // `restart`, not `setStep`: a new account must never inherit an
+        // earlier host's host type or uploaded documents.
         ref
             .read(hostOnboardingProgressControllerProvider.notifier)
-            .setStep(HostOnboardingStep.hostType);
+            .restart(HostOnboardingStep.hostType);
         state = state.copyWith(draft: validated, isSubmitting: false);
         return true;
       },

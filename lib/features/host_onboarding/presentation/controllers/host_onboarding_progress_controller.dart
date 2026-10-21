@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/session_providers.dart';
 import '../../domain/entities/host_documents_draft.dart';
 import '../../domain/entities/host_onboarding_progress.dart';
 import '../../domain/entities/host_onboarding_step.dart';
@@ -15,11 +16,21 @@ part 'host_onboarding_progress_controller.g.dart';
 /// wizard on the same step with the same field values instead of
 /// restarting it. `keepAlive`, mirroring `HostSessionController`: this
 /// outlives any single wizard screen.
+///
+/// Progress belongs to the signed-in host, so it's wiped whenever the
+/// session ends (log out or a server-rejected token) — otherwise the next
+/// account on this device would resume with the previous host's host
+/// type and uploaded documents.
 @Riverpod(keepAlive: true)
 class HostOnboardingProgressController
     extends _$HostOnboardingProgressController {
   @override
-  HostOnboardingProgress? build() => null;
+  HostOnboardingProgress? build() {
+    ref.listen(hostSessionControllerProvider, (previous, next) {
+      if (previous != null && next == null) clear();
+    });
+    return null;
+  }
 
   /// Loads the persisted progress, if any. Called once at app bootstrap
   /// (`HostBootstrapPage`), before the initial route is decided.
@@ -45,6 +56,14 @@ class HostOnboardingProgressController
 
   void setStep(HostOnboardingStep step) {
     _update((current) => current.copyWith(step: step));
+  }
+
+  /// Starts a brand-new wizard at [step], discarding any earlier progress
+  /// rather than merging into it — for a freshly created account.
+  void restart(HostOnboardingStep step) {
+    final next = HostOnboardingProgress(step: step);
+    state = next;
+    unawaited(ref.read(hostOnboardingProgressRepositoryProvider).save(next));
   }
 
   void clear() {

@@ -33,4 +33,25 @@ class HostSessionController extends _$HostSessionController {
     state = null;
     unawaited(ref.read(hostSessionLocalDatasourceProvider).clear());
   }
+
+  /// Ends a session the server no longer accepts (a 401 on an
+  /// authenticated request) and notifies [sessionExpiryProvider] so the
+  /// app routes to login. A no-op when already signed out, so a burst of
+  /// parallel 401s only signs out once.
+  void expire() {
+    if (state == null) return;
+    clear();
+    ref.read(sessionExpiryProvider.notifier).signal();
+  }
+}
+
+/// Bumped each time [HostSessionController.expire] ends a session —
+/// listened to at the app root to force the user back to login. A
+/// counter (not a bool) so every expiry is a distinct change.
+@Riverpod(keepAlive: true)
+class SessionExpiry extends _$SessionExpiry {
+  @override
+  int build() => 0;
+
+  void signal() => state++;
 }

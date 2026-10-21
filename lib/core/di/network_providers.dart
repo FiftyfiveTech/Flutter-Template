@@ -38,6 +38,21 @@ BaseApiClient baseApiClient(Ref ref) {
         }
         handler.next(options);
       },
+      onError: (error, handler) {
+        // A 401 means the server rejected our token (expired/revoked/
+        // INVALID_TOKEN) — force a fresh login. Only when the request
+        // carried the *current* token: a token-less call (OTP login) or a
+        // stale in-flight request from before a re-login mustn't sign out
+        // the new session.
+        final sentAuth = error.requestOptions.headers['Authorization'];
+        final current = ref.read(hostSessionControllerProvider)?.accessToken;
+        if (error.response?.statusCode == 401 &&
+            current != null &&
+            sentAuth == 'Bearer $current') {
+          ref.read(hostSessionControllerProvider.notifier).expire();
+        }
+        handler.next(error);
+      },
     ),
   );
 
