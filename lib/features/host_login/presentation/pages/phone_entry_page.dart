@@ -55,9 +55,9 @@ class _PhoneEntryPageState extends ConsumerState<PhoneEntryPage> {
     final notifier = ref.read(phoneEntryControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text('Log in', style: typography.h3),
@@ -80,7 +80,7 @@ class _PhoneEntryPageState extends ConsumerState<PhoneEntryPage> {
                       "Enter the phone number you signed up with. We'll text "
                       'you a one-time code.',
                       style: typography.body.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     AppSpacing.spacerLg,
@@ -98,8 +98,10 @@ class _PhoneEntryPageState extends ConsumerState<PhoneEntryPage> {
               ),
             ),
             DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.borderDefault)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: context.colors.borderDefault),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(

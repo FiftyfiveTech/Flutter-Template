@@ -8,6 +8,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
+import '../../../../shared/widgets/ah_confirm_dialog.dart';
 import '../../../../shared/widgets/ah_chip_select.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../../shared/widgets/ah_stepper_input.dart';
@@ -46,7 +47,6 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
   late final _addLine2Controller = TextEditingController();
   late final _localityController = TextEditingController();
   late final _pincodeController = TextEditingController();
-  bool _confirmDelete = false;
   bool _controllersSeeded = false;
 
   late final _provider = hostVenueFormControllerProvider(widget.venueId);
@@ -154,17 +154,33 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
     scrollToFirstError(_fieldKeys, fieldErrors);
   }
 
-  Future<void> _onConfirmDelete() async {
+  /// Warns first; only a confirmed delete calls `DELETE /api/v1/venues/{id}`.
+  Future<void> _onDelete() async {
+    final name = ref.read(_provider).draft.name.trim();
+    final confirmed = await showAhConfirmDialog(
+      context,
+      title: name.isEmpty ? 'Delete this venue?' : 'Delete $name?',
+      message: "It'll be removed from your saved venues. This can't be undone.",
+      confirmLabel: 'Delete venue',
+      cancelLabel: 'Keep venue',
+    );
+    if (!confirmed || !mounted) return;
     final deleted = await ref.read(_provider.notifier).delete();
     if (!mounted) return;
     if (deleted) {
+      final navigatorContext = Navigator.of(context).context;
       context.pop();
-    } else {
-      setState(() => _confirmDelete = false);
-      final error = ref.read(_provider).errorMessage;
-      if (error != null) {
-        showAhMessageSheet(context, message: error, tone: AhMessageTone.error);
-      }
+      if (!navigatorContext.mounted) return;
+      showAhMessageSheet(
+        navigatorContext,
+        message: 'Venue deleted.',
+        tone: AhMessageTone.success,
+      );
+      return;
+    }
+    final error = ref.read(_provider).errorMessage;
+    if (error != null) {
+      showAhMessageSheet(context, message: error, tone: AhMessageTone.error);
     }
   }
 
@@ -178,9 +194,9 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
     _seedControllersIfNeeded(state);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -190,9 +206,9 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
       ),
       body: SafeArea(
         child: state.isLoadingVenue
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                  color: AppColors.actionPrimary,
+                  color: context.colors.actionPrimary,
                 ),
               )
             : state.loadError != null
@@ -200,247 +216,236 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                 message: state.loadError!,
                 onRetry: notifier.retryLoad,
               )
-            : Stack(
+            : Column(
                 children: [
-                  Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.gutter,
-                            AppSpacing.md,
-                            AppSpacing.gutter,
-                            AppSpacing.lg,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.gutter,
+                        AppSpacing.md,
+                        AppSpacing.gutter,
+                        AppSpacing.lg,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Venue photos',
+                            style: typography.bodySm.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Venue photos',
-                                style: typography.bodySm.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                          AppSpacing.spacerSm,
+                          KeyedSubtree(
+                            key: _fieldKeys['photos'],
+                            child: AhPhotoSlots(
+                              count: _visiblePhotoSlotCount(state),
+                              slots: state.photoSlots,
+                              onTapSlot: _pickPhoto,
+                            ),
+                          ),
+                          AppSpacing.spacerXs,
+                          Text(
+                            fieldErrors['photos'] ??
+                                'Minimum $kMinVenuePhotos, up to '
+                                    '$kMaxVenuePhotos.',
+                            style: typography.caption.copyWith(
+                              color: fieldErrors['photos'] != null
+                                  ? context.colors.statusError
+                                  : context.colors.textTertiary,
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['venueTypes'],
+                            child: AhAsyncSearchField<String>(
+                              label: 'Venue type',
+                              value: '',
+                              placeholder: 'Search venue types',
+                              search: (query) async =>
+                                  notifier.searchVenueTypes(query),
+                              displayStringForOption: (type) => type,
+                              onSelected: notifier.addVenueType,
+                              debounce: Duration.zero,
+                              searchOnEmptyQuery: true,
+                              clearOnSelect: true,
+                            ),
+                          ),
+                          if (draft.allowedVenueTypes.isNotEmpty) ...[
+                            AppSpacing.spacerSm,
+                            AhChipSelect(
+                              options: draft.allowedVenueTypes,
+                              selected: draft.allowedVenueTypes,
+                              onToggle: notifier.toggleVenueType,
+                              showRemoveIcon: true,
+                            ),
+                          ],
+                          AppSpacing.spacerXs,
+                          Text(
+                            fieldErrors['venueTypes'] ??
+                                'Pick every type that describes this '
+                                    'venue.',
+                            style: typography.caption.copyWith(
+                              color: fieldErrors['venueTypes'] != null
+                                  ? context.colors.statusError
+                                  : context.colors.textTertiary,
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['name'],
+                            child: AhTextField(
+                              label: 'Venue name',
+                              placeholder: 'e.g. Toit, Indiranagar',
+                              controller: _nameController,
+                              onChanged: notifier.updateName,
+                              errorText: fieldErrors['name'],
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['addLine1'],
+                            child: AhTextField(
+                              label: 'Address line 1',
+                              placeholder: 'e.g. 12, 100 Feet Road',
+                              controller: _addLine1Controller,
+                              onChanged: notifier.updateAddLine1,
+                              errorText: fieldErrors['addLine1'],
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['addLine2'],
+                            child: AhTextField(
+                              label: 'Address line 2',
+                              placeholder: '(optional)',
+                              controller: _addLine2Controller,
+                              onChanged: notifier.updateAddLine2,
+                              errorText: fieldErrors['addLine2'],
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['locality'],
+                            child: AhTextField(
+                              label: 'Locality',
+                              placeholder: 'e.g. Indiranagar',
+                              controller: _localityController,
+                              onChanged: notifier.updateLocality,
+                              errorText: fieldErrors['locality'],
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['city'],
+                            child: AhAsyncSearchField<City>(
+                              label: 'City',
+                              value: draft.cityName,
+                              placeholder: 'Search for a city',
+                              search: (query) => ref.read(
+                                citySearchResultsProvider(query).future,
                               ),
-                              AppSpacing.spacerSm,
-                              KeyedSubtree(
-                                key: _fieldKeys['photos'],
-                                child: AhPhotoSlots(
-                                  count: _visiblePhotoSlotCount(state),
-                                  slots: state.photoSlots,
-                                  onTapSlot: _pickPhoto,
-                                ),
-                              ),
-                              AppSpacing.spacerXs,
-                              Text(
-                                fieldErrors['photos'] ??
-                                    'Minimum $kMinVenuePhotos, up to '
-                                        '$kMaxVenuePhotos.',
-                                style: typography.caption.copyWith(
-                                  color: fieldErrors['photos'] != null
-                                      ? AppColors.statusError
-                                      : AppColors.textTertiary,
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['venueTypes'],
-                                child: AhAsyncSearchField<String>(
-                                  label: 'Venue type',
-                                  value: '',
-                                  placeholder: 'Search venue types',
-                                  search: (query) async =>
-                                      notifier.searchVenueTypes(query),
-                                  displayStringForOption: (type) => type,
-                                  onSelected: notifier.addVenueType,
-                                  debounce: Duration.zero,
-                                  searchOnEmptyQuery: true,
-                                  clearOnSelect: true,
-                                ),
-                              ),
-                              if (draft.allowedVenueTypes.isNotEmpty) ...[
-                                AppSpacing.spacerSm,
-                                AhChipSelect(
-                                  options: draft.allowedVenueTypes,
-                                  selected: draft.allowedVenueTypes,
-                                  onToggle: notifier.toggleVenueType,
-                                  showRemoveIcon: true,
-                                ),
-                              ],
-                              AppSpacing.spacerXs,
-                              Text(
-                                fieldErrors['venueTypes'] ??
-                                    'Pick every type that describes this '
-                                        'venue.',
-                                style: typography.caption.copyWith(
-                                  color: fieldErrors['venueTypes'] != null
-                                      ? AppColors.statusError
-                                      : AppColors.textTertiary,
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['name'],
-                                child: AhTextField(
-                                  label: 'Venue name',
-                                  placeholder: 'e.g. Toit, Indiranagar',
-                                  controller: _nameController,
-                                  onChanged: notifier.updateName,
-                                  errorText: fieldErrors['name'],
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['addLine1'],
-                                child: AhTextField(
-                                  label: 'Address line 1',
-                                  placeholder: 'e.g. 12, 100 Feet Road',
-                                  controller: _addLine1Controller,
-                                  onChanged: notifier.updateAddLine1,
-                                  errorText: fieldErrors['addLine1'],
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['addLine2'],
-                                child: AhTextField(
-                                  label: 'Address line 2',
-                                  placeholder: '(optional)',
-                                  controller: _addLine2Controller,
-                                  onChanged: notifier.updateAddLine2,
-                                  errorText: fieldErrors['addLine2'],
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['locality'],
-                                child: AhTextField(
-                                  label: 'Locality',
-                                  placeholder: 'e.g. Indiranagar',
-                                  controller: _localityController,
-                                  onChanged: notifier.updateLocality,
-                                  errorText: fieldErrors['locality'],
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['city'],
-                                child: AhAsyncSearchField<City>(
-                                  label: 'City',
-                                  value: draft.cityName,
-                                  placeholder: 'Search for a city',
-                                  search: (query) => ref.read(
-                                    citySearchResultsProvider(query).future,
+                              displayStringForOption: (city) => city.name,
+                              onSelected: notifier.updateCity,
+                              errorText: fieldErrors['city'],
+                              searchOnEmptyQuery: true,
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['pincode'],
+                            child: AhTextField(
+                              label: 'Pincode',
+                              placeholder: 'e.g. 560038',
+                              controller: _pincodeController,
+                              onChanged: notifier.updatePincode,
+                              keyboardType: TextInputType.number,
+                              errorText: fieldErrors['pincode'],
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          KeyedSubtree(
+                            key: _fieldKeys['maxCapacity'],
+                            child: AhStepperInput(
+                              label: 'Max capacity at this venue',
+                              value: draft.maxCapacity,
+                              min: 1,
+                              max: 300,
+                              step: 1,
+                              suffix: 'seats',
+                              onChanged: notifier.updateMaxCapacity,
+                              errorText: fieldErrors['maxCapacity'],
+                            ),
+                          ),
+                          AppSpacing.spacerMd,
+                          // AhAlertBanner(
+                          //   message:
+                          //       'The exact address is only released to a '
+                          //       "member after they book — this stays "
+                          //       'true for every event at this venue.',
+                          // ),
+                          if (state.isEdit) ...[
+                            AppSpacing.spacerLg,
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: context.colors.borderDefault,
                                   ),
-                                  displayStringForOption: (city) => city.name,
-                                  onSelected: notifier.updateCity,
-                                  errorText: fieldErrors['city'],
-                                  searchOnEmptyQuery: true,
                                 ),
                               ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['pincode'],
-                                child: AhTextField(
-                                  label: 'Pincode',
-                                  placeholder: 'e.g. 560038',
-                                  controller: _pincodeController,
-                                  onChanged: notifier.updatePincode,
-                                  keyboardType: TextInputType.number,
-                                  errorText: fieldErrors['pincode'],
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  top: AppSpacing.md,
                                 ),
-                              ),
-                              AppSpacing.spacerMd,
-                              KeyedSubtree(
-                                key: _fieldKeys['maxCapacity'],
-                                child: AhStepperInput(
-                                  label: 'Max capacity at this venue',
-                                  value: draft.maxCapacity,
-                                  min: 1,
-                                  max: 300,
-                                  step: 1,
-                                  suffix: 'seats',
-                                  onChanged: notifier.updateMaxCapacity,
-                                  errorText: fieldErrors['maxCapacity'],
-                                ),
-                              ),
-                              AppSpacing.spacerMd,
-                              // const AhAlertBanner(
-                              //   message:
-                              //       'The exact address is only released to a '
-                              //       "member after they book — this stays "
-                              //       'true for every event at this venue.',
-                              // ),
-                              if (state.isEdit) ...[
-                                AppSpacing.spacerLg,
-                                DecoratedBox(
-                                  decoration: const BoxDecoration(
-                                    border: Border(
-                                      top: BorderSide(
-                                        color: AppColors.borderDefault,
-                                      ),
+                                child: Center(
+                                  child: TextButton.icon(
+                                    onPressed: state.isDeleting
+                                        ? null
+                                        : _onDelete,
+                                    icon: Icon(
+                                      Icons.delete_outline,
+                                      size: 18,
+                                      color: context.colors.statusError,
                                     ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: AppSpacing.md,
-                                    ),
-                                    child: Center(
-                                      child: TextButton.icon(
-                                        onPressed: state.isDeleting
-                                            ? null
-                                            : () => setState(
-                                                () => _confirmDelete = true,
-                                              ),
-                                        icon: const Icon(
-                                          Icons.delete_outline,
-                                          size: 18,
-                                          color: AppColors.statusError,
-                                        ),
-                                        label: Text(
-                                          'Delete this venue',
-                                          style: typography.bodySm.copyWith(
-                                            color: AppColors.statusError,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
+                                    label: Text(
+                                      state.isDeleting
+                                          ? 'Deleting…'
+                                          : 'Delete this venue',
+                                      style: typography.bodySm.copyWith(
+                                        color: context.colors.statusError,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ],
-                          ),
-                        ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      DecoratedBox(
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            top: BorderSide(color: AppColors.borderDefault),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.gutter,
-                            AppSpacing.sm + AppSpacing.xs,
-                            AppSpacing.gutter,
-                            AppSpacing.lg,
-                          ),
-                          child: AhButton(
-                            label: state.isSaving ? 'Saving…' : state.saveLabel,
-                            fullWidth: true,
-                            onPressed: state.isSaving ? null : _onSave,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (_confirmDelete)
-                    _DeleteVenueSheet(
-                      venueName: draft.name,
-                      isDeleting: state.isDeleting,
-                      onDelete: _onConfirmDelete,
-                      onCancel: () => setState(() => _confirmDelete = false),
                     ),
+                  ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: context.colors.borderDefault),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.gutter,
+                        AppSpacing.sm + AppSpacing.xs,
+                        AppSpacing.gutter,
+                        AppSpacing.lg,
+                      ),
+                      child: AhButton(
+                        label: state.isSaving ? 'Saving…' : state.saveLabel,
+                        fullWidth: true,
+                        onPressed: state.isSaving ? null : _onSave,
+                      ),
+                    ),
+                  ),
                 ],
               ),
       ),
@@ -472,81 +477,14 @@ class _LoadErrorView extends StatelessWidget {
             AppSpacing.spacerSm,
             Text(
               message,
-              style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+              style: typography.bodySm.copyWith(
+                color: context.colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             AppSpacing.spacerMd,
             AhButton(label: 'Try again', onPressed: onRetry),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DeleteVenueSheet extends StatelessWidget {
-  const _DeleteVenueSheet({
-    required this.venueName,
-    required this.isDeleting,
-    required this.onDelete,
-    required this.onCancel,
-  });
-
-  final String venueName;
-  final bool isDeleting;
-  final VoidCallback onDelete;
-  final VoidCallback onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    final typography = Theme.of(context).extension<AppTypography>()!;
-
-    return Positioned.fill(
-      child: ColoredBox(
-        color: AppColors.scrim,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.gutter),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSheet),
-                border: Border.all(color: AppColors.borderDefault),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Delete $venueName?', style: typography.h3),
-                  AppSpacing.spacerSm,
-                  Text(
-                    "Two upcoming events use this venue. They'll need a new "
-                    "venue before they can stay published.",
-                    style: typography.bodySm.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  AppSpacing.spacerLg,
-                  AhButton(
-                    label: isDeleting ? 'Deleting…' : 'Delete venue',
-                    fullWidth: true,
-                    variant: AhButtonVariant.primary,
-                    onPressed: isDeleting ? null : onDelete,
-                  ),
-                  AppSpacing.spacerSm,
-                  AhButton(
-                    label: 'Keep it',
-                    fullWidth: true,
-                    variant: AhButtonVariant.tertiary,
-                    onPressed: isDeleting ? null : onCancel,
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );

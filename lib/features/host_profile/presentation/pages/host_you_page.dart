@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/session_providers.dart';
+import '../../../../core/di/theme_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -17,10 +18,17 @@ import '../../../../shared/widgets/ah_message_sheet.dart';
 
 /// H-12 · Profile — account summary (tap to edit), appearance, venues
 /// shortcut and session actions. The Account section (payout account) is hidden until payouts
-/// exist. Appearance is shown read-only (locked to System) since the app
-/// currently ships a single light theme only — no ThemeMode infra exists yet.
+/// exist. Appearance switches the app between Light (default), Dark and
+/// System and is remembered across restarts.
 class HostYouPage extends ConsumerWidget {
   const HostYouPage({super.key});
+
+  /// Segment order of the Appearance control.
+  static const _appearanceModes = [
+    ThemeMode.light,
+    ThemeMode.dark,
+    ThemeMode.system,
+  ];
 
   /// Reloads on return so the card reflects the saved name/photo.
   Future<void> _openEditProfile(BuildContext context, WidgetRef ref) async {
@@ -89,7 +97,7 @@ class HostYouPage extends ConsumerWidget {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -105,15 +113,17 @@ class HostYouPage extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Profile',
-                  style: typography.h1.copyWith(color: AppColors.textPrimary),
+                  style: typography.h1.copyWith(
+                    color: context.colors.textPrimary,
+                  ),
                 ),
               ),
             ),
             Expanded(
               child: state.isLoading && state.hostName == null
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.actionPrimary,
+                        color: context.colors.actionPrimary,
                       ),
                     )
                   : ListView(
@@ -140,7 +150,7 @@ class HostYouPage extends ConsumerWidget {
                                     Text(
                                       state.hostName ?? '',
                                       style: typography.h3.copyWith(
-                                        color: AppColors.textPrimary,
+                                        color: context.colors.textPrimary,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -148,7 +158,7 @@ class HostYouPage extends ConsumerWidget {
                                     Text(
                                       'Venue host',
                                       style: typography.bodySm.copyWith(
-                                        color: AppColors.textTertiary,
+                                        color: context.colors.textTertiary,
                                       ),
                                     ),
                                   ],
@@ -165,9 +175,14 @@ class HostYouPage extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.lg),
                         _SectionLabel('APPEARANCE', typography: typography),
                         const SizedBox(height: AppSpacing.sm),
-                        const AhSegmentedControl(
-                          labels: ['Light', 'Dark', 'System'],
-                          selectedIndex: 2,
+                        AhSegmentedControl(
+                          labels: const ['Light', 'Dark', 'System'],
+                          selectedIndex: _appearanceModes.indexOf(
+                            ref.watch(themeModeControllerProvider),
+                          ),
+                          onChanged: (index) => ref
+                              .read(themeModeControllerProvider.notifier)
+                              .setMode(_appearanceModes[index]),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         AhCard(
@@ -183,10 +198,10 @@ class HostYouPage extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.lg),
                         AhCard(
                           onTap: () => _logOut(context, ref),
-                          child: const _AccountRow(
+                          child: _AccountRow(
                             icon: Icons.logout,
                             label: 'Log out',
-                            color: AppColors.statusError,
+                            color: context.colors.statusError,
                             showChevron: false,
                           ),
                         ),
@@ -237,14 +252,14 @@ class _EditableAvatar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.xs / 2),
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
+                color: context.colors.surfaceCard,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.borderDefault),
+                border: Border.all(color: context.colors.borderDefault),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.edit_outlined,
                 size: 12,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -266,7 +281,7 @@ class _SectionLabel extends StatelessWidget {
       text,
       style: typography.label.copyWith(
         letterSpacing: 1.1,
-        color: AppColors.textTertiary,
+        color: context.colors.textTertiary,
         fontWeight: FontWeight.w700,
       ),
     );
@@ -291,7 +306,7 @@ class _AccountRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
-    final rowColor = color ?? AppColors.textPrimary;
+    final rowColor = color ?? context.colors.textPrimary;
 
     return Row(
       children: [
@@ -299,7 +314,9 @@ class _AccountRow extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: (color ?? AppColors.textTertiary).withValues(alpha: 0.14),
+            color: (color ?? context.colors.textTertiary).withValues(
+              alpha: 0.14,
+            ),
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           ),
           alignment: Alignment.center,
@@ -319,15 +336,17 @@ class _AccountRow extends StatelessWidget {
         if (trailingText != null) ...[
           Text(
             trailingText!,
-            style: typography.bodySm.copyWith(color: AppColors.textTertiary),
+            style: typography.bodySm.copyWith(
+              color: context.colors.textTertiary,
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
         ],
         if (showChevron)
-          const Icon(
+          Icon(
             Icons.chevron_right,
             size: 18,
-            color: AppColors.textTertiary,
+            color: context.colors.textTertiary,
           ),
       ],
     );
@@ -353,29 +372,29 @@ class _DeleteAccountRow extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.statusError),
+            border: Border.all(color: context.colors.statusError),
           ),
           child: Row(
             children: [
               if (isDeleting)
-                const SizedBox.square(
+                SizedBox.square(
                   dimension: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.statusError,
+                    color: context.colors.statusError,
                   ),
                 )
               else
-                const Icon(
+                Icon(
                   Icons.delete_outline,
                   size: 18,
-                  color: AppColors.statusError,
+                  color: context.colors.statusError,
                 ),
               const SizedBox(width: AppSpacing.sm + 2),
               Text(
                 isDeleting ? 'Deleting account…' : 'Delete account',
                 style: typography.body.copyWith(
-                  color: AppColors.statusError,
+                  color: context.colors.statusError,
                   fontWeight: FontWeight.w600,
                 ),
               ),

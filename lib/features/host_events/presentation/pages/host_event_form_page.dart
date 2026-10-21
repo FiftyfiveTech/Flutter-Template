@@ -155,7 +155,7 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
     final reason = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surfaceCard,
+      backgroundColor: context.colors.surfaceCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSpacing.radiusSheet),
@@ -226,9 +226,9 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -240,21 +240,21 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
         actions: [
           if (state.canDelete)
             state.isDeleting
-                ? const Padding(
-                    padding: EdgeInsets.all(AppSpacing.md),
+                ? Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     child: SizedBox.square(
                       dimension: AppSpacing.lg - AppSpacing.xs,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.statusError,
+                        color: context.colors.statusError,
                       ),
                     ),
                   )
                 : IconButton(
                     tooltip: 'Delete draft',
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.delete_outline,
-                      color: AppColors.statusError,
+                      color: context.colors.statusError,
                     ),
                     onPressed: state.isBusy ? null : _onDeleteDraft,
                   ),
@@ -262,9 +262,9 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
       ),
       body: SafeArea(
         child: state.isLoadingEvent
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                  color: AppColors.actionPrimary,
+                  color: context.colors.actionPrimary,
                 ),
               )
             : state.loadError != null
@@ -317,8 +317,8 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                                 'Minimum $kMinEventPhotos photos.',
                             style: typography.caption.copyWith(
                               color: fieldErrors['photos'] != null
-                                  ? AppColors.statusError
-                                  : AppColors.textTertiary,
+                                  ? context.colors.statusError
+                                  : context.colors.textTertiary,
                             ),
                           ),
                           AppSpacing.spacerMd,
@@ -451,7 +451,7 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                                 Text(
                                   'Can be raised later.',
                                   style: typography.caption.copyWith(
-                                    color: AppColors.textTertiary,
+                                    color: context.colors.textTertiary,
                                   ),
                                 ),
                                 AppSpacing.spacerMd,
@@ -534,9 +534,9 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                   ),
                   if (state.isEditable || state.canCancel)
                     DecoratedBox(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         border: Border(
-                          top: BorderSide(color: AppColors.borderDefault),
+                          top: BorderSide(color: context.colors.borderDefault),
                         ),
                       ),
                       child: Padding(
@@ -660,7 +660,9 @@ class _CancelEventSheetState extends State<_CancelEventSheet> {
             AppSpacing.spacerSm,
             Text(
               "Every attendee will be refunded. This can't be undone.",
-              style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+              style: typography.bodySm.copyWith(
+                color: context.colors.textSecondary,
+              ),
             ),
             AppSpacing.spacerMd,
             AhTextArea(
@@ -718,7 +720,9 @@ class _LoadErrorView extends StatelessWidget {
             AppSpacing.spacerSm,
             Text(
               message,
-              style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+              style: typography.bodySm.copyWith(
+                color: context.colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             AppSpacing.spacerMd,
@@ -743,10 +747,10 @@ class _LockedAddressCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.lock_outline,
             size: 18,
-            color: AppColors.textTertiary,
+            color: context.colors.textTertiary,
           ),
           AppSpacing.spacerSm,
           Expanded(
@@ -763,7 +767,7 @@ class _LockedAddressCard extends StatelessWidget {
                 Text(
                   'From the venue record. Edit it under Venues.',
                   style: typography.caption.copyWith(
-                    color: AppColors.textTertiary,
+                    color: context.colors.textTertiary,
                   ),
                 ),
               ],
@@ -796,10 +800,10 @@ class _RatioBandCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.balance,
                 size: 18,
-                color: AppColors.trustVerified,
+                color: context.colors.trustVerified,
               ),
               AppSpacing.spacerSm,
               Text(
@@ -818,7 +822,9 @@ class _RatioBandCard extends StatelessWidget {
           AppSpacing.spacerMd,
           Text(
             'No gender may exceed 60% of seats sold.',
-            style: typography.caption.copyWith(color: AppColors.textTertiary),
+            style: typography.caption.copyWith(
+              color: context.colors.textTertiary,
+            ),
           ),
           AppSpacing.spacerMd,
           AhSlider(

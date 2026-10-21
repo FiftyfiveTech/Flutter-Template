@@ -16,7 +16,7 @@ class HostLandingPage extends StatelessWidget {
     final typography = Theme.of(context).extension<AppTypography>()!;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -29,12 +29,11 @@ class HostLandingPage extends StatelessWidget {
                   child: Image.asset(
                     'assets/images/host_landing_hero.jpg',
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceCard,
-                          ),
-                        ),
+                    errorBuilder: (context, error, stackTrace) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: context.colors.surfaceCard,
+                      ),
+                    ),
                   ),
                 ),
                 Positioned(
@@ -48,8 +47,8 @@ class HostLandingPage extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.backgroundPrimary.withValues(alpha: 0),
-                          AppColors.backgroundPrimary,
+                          context.colors.backgroundPrimary.withValues(alpha: 0),
+                          context.colors.backgroundPrimary,
                         ],
                       ),
                     ),
@@ -71,7 +70,7 @@ class HostLandingPage extends StatelessWidget {
                     Text(
                       'FOR HOSTS',
                       style: typography.label.copyWith(
-                        color: AppColors.actionTertiaryFg,
+                        color: context.colors.actionTertiaryFg,
                       ),
                     ),
                     AppSpacing.spacerSm,
@@ -83,7 +82,7 @@ class HostLandingPage extends StatelessWidget {
                     Text(
                       'List a night, set the price, let verified members book.',
                       style: typography.body.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),

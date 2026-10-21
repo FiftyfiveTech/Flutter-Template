@@ -88,18 +88,18 @@ class _HostEditProfilePageState extends ConsumerState<HostEditProfilePage> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text('Edit profile', style: typography.h3),
       ),
       body: SafeArea(
         child: state.isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                  color: AppColors.actionPrimary,
+                  color: context.colors.actionPrimary,
                 ),
               )
             : Column(
@@ -166,9 +166,9 @@ class _HostEditProfilePageState extends ConsumerState<HostEditProfilePage> {
                     ),
                   ),
                   DecoratedBox(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       border: Border(
-                        top: BorderSide(color: AppColors.borderDefault),
+                        top: BorderSide(color: context.colors.borderDefault),
                       ),
                     ),
                     child: Padding(

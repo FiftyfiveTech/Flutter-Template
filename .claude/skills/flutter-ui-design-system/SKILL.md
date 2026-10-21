@@ -37,10 +37,10 @@ new tokens there first, then reference them from widgets, never hardcode the raw
   control.
 - **Responsive**: mobile-first single column by default; use `LayoutBuilder`/`MediaQuery`
   breakpoints if/when tablet support is added.
-- **Dark mode**: this template ships `AppTheme.light` only. If a project needs dark mode, add the
-  variant by giving each `ThemeExtension` a second instance and switching on `Brightness` — don't
-  bake light-only assumptions (e.g. a fixed white background color used outside the theme) into
-  widget code.
+- **Dark mode**: the app ships `AppTheme.light` (default) and `AppTheme.dark`; the host picks
+  Light/Dark/System on H-12 · Profile (`themeModeControllerProvider`, persisted in Drift). Read
+  colours via `context.colors.x` (the active `AppColors` extension) — never a static/const colour,
+  and never `AppPalette` directly, or that spot won't switch with the theme.
 - **Accessibility**: minimum tap targets, screen-reader labels (`Semantics`/`tooltip` where
   appropriate), sufficient color contrast, a loading state (never a blank screen) and an empty
   state for every async-backed view — see `CounterPage`'s `AsyncValue.when` for the loading/data/

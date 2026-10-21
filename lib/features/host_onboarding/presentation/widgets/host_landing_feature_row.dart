@@ -22,12 +22,14 @@ class HostLandingFeatureRow extends StatelessWidget {
       label: label,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.trustVerified),
+          Icon(icon, size: 20, color: context.colors.trustVerified),
           AppSpacing.spacerSm,
           Expanded(
             child: Text(
               label,
-              style: typography.body.copyWith(color: AppColors.textSecondary),
+              style: typography.body.copyWith(
+                color: context.colors.textSecondary,
+              ),
             ),
           ),
         ],

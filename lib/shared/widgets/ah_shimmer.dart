@@ -52,10 +52,10 @@ class _AhShimmerBoxState extends State<AhShimmerBox>
             return LinearGradient(
               begin: Alignment(-1 - sweep * 2, 0),
               end: Alignment(1 - sweep * 2, 0),
-              colors: const [
-                AppColors.borderDefault,
-                AppColors.textTertiary,
-                AppColors.borderDefault,
+              colors: [
+                context.colors.borderDefault,
+                context.colors.textTertiary,
+                context.colors.borderDefault,
               ],
               stops: const [0.35, 0.5, 0.65],
             ).createShader(bounds);
@@ -67,7 +67,7 @@ class _AhShimmerBoxState extends State<AhShimmerBox>
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: AppColors.borderDefault,
+          color: context.colors.borderDefault,
           borderRadius: borderRadius,
         ),
       ),

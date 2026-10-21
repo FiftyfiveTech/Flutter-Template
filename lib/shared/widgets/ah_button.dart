@@ -59,31 +59,31 @@ class AhButton extends StatelessWidget {
       AhButtonVariant.secondary => ElevatedButton(
         onPressed: tap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.actionSecondary,
-          foregroundColor: AppColors.actionSecondaryFg,
+          backgroundColor: context.colors.actionSecondary,
+          foregroundColor: context.colors.actionSecondaryFg,
           textStyle: labelStyle,
           shape: shape,
         ),
-        child: content(AppColors.actionSecondaryFg),
+        child: content(context.colors.actionSecondaryFg),
       ),
       AhButtonVariant.tertiary => TextButton(
         onPressed: tap,
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.actionTertiaryFg,
+          foregroundColor: context.colors.actionTertiaryFg,
           textStyle: labelStyle,
           shape: shape,
         ),
-        child: content(AppColors.actionTertiaryFg),
+        child: content(context.colors.actionTertiaryFg),
       ),
       AhButtonVariant.destructive => ElevatedButton(
         onPressed: tap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.actionDestructive,
-          foregroundColor: AppColors.actionPrimaryFg,
+          backgroundColor: context.colors.actionDestructive,
+          foregroundColor: context.colors.actionPrimaryFg,
           textStyle: labelStyle,
           shape: shape,
         ),
-        child: content(AppColors.actionPrimaryFg),
+        child: content(context.colors.actionPrimaryFg),
       ),
     };
 

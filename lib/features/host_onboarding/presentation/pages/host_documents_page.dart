@@ -136,12 +136,12 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                       : Icons.upload_file,
                   size: 20,
                   color: uploaded
-                      ? AppColors.statusSuccess
+                      ? context.colors.statusSuccess
                       : uploadFailed
-                      ? AppColors.statusError
+                      ? context.colors.statusError
                       : isSelected
-                      ? AppColors.actionPrimary
-                      : AppColors.textTertiary,
+                      ? context.colors.actionPrimary
+                      : context.colors.textTertiary,
                 ),
               AppSpacing.spacerMd,
               Expanded(
@@ -156,7 +156,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: typography.caption.copyWith(
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                         ),
                       ),
                     ],
@@ -186,7 +186,9 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
           AppSpacing.spacerXs,
           Text(
             errorText,
-            style: typography.caption.copyWith(color: AppColors.statusError),
+            style: typography.caption.copyWith(
+              color: context.colors.statusError,
+            ),
           ),
         ],
       ],
@@ -206,9 +208,9 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
     final uploadStates = formState.uploadStates;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text('Verification documents', style: typography.h3),
@@ -240,7 +242,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                     Text(
                       'REQUIRED FOR EVERY HOST',
                       style: typography.caption.copyWith(
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.1,
                       ),
@@ -272,7 +274,7 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
                       Text(
                         'ADDITIONAL · VENUE',
                         style: typography.caption.copyWith(
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.1,
                         ),
@@ -362,8 +364,10 @@ class _HostDocumentsPageState extends ConsumerState<HostDocumentsPage> {
               ),
             ),
             DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.borderDefault)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: context.colors.borderDefault),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(

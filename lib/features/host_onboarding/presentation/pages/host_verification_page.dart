@@ -69,9 +69,9 @@ class HostVerificationPage extends ConsumerWidget {
       // From Home it's an ordinary pushed screen, so back returns there.
       canPop: openedFromHome,
       child: Scaffold(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         appBar: AppBar(
-          backgroundColor: AppColors.backgroundPrimary,
+          backgroundColor: context.colors.backgroundPrimary,
           elevation: 0,
           centerTitle: true,
           automaticallyImplyLeading: openedFromHome,
@@ -171,8 +171,8 @@ class _VerificationContent extends StatelessWidget {
                       allVerified ? Icons.verified_user : Icons.hourglass_top,
                       size: 58,
                       color: allVerified
-                          ? AppColors.trustVerified
-                          : AppColors.actionPrimary,
+                          ? context.colors.trustVerified
+                          : context.colors.actionPrimary,
                     ),
                     AppSpacing.spacerSm,
                     Text(
@@ -188,7 +188,7 @@ class _VerificationContent extends StatelessWidget {
                     //       : "We review every host's first documents by "
                     //             'hand. Usually within 1 business day.',
                     //   style: typography.bodySm.copyWith(
-                    //     color: AppColors.textSecondary,
+                    //     color: context.colors.textSecondary,
                     //   ),
                     //   textAlign: TextAlign.center,
                     // ),
@@ -206,7 +206,7 @@ class _VerificationContent extends StatelessWidget {
               Text(
                 'DOCUMENTS',
                 style: typography.caption.copyWith(
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.1,
                 ),
@@ -224,8 +224,10 @@ class _VerificationContent extends StatelessWidget {
           ),
         ),
         DecoratedBox(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: AppColors.borderDefault)),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: context.colors.borderDefault),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -243,10 +245,10 @@ class _VerificationContent extends StatelessWidget {
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.lock_outline,
                         size: 16,
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                       ),
                       AppSpacing.spacerSm,
                       Flexible(
@@ -258,7 +260,7 @@ class _VerificationContent extends StatelessWidget {
                                     'verified'
                               : 'Home unlocks once every document is verified',
                           style: typography.bodySm.copyWith(
-                            color: AppColors.textTertiary,
+                            color: context.colors.textTertiary,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -305,7 +307,9 @@ class _DocumentStatusRow extends StatelessWidget {
             AppSpacing.spacerXs,
             Text(
               reason!,
-              style: typography.caption.copyWith(color: AppColors.statusError),
+              style: typography.caption.copyWith(
+                color: context.colors.statusError,
+              ),
             ),
           ],
         ],

@@ -50,41 +50,43 @@ class AhSearchField extends StatelessWidget {
             return TextField(
               controller: controller,
               focusNode: focusNode,
-              style: typography.body.copyWith(color: AppColors.textPrimary),
+              style: typography.body.copyWith(
+                color: context.colors.textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: placeholder,
                 hintStyle: typography.body.copyWith(
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.search,
                   size: 20,
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
                 filled: true,
-                fillColor: AppColors.surfaceCard,
+                fillColor: context.colors.surfaceCard,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
                   vertical: AppSpacing.sm + AppSpacing.xs,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  borderSide: const BorderSide(color: AppColors.borderDefault),
+                  borderSide: BorderSide(color: context.colors.borderDefault),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   borderSide: BorderSide(
                     color: hasError
-                        ? AppColors.statusError
-                        : AppColors.borderDefault,
+                        ? context.colors.statusError
+                        : context.colors.borderDefault,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   borderSide: BorderSide(
                     color: hasError
-                        ? AppColors.statusError
-                        : AppColors.actionPrimary,
+                        ? context.colors.statusError
+                        : context.colors.actionPrimary,
                   ),
                 ),
               ),
@@ -94,7 +96,7 @@ class AhSearchField extends StatelessWidget {
             return Align(
               alignment: Alignment.topLeft,
               child: Material(
-                color: AppColors.surfaceCard,
+                color: context.colors.surfaceCard,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 elevation: 4,
                 child: ConstrainedBox(
@@ -111,7 +113,7 @@ class AhSearchField extends StatelessWidget {
                         title: Text(
                           option,
                           style: typography.body.copyWith(
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
                         onTap: () => onSelected(option),
@@ -127,7 +129,9 @@ class AhSearchField extends StatelessWidget {
           AppSpacing.spacerXs,
           Text(
             errorText!,
-            style: typography.caption.copyWith(color: AppColors.statusError),
+            style: typography.caption.copyWith(
+              color: context.colors.statusError,
+            ),
           ),
         ],
       ],

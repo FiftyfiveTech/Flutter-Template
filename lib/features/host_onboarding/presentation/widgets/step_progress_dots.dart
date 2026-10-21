@@ -31,8 +31,8 @@ class StepProgressDots extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: step == currentStep
-                    ? AppColors.actionPrimary
-                    : AppColors.borderDefault,
+                    ? context.colors.actionPrimary
+                    : context.colors.borderDefault,
               ),
             ),
             if (step != totalSteps) AppSpacing.spacerXs,
@@ -40,7 +40,9 @@ class StepProgressDots extends StatelessWidget {
           AppSpacing.spacerSm,
           Text(
             'Step $currentStep of $totalSteps',
-            style: typography.caption.copyWith(color: AppColors.textTertiary),
+            style: typography.caption.copyWith(
+              color: context.colors.textTertiary,
+            ),
           ),
         ],
       ),

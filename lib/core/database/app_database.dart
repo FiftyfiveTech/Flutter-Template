@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../features/host_check_in/data/local/check_in_tables.dart';
 import '../../features/host_onboarding/data/local/host_onboarding_progress_table.dart';
 import '../../features/host_profile/data/local/host_profile_table.dart';
+import 'app_preferences_table.dart';
 import 'host_session_table.dart';
 import 'sync_queue_table.dart';
 
@@ -23,6 +24,7 @@ part 'app_database.g.dart';
     CheckInPendingTable,
     CheckInConflictTable,
     CheckInDeviceTable,
+    AppPreferencesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -30,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -56,6 +58,9 @@ class AppDatabase extends _$AppDatabase {
       if (from >= 4 && from < 6) {
         await m.addColumn(hostProfileTable, hostProfileTable.firstName);
         await m.addColumn(hostProfileTable, hostProfileTable.lastName);
+      }
+      if (from < 7) {
+        await m.createTable(appPreferencesTable);
       }
     },
   );

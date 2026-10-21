@@ -10,6 +10,8 @@ import 'package:flutter/painting.dart';
 abstract final class AppPalette {
   // Brand primary (dusty rose). `primary400` is the base brand colour —
   // changing it re-colours every primary button, switch and accent.
+  // `primary200` is the dark theme's legible-on-coal accent tint.
+  static const primary200 = Color(0xFFC48E9F);
   static const primary300 = Color(0xFFA3677A);
   static const primary400 = Color(0xFF8B4F63);
   static const primary500 = Color(0xFF6B3A4D);
@@ -33,8 +35,25 @@ abstract final class AppPalette {
   static const ink900Alpha16 = Color(0x291A1A18); // rgba(26,26,24,.16)
   static const blackAlpha55 = Color(0x8C000000);
 
+  // Coal — the dark theme's surfaces and secondary type.
+  static const coal950 = Color(0xFF0E0E0D);
+  static const coal900 = Color(0xFF151514);
+  static const coal800 = Color(0xFF1F1F1E);
+  static const coal700 = Color(0xFF2A2A28);
+  static const coal400 = Color(0xFF6E6E6A);
+  static const coal300 = Color(0xFF9A9A95);
+  static const coalText = Color(0xFFF5F5F2);
+  static const whiteAlpha07 = Color(0x12FFFFFF); // rgba(255,255,255,.07)
+  static const whiteAlpha16 = Color(0x29FFFFFF); // rgba(255,255,255,.16)
+  static const coalScrim = Color(0xB8080807); // rgba(8,8,7,.72)
+
   // Status hues
   static const teal600 = Color(0xFF0F766E);
   static const sun600 = Color(0xFFA16207);
   static const rose500 = Color(0xFFC0344E);
+
+  // Status hues tuned for dark surfaces.
+  static const teal300 = Color(0xFF5BD1B0);
+  static const sun300 = Color(0xFFE9C46A);
+  static const rose300 = Color(0xFFF2637E);
 }

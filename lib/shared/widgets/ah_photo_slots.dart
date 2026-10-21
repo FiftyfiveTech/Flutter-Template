@@ -111,7 +111,7 @@ class _PhotoSlot extends StatelessWidget {
               height: _slotSize,
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceCard,
+                  color: context.colors.surfaceCard,
                   borderRadius: borderRadius,
                   image: hasImage
                       ? DecorationImage(
@@ -125,15 +125,15 @@ class _PhotoSlot extends StatelessWidget {
                       : null,
                 ),
                 child: hasImage
-                    ? _buildOverlay(typography)
+                    ? _buildOverlay(typography, context.colors)
                     : CustomPaint(
                         painter: _DashedBorderPainter(
                           color: isError
-                              ? AppColors.statusError
-                              : AppColors.borderDefault,
+                              ? context.colors.statusError
+                              : context.colors.borderDefault,
                           radius: AppSpacing.radiusLg,
                         ),
-                        child: _buildOverlay(typography),
+                        child: _buildOverlay(typography, context.colors),
                       ),
               ),
             ),
@@ -143,23 +143,25 @@ class _PhotoSlot extends StatelessWidget {
           AppSpacing.spacerXs,
           Text(
             data.errorMessage ?? "Couldn't upload — tap to retry",
-            style: typography.caption.copyWith(color: AppColors.statusError),
+            style: typography.caption.copyWith(
+              color: context.colors.statusError,
+            ),
           ),
         ],
       ],
     );
   }
 
-  Widget? _buildOverlay(AppTypography typography) {
+  Widget? _buildOverlay(AppTypography typography, AppColors colors) {
     switch (data.status) {
       case AhPhotoSlotStatus.uploading:
-        return const Center(
+        return Center(
           child: SizedBox(
             width: 22,
             height: 22,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AppColors.actionPrimary,
+              color: colors.actionPrimary,
             ),
           ),
         );
@@ -169,18 +171,12 @@ class _PhotoSlot extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 22,
-                color: AppColors.statusError,
-              ),
+              Icon(Icons.error_outline, size: 22, color: colors.statusError),
               AppSpacing.spacerXs,
               Text(
                 'Photo ${index + 1}',
                 textAlign: TextAlign.center,
-                style: typography.caption.copyWith(
-                  color: AppColors.statusError,
-                ),
+                style: typography.caption.copyWith(color: colors.statusError),
               ),
             ],
           ),
@@ -193,17 +189,17 @@ class _PhotoSlot extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.add_a_photo_outlined,
                 size: 22,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
               AppSpacing.spacerXs,
               Text(
                 'Photo ${index + 1}',
                 textAlign: TextAlign.center,
                 style: typography.caption.copyWith(
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -213,7 +209,7 @@ class _PhotoSlot extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: typography.caption.copyWith(
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                   fontSize: 10,
                 ),
               ),

@@ -31,7 +31,7 @@ class CheckInResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
     final copy = CheckInOutcomeCopy.forResult(result);
-    final color = copy.tone.color;
+    final color = copy.tone.colorIn(context.colors);
     final name = result.attendeeName;
     final canQueue =
         onQueueForVerification != null &&
@@ -41,7 +41,7 @@ class CheckInResultCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.surfaceRaised,
+        color: context.colors.surfaceRaised,
         borderRadius: BorderRadius.circular(AppSpacing.radiusSheet),
         border: Border.all(color: color, width: 3),
       ),
@@ -79,7 +79,9 @@ class CheckInResultCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               copy.detail,
-              style: typography.body.copyWith(color: AppColors.textSecondary),
+              style: typography.body.copyWith(
+                color: context.colors.textSecondary,
+              ),
             ),
           ),
           if (result.isOffline && result.outcome.isAdmitted) ...[
@@ -89,7 +91,7 @@ class CheckInResultCard extends StatelessWidget {
               child: Text(
                 'Offline check-in',
                 style: typography.caption.copyWith(
-                  color: AppColors.statusWarning,
+                  color: context.colors.statusWarning,
                   fontWeight: FontWeight.w600,
                 ),
               ),

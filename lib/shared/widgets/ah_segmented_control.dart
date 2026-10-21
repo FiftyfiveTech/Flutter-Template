@@ -26,9 +26,9 @@ class AhSegmentedControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.backgroundSecondary,
+        color: context.colors.backgroundSecondary,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: AppColors.borderDefault),
+        border: Border.all(color: context.colors.borderDefault),
       ),
       child: Row(
         children: [
@@ -40,7 +40,7 @@ class AhSegmentedControl extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: i == selectedIndex
-                        ? AppColors.surfaceRaised
+                        ? context.colors.surfaceRaised
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
@@ -49,8 +49,8 @@ class AhSegmentedControl extends StatelessWidget {
                     labels[i],
                     style: typography.bodySm.copyWith(
                       color: i == selectedIndex
-                          ? AppColors.textPrimary
-                          : AppColors.textTertiary,
+                          ? context.colors.textPrimary
+                          : context.colors.textTertiary,
                       fontWeight: i == selectedIndex
                           ? FontWeight.w700
                           : FontWeight.w500,

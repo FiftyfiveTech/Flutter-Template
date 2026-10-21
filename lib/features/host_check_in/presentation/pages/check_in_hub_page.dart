@@ -31,16 +31,16 @@ class CheckInHubPage extends ConsumerWidget {
     final notifier = ref.read(provider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text(eventTitle ?? 'Check-in', style: typography.h3),
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          color: AppColors.actionPrimary,
+          color: context.colors.actionPrimary,
           onRefresh: notifier.refresh,
           child: ListView(
             padding: const EdgeInsets.fromLTRB(
@@ -136,7 +136,9 @@ class _CountCard extends StatelessWidget {
         children: [
           Text(
             'Checked in',
-            style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+            style: typography.bodySm.copyWith(
+              color: context.colors.textSecondary,
+            ),
           ),
           AppSpacing.spacerXs,
           state.isLoading
@@ -151,8 +153,8 @@ class _CountCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: AppSpacing.sm,
-              color: AppColors.statusSuccess,
-              backgroundColor: AppColors.backgroundSecondary,
+              color: context.colors.statusSuccess,
+              backgroundColor: context.colors.backgroundSecondary,
             ),
           ),
         ],
@@ -179,10 +181,10 @@ class _PendingSyncCard extends StatelessWidget {
     return AhCard(
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.cloud_upload_outlined,
             size: 20,
-            color: AppColors.statusWarning,
+            color: context.colors.statusWarning,
           ),
           AppSpacing.spacerSm,
           Expanded(
@@ -194,12 +196,12 @@ class _PendingSyncCard extends StatelessWidget {
             ),
           ),
           isSyncing
-              ? const SizedBox(
+              ? SizedBox(
                   width: AppSpacing.lg,
                   height: AppSpacing.lg,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.actionPrimary,
+                    color: context.colors.actionPrimary,
                   ),
                 )
               : TextButton(onPressed: onSync, child: const Text('Sync now')),

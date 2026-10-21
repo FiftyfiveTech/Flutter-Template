@@ -65,9 +65,9 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
     final notifier = ref.read(hostSignupControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -133,8 +133,10 @@ class _HostSignupPageState extends ConsumerState<HostSignupPage> {
               ),
             ),
             DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.borderDefault)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: context.colors.borderDefault),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(

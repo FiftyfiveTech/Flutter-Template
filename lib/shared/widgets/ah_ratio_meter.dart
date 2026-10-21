@@ -26,11 +26,11 @@ class AhRatioMeter extends StatelessWidget {
           children: [
             Expanded(
               flex: (maleFraction * 1000).round(),
-              child: Container(color: AppColors.actionTertiaryFg),
+              child: Container(color: context.colors.actionTertiaryFg),
             ),
             Expanded(
               flex: ((1 - maleFraction) * 1000).round(),
-              child: Container(color: AppColors.actionPrimary),
+              child: Container(color: context.colors.actionPrimary),
             ),
           ],
         ),

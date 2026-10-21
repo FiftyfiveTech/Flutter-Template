@@ -31,9 +31,9 @@ class HostHomeBottomNav extends StatelessWidget {
           height: 60,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: context.colors.surfaceCard,
             borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-            border: Border.all(color: AppColors.borderDefault),
+            border: Border.all(color: context.colors.borderDefault),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -98,18 +98,18 @@ class _NavItem extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.actionPrimary,
+            color: context.colors.actionPrimary,
             borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18, color: AppColors.actionPrimaryFg),
+              Icon(icon, size: 18, color: context.colors.actionPrimaryFg),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 label,
                 style: typography.bodySm.copyWith(
-                  color: AppColors.actionPrimaryFg,
+                  color: context.colors.actionPrimaryFg,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -124,7 +124,7 @@ class _NavItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Icon(icon, size: 22, color: AppColors.textSecondary),
+        child: Icon(icon, size: 22, color: context.colors.textSecondary),
       ),
     );
   }

@@ -33,12 +33,12 @@ class AhCard extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: context.colors.surfaceCard,
             borderRadius: borderRadius,
             border: Border.all(
               color: selected
-                  ? AppColors.actionPrimary
-                  : AppColors.borderDefault,
+                  ? context.colors.actionPrimary
+                  : context.colors.borderDefault,
             ),
           ),
           child: child,

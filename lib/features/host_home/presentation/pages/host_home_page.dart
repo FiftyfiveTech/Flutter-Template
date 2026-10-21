@@ -45,15 +45,15 @@ class HostHomePage extends ConsumerWidget {
     final summary = state.summary;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
             Expanded(
               child: RefreshIndicator(
-                color: AppColors.actionPrimary,
-                backgroundColor: AppColors.surfaceCard,
+                color: context.colors.actionPrimary,
+                backgroundColor: context.colors.surfaceCard,
                 onRefresh: notifier.loadSummary,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -77,7 +77,7 @@ class HostHomePage extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: typography.h2.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                               ),
                             ),
                           ),
@@ -122,7 +122,7 @@ class HostHomePage extends ConsumerWidget {
                         'YOUR EVENTS — TAP TO EDIT',
                         style: typography.label.copyWith(
                           letterSpacing: 1.1,
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -130,11 +130,11 @@ class HostHomePage extends ConsumerWidget {
 
                       // Events List
                       if (state.isLoading && summary == null)
-                        const Center(
+                        Center(
                           child: Padding(
-                            padding: EdgeInsets.all(AppSpacing.xl),
+                            padding: const EdgeInsets.all(AppSpacing.xl),
                             child: CircularProgressIndicator(
-                              color: AppColors.actionPrimary,
+                              color: context.colors.actionPrimary,
                             ),
                           ),
                         )
@@ -206,23 +206,25 @@ class _NoEventsMessage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.event_note_outlined,
             size: 28,
-            color: AppColors.textTertiary,
+            color: context.colors.textTertiary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'No events yet',
             style: typography.body.copyWith(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Tap to list your first night.',
-            style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+            style: typography.bodySm.copyWith(
+              color: context.colors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -287,9 +289,9 @@ class _EventCardShimmer extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
+        color: context.colors.surfaceCard,
         borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-        border: Border.all(color: AppColors.borderDefault),
+        border: Border.all(color: context.colors.borderDefault),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,25 +333,25 @@ class _VenuesCard extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.storefront_outlined,
             size: 20,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           const SizedBox(width: AppSpacing.sm + 2),
           Expanded(
             child: Text(
               count == 0 ? 'No venues yet — Add one' : 'Venues · $count saved',
               style: typography.body.copyWith(
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const Icon(
+          Icon(
             Icons.chevron_right,
             size: 20,
-            color: AppColors.textTertiary,
+            color: context.colors.textTertiary,
           ),
         ],
       ),

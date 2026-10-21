@@ -28,11 +28,11 @@ class HostHomeEventCard extends StatelessWidget {
     // offers no actions; tapping it only opens the read-only details.
     final isEnded = event.status == HostEventStatus.completed;
     final primaryText = isEnded
-        ? AppColors.textTertiary
-        : AppColors.textPrimary;
+        ? context.colors.textTertiary
+        : context.colors.textPrimary;
     final secondaryText = isEnded
-        ? AppColors.textTertiary
-        : AppColors.textSecondary;
+        ? context.colors.textTertiary
+        : context.colors.textSecondary;
 
     return Material(
       color: Colors.transparent,
@@ -43,10 +43,10 @@ class HostHomeEventCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             color: isEnded
-                ? AppColors.backgroundSecondary
-                : AppColors.surfaceCard,
+                ? context.colors.backgroundSecondary
+                : context.colors.surfaceCard,
             borderRadius: borderRadius,
-            border: Border.all(color: AppColors.borderDefault),
+            border: Border.all(color: context.colors.borderDefault),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,10 +60,10 @@ class HostHomeEventCard extends StatelessWidget {
                     style: typography.caption.copyWith(color: secondaryText),
                   ),
                   const SizedBox(width: AppSpacing.xs),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
                     size: 18,
-                    color: AppColors.textTertiary,
+                    color: context.colors.textTertiary,
                   ),
                 ],
               ),
@@ -109,28 +109,32 @@ class _StatusBadge extends StatelessWidget {
       HostEventStatus.draft => (
         'Draft',
         Icons.edit_note,
-        AppColors.textSecondary,
+        context.colors.textSecondary,
       ),
       HostEventStatus.inReview => (
         'In review',
         Icons.hourglass_top,
-        AppColors.statusWarning,
+        context.colors.statusWarning,
       ),
       HostEventStatus.upcoming => (
         'Upcoming',
         Icons.schedule,
-        AppColors.statusInfo,
+        context.colors.statusInfo,
       ),
-      HostEventStatus.live => ('Live', Icons.sensors, AppColors.actionPrimary),
+      HostEventStatus.live => (
+        'Live',
+        Icons.sensors,
+        context.colors.actionPrimary,
+      ),
       HostEventStatus.completed => (
         'Completed',
         Icons.check_circle_outline,
-        AppColors.textTertiary,
+        context.colors.textTertiary,
       ),
       HostEventStatus.cancelled => (
         'Cancelled',
         Icons.cancel_outlined,
-        AppColors.statusError,
+        context.colors.statusError,
       ),
     };
     final bgColor = color.withValues(alpha: 0.16);

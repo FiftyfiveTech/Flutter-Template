@@ -75,9 +75,9 @@ class HostTypePage extends ConsumerWidget {
     final notifier = ref.read(hostTypeControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text('What kind of host are you', style: typography.h3),
@@ -108,7 +108,7 @@ class HostTypePage extends ConsumerWidget {
                             Icon(
                               option.icon,
                               size: 22,
-                              color: AppColors.actionPrimary,
+                              color: context.colors.actionPrimary,
                             ),
                             AppSpacing.spacerMd,
                             Expanded(
@@ -125,7 +125,7 @@ class HostTypePage extends ConsumerWidget {
                                   Text(
                                     option.description,
                                     style: typography.bodySm.copyWith(
-                                      color: AppColors.textTertiary,
+                                      color: context.colors.textTertiary,
                                     ),
                                   ),
                                 ],
@@ -141,8 +141,10 @@ class HostTypePage extends ConsumerWidget {
               ),
             ),
             DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.borderDefault)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: context.colors.borderDefault),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(

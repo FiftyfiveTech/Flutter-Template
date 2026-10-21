@@ -63,8 +63,8 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = isSelected
-        ? AppColors.actionPrimary
-        : AppColors.textSecondary;
+        ? context.colors.actionPrimary
+        : context.colors.textSecondary;
 
     return Material(
       color: Colors.transparent,
@@ -78,13 +78,13 @@ class _Chip extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.actionPrimary.withValues(alpha: 0.16)
-                : AppColors.surfaceCard,
+                ? context.colors.actionPrimary.withValues(alpha: 0.16)
+                : context.colors.surfaceCard,
             borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
             border: Border.all(
               color: isSelected
-                  ? AppColors.actionPrimary
-                  : AppColors.borderDefault,
+                  ? context.colors.actionPrimary
+                  : context.colors.borderDefault,
             ),
           ),
           child: Row(

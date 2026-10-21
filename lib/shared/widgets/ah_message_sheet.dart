@@ -23,7 +23,7 @@ Future<void> showAhMessageSheet(
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: AppColors.surfaceCard,
+    backgroundColor: context.colors.surfaceCard,
     showDragHandle: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
@@ -52,20 +52,16 @@ class _AhMessageSheet extends StatelessWidget {
   final String? title;
   final String buttonLabel;
 
-  (IconData, Color, String) get _toneStyle => switch (tone) {
-    AhMessageTone.info => (
-      Icons.info_outline,
-      AppColors.statusInfo,
-      'Heads up',
-    ),
+  (IconData, Color, String) _toneStyle(AppColors colors) => switch (tone) {
+    AhMessageTone.info => (Icons.info_outline, colors.statusInfo, 'Heads up'),
     AhMessageTone.success => (
       Icons.check_circle_outline,
-      AppColors.statusSuccess,
+      colors.statusSuccess,
       'Done',
     ),
     AhMessageTone.error => (
       Icons.error_outline,
-      AppColors.statusError,
+      colors.statusError,
       'Something went wrong',
     ),
   };
@@ -73,7 +69,7 @@ class _AhMessageSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
-    final (icon, color, defaultTitle) = _toneStyle;
+    final (icon, color, defaultTitle) = _toneStyle(context.colors);
 
     return SafeArea(
       top: false,
@@ -98,13 +94,15 @@ class _AhMessageSheet extends StatelessWidget {
             AppSpacing.spacerMd,
             Text(
               title ?? defaultTitle,
-              style: typography.h2.copyWith(color: AppColors.textPrimary),
+              style: typography.h2.copyWith(color: context.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               message,
-              style: typography.body.copyWith(color: AppColors.textSecondary),
+              style: typography.body.copyWith(
+                color: context.colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             AppSpacing.spacerLg,

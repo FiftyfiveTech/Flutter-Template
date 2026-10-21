@@ -45,10 +45,12 @@ class AhStepperInput extends StatelessWidget {
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.surfaceCard,
+            color: context.colors.surfaceCard,
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(
-              color: hasError ? AppColors.statusError : AppColors.borderDefault,
+              color: hasError
+                  ? context.colors.statusError
+                  : context.colors.borderDefault,
             ),
           ),
           child: Row(
@@ -64,7 +66,7 @@ class AhStepperInput extends StatelessWidget {
                   child: Text(
                     suffix == null ? '$value' : '$value $suffix',
                     style: typography.body.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -83,7 +85,9 @@ class AhStepperInput extends StatelessWidget {
           AppSpacing.spacerXs,
           Text(
             errorText!,
-            style: typography.caption.copyWith(color: AppColors.statusError),
+            style: typography.caption.copyWith(
+              color: context.colors.statusError,
+            ),
           ),
         ],
       ],
@@ -111,7 +115,9 @@ class _StepButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 20,
-            color: enabled ? AppColors.actionPrimary : AppColors.textTertiary,
+            color: enabled
+                ? context.colors.actionPrimary
+                : context.colors.textTertiary,
           ),
         ),
       ),

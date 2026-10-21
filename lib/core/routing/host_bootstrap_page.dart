@@ -59,9 +59,9 @@ class _HostBootstrapPageState extends ConsumerState<HostBootstrapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
-      body: Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      backgroundColor: context.colors.backgroundPrimary,
+      body: const Center(child: CircularProgressIndicator()),
     );
   }
 }

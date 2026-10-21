@@ -18,19 +18,22 @@ class CheckInConnectionPill extends StatelessWidget {
     final downloadedAt = state.manifestDownloadedAt;
 
     final (label, color) = switch (state.connection) {
-      CheckInConnection.unknown => ('Connecting…', AppColors.textSecondary),
-      CheckInConnection.online => ('Online', AppColors.statusSuccess),
+      CheckInConnection.unknown => (
+        'Connecting…',
+        context.colors.textSecondary,
+      ),
+      CheckInConnection.online => ('Online', context.colors.statusSuccess),
       CheckInConnection.offline when downloadedAt == null => (
         'Offline · no guest list on this phone',
-        AppColors.statusError,
+        context.colors.statusError,
       ),
       CheckInConnection.offline when state.isManifestExpired => (
         'Offline · guest list expired',
-        AppColors.statusError,
+        context.colors.statusError,
       ),
       CheckInConnection.offline => (
         'Offline · guest list from ${formatCheckInTime(downloadedAt!)}',
-        AppColors.statusWarning,
+        context.colors.statusWarning,
       ),
     };
 

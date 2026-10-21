@@ -39,7 +39,7 @@ class AhSlider extends StatelessWidget {
             Text(
               valueLabel ?? '$value',
               style: typography.body.copyWith(
-                color: AppColors.actionPrimary,
+                color: context.colors.actionPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -47,9 +47,11 @@ class AhSlider extends StatelessWidget {
         ),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
-            activeTrackColor: AppColors.actionPrimary,
-            thumbColor: AppColors.actionPrimary,
-            inactiveTrackColor: AppColors.actionPrimary.withValues(alpha: 0.2),
+            activeTrackColor: context.colors.actionPrimary,
+            thumbColor: context.colors.actionPrimary,
+            inactiveTrackColor: context.colors.actionPrimary.withValues(
+              alpha: 0.2,
+            ),
           ),
           child: Slider(
             value: value.toDouble(),
@@ -65,7 +67,7 @@ class AhSlider extends StatelessWidget {
             child: Text(
               helperText!,
               style: typography.caption.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),

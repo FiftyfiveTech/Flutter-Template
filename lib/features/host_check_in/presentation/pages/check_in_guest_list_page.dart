@@ -83,9 +83,9 @@ class _CheckInGuestListPageState extends ConsumerState<CheckInGuestListPage> {
     final guests = filterGuests(state.attendees, query: _query, filter: filter);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text('Guest list', style: typography.h3),
@@ -110,7 +110,7 @@ class _CheckInGuestListPageState extends ConsumerState<CheckInGuestListPage> {
                       Text(
                         '${state.checkedInCount} / ${state.totalCount} in',
                         style: typography.bodySm.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -134,7 +134,7 @@ class _CheckInGuestListPageState extends ConsumerState<CheckInGuestListPage> {
             ),
             Expanded(
               child: RefreshIndicator(
-                color: AppColors.actionPrimary,
+                color: context.colors.actionPrimary,
                 onRefresh: ref.read(provider.notifier).refresh,
                 child: _buildList(context, state, guests),
               ),
@@ -159,8 +159,8 @@ class _CheckInGuestListPageState extends ConsumerState<CheckInGuestListPage> {
     );
 
     if (state.isLoading && state.attendees.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.actionPrimary),
+      return Center(
+        child: CircularProgressIndicator(color: context.colors.actionPrimary),
       );
     }
     if (state.attendees.isEmpty) {
@@ -177,7 +177,9 @@ class _CheckInGuestListPageState extends ConsumerState<CheckInGuestListPage> {
           else
             Text(
               'No guests have booked yet.',
-              style: typography.body.copyWith(color: AppColors.textSecondary),
+              style: typography.body.copyWith(
+                color: context.colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
         ],
@@ -189,7 +191,9 @@ class _CheckInGuestListPageState extends ConsumerState<CheckInGuestListPage> {
         children: [
           Text(
             'No guests match.',
-            style: typography.body.copyWith(color: AppColors.textSecondary),
+            style: typography.body.copyWith(
+              color: context.colors.textSecondary,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -215,7 +219,7 @@ class _CheckInGuestListPageState extends ConsumerState<CheckInGuestListPage> {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surfaceCard,
+      backgroundColor: context.colors.surfaceCard,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
@@ -279,7 +283,7 @@ class _GuestRow extends StatelessWidget {
                   Text(
                     subtitle,
                     style: typography.caption.copyWith(
-                      color: AppColors.textTertiary,
+                      color: context.colors.textTertiary,
                     ),
                   ),
                 ],
@@ -357,7 +361,7 @@ class _ManualCheckInSheetState extends ConsumerState<_ManualCheckInSheet> {
                     Text(
                       guest.ticketTypeName!,
                       style: typography.bodySm.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -367,7 +371,7 @@ class _ManualCheckInSheetState extends ConsumerState<_ManualCheckInSheet> {
                     'checking them in by name.',
                     textAlign: TextAlign.center,
                     style: typography.body.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   AppSpacing.spacerLg,

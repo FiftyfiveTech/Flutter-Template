@@ -33,9 +33,9 @@ class AhSwitchTile extends StatelessWidget {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
+          color: context.colors.surfaceCard,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          border: Border.all(color: AppColors.borderDefault),
+          border: Border.all(color: context.colors.borderDefault),
         ),
         child: Row(
           children: [
@@ -54,7 +54,7 @@ class AhSwitchTile extends StatelessWidget {
                     Text(
                       description!,
                       style: typography.caption.copyWith(
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                       ),
                     ),
                   ],
@@ -65,7 +65,7 @@ class AhSwitchTile extends StatelessWidget {
               child: Switch(
                 value: value,
                 onChanged: onChanged,
-                activeThumbColor: AppColors.actionPrimary,
+                activeThumbColor: context.colors.actionPrimary,
               ),
             ),
           ],

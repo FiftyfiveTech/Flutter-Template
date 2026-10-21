@@ -19,11 +19,11 @@ class AhAlertBanner extends StatelessWidget {
   final String message;
   final AhBannerTone tone;
 
-  Color get _color => switch (tone) {
-    AhBannerTone.info => AppColors.statusInfo,
-    AhBannerTone.warning => AppColors.statusWarning,
-    AhBannerTone.error => AppColors.statusError,
-    AhBannerTone.success => AppColors.statusSuccess,
+  Color _colorIn(AppColors colors) => switch (tone) {
+    AhBannerTone.info => colors.statusInfo,
+    AhBannerTone.warning => colors.statusWarning,
+    AhBannerTone.error => colors.statusError,
+    AhBannerTone.success => colors.statusSuccess,
   };
 
   IconData get _icon => switch (tone) {
@@ -36,7 +36,7 @@ class AhAlertBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
-    final color = _color;
+    final color = _colorIn(context.colors);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -53,7 +53,9 @@ class AhAlertBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: typography.bodySm.copyWith(color: AppColors.textPrimary),
+              style: typography.bodySm.copyWith(
+                color: context.colors.textPrimary,
+              ),
             ),
           ),
         ],

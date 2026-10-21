@@ -399,6 +399,7 @@ class HostVenueFormController extends _$HostVenueFormController {
     state = state.copyWith(isDeleting: true, errorMessage: null);
     final useCase = ref.read(deleteHostVenueUseCaseProvider);
     final result = await useCase(state.draft.id);
+    if (!ref.mounted) return false;
     state = result.when(
       ok: (_) => state.copyWith(isDeleting: false, deleted: true),
       err: (failure) =>

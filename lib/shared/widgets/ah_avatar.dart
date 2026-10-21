@@ -38,12 +38,12 @@ class AhAvatar extends StatelessWidget {
         ? Icon(
             Icons.person_outline,
             size: radius,
-            color: AppColors.actionPrimaryFg,
+            color: context.colors.actionPrimaryFg,
           )
         : Text(
             initialsText,
             style: typography.body.copyWith(
-              color: AppColors.actionPrimaryFg,
+              color: context.colors.actionPrimaryFg,
               fontWeight: FontWeight.w700,
             ),
           );
@@ -52,7 +52,7 @@ class AhAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: AppColors.actionPrimary,
+      backgroundColor: context.colors.actionPrimary,
       child: photoPath != null
           ? ClipOval(
               child: Image.file(

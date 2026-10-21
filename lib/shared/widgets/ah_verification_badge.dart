@@ -21,8 +21,8 @@ class AhVerificationBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
     final color = isVerified
-        ? AppColors.trustVerified
-        : AppColors.statusWarning;
+        ? context.colors.trustVerified
+        : context.colors.statusWarning;
 
     return Semantics(
       button: true,

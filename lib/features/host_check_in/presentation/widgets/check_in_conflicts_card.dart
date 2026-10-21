@@ -29,10 +29,10 @@ class CheckInConflictsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.sync_problem,
                 size: 20,
-                color: AppColors.statusError,
+                color: context.colors.statusError,
               ),
               AppSpacing.spacerSm,
               Expanded(
@@ -49,13 +49,12 @@ class CheckInConflictsCard extends StatelessWidget {
           Text(
             "These guests don't count as checked in, so they won't be in "
             "tonight's matching.",
-            style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+            style: typography.bodySm.copyWith(
+              color: context.colors.textSecondary,
+            ),
           ),
           for (final conflict in conflicts) ...[
-            const Divider(
-              height: AppSpacing.lg,
-              color: AppColors.borderDefault,
-            ),
+            Divider(height: AppSpacing.lg, color: context.colors.borderDefault),
             Row(
               children: [
                 Expanded(
@@ -70,7 +69,7 @@ class CheckInConflictsCard extends StatelessWidget {
                       Text(
                         _detail(conflict),
                         style: typography.caption.copyWith(
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                         ),
                       ),
                     ],
@@ -78,10 +77,10 @@ class CheckInConflictsCard extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: 'Dismiss',
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close,
                     size: 18,
-                    color: AppColors.textTertiary,
+                    color: context.colors.textTertiary,
                   ),
                   onPressed: () => onDismiss(conflict.scanId),
                 ),

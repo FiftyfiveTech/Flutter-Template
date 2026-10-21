@@ -43,37 +43,39 @@ class AhTextField extends StatelessWidget {
           controller: controller,
           onChanged: onChanged,
           keyboardType: keyboardType,
-          style: typography.body.copyWith(color: AppColors.textPrimary),
+          style: typography.body.copyWith(color: context.colors.textPrimary),
           decoration: InputDecoration(
             hintText: placeholder,
-            hintStyle: typography.body.copyWith(color: AppColors.textTertiary),
+            hintStyle: typography.body.copyWith(
+              color: context.colors.textTertiary,
+            ),
             prefixIcon: icon == null
                 ? null
-                : Icon(icon, size: 20, color: AppColors.textTertiary),
+                : Icon(icon, size: 20, color: context.colors.textTertiary),
             filled: true,
-            fillColor: AppColors.surfaceCard,
+            fillColor: context.colors.surfaceCard,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm + AppSpacing.xs,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              borderSide: const BorderSide(color: AppColors.borderDefault),
+              borderSide: BorderSide(color: context.colors.borderDefault),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               borderSide: BorderSide(
                 color: hasError
-                    ? AppColors.statusError
-                    : AppColors.borderDefault,
+                    ? context.colors.statusError
+                    : context.colors.borderDefault,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               borderSide: BorderSide(
                 color: hasError
-                    ? AppColors.statusError
-                    : AppColors.actionPrimary,
+                    ? context.colors.statusError
+                    : context.colors.actionPrimary,
               ),
             ),
           ),
@@ -82,13 +84,17 @@ class AhTextField extends StatelessWidget {
           AppSpacing.spacerXs,
           Text(
             errorText!,
-            style: typography.caption.copyWith(color: AppColors.statusError),
+            style: typography.caption.copyWith(
+              color: context.colors.statusError,
+            ),
           ),
         ] else if (helperText != null) ...[
           AppSpacing.spacerXs,
           Text(
             helperText!,
-            style: typography.caption.copyWith(color: AppColors.textTertiary),
+            style: typography.caption.copyWith(
+              color: context.colors.textTertiary,
+            ),
           ),
         ],
       ],

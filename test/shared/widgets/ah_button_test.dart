@@ -58,9 +58,9 @@ void main() {
       ),
     );
 
-    expect(primaryFill(tester).colors, const [
-      AppColors.actionPrimary,
-      AppColors.actionPrimary,
+    expect(primaryFill(tester).colors, [
+      AppColors.light.actionPrimary,
+      AppColors.light.actionPrimary,
     ]);
   });
 
@@ -69,8 +69,8 @@ void main() {
   ) async {
     final theme = AppTheme.lightWith(AppButtonFill.gradient);
 
-    expect(theme.colorScheme.primary, AppColors.actionPrimary);
-    expect(theme.colorScheme.onPrimary, AppColors.actionPrimaryFg);
+    expect(theme.colorScheme.primary, AppColors.light.actionPrimary);
+    expect(theme.colorScheme.onPrimary, AppColors.light.actionPrimaryFg);
   });
 
   testWidgets('enabled primary fires onPressed at full opacity', (

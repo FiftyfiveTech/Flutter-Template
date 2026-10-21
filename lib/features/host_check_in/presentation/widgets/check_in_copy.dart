@@ -16,10 +16,10 @@ String formatCheckInTime(DateTime time) {
 enum CheckInTone { success, warning, error }
 
 extension CheckInToneColor on CheckInTone {
-  Color get color => switch (this) {
-    CheckInTone.success => AppColors.statusSuccess,
-    CheckInTone.warning => AppColors.statusWarning,
-    CheckInTone.error => AppColors.statusError,
+  Color colorIn(AppColors colors) => switch (this) {
+    CheckInTone.success => colors.statusSuccess,
+    CheckInTone.warning => colors.statusWarning,
+    CheckInTone.error => colors.statusError,
   };
 
   IconData get icon => switch (this) {

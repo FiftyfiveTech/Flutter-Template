@@ -70,9 +70,9 @@ class _OtpEntryPageState extends ConsumerState<OtpEntryPage> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text('Enter code', style: typography.h3),
@@ -94,7 +94,7 @@ class _OtpEntryPageState extends ConsumerState<OtpEntryPage> {
                     Text(
                       'Enter the 6-digit code sent to ${widget.phoneNumber}.',
                       style: typography.body.copyWith(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     AppSpacing.spacerLg,
@@ -129,8 +129,10 @@ class _OtpEntryPageState extends ConsumerState<OtpEntryPage> {
               ),
             ),
             DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.borderDefault)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: context.colors.borderDefault),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(

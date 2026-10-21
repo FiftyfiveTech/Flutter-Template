@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/di/session_providers.dart';
+import 'core/di/theme_providers.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'shared/widgets/ah_message_sheet.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // If your project uses the Firebase/Firestore backend path, run `flutterfire configure`
@@ -18,7 +19,14 @@ void main() {
   // for projects using the default Strategy A. See core/di/sync_providers.dart for where to wire
   // it in once a feature actually opts into Strategy C.
 
-  runApp(const ProviderScope(child: AppTemplate()));
+  // Restore the host's Appearance choice before the first frame, so a
+  // dark-mode host doesn't see the light theme flash on launch.
+  final container = ProviderContainer();
+  await container.read(themeModeControllerProvider.notifier).hydrate();
+
+  runApp(
+    UncontrolledProviderScope(container: container, child: const AppTemplate()),
+  );
 }
 
 class AppTemplate extends ConsumerWidget {
@@ -46,6 +54,8 @@ class AppTemplate extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Flutter Template',
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ref.watch(themeModeControllerProvider),
       routerConfig: appRouter,
     );
   }

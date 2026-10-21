@@ -106,20 +106,20 @@ class AhDateTimeField extends StatelessWidget {
               vertical: AppSpacing.sm + AppSpacing.xs,
             ),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: context.colors.surfaceCard,
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               border: Border.all(
                 color: hasError
-                    ? AppColors.statusError
-                    : AppColors.borderDefault,
+                    ? context.colors.statusError
+                    : context.colors.borderDefault,
               ),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.calendar_today_outlined,
                   size: 18,
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
                 AppSpacing.spacerSm,
                 Expanded(
@@ -130,8 +130,8 @@ class AhDateTimeField extends StatelessWidget {
                     softWrap: false,
                     style: typography.body.copyWith(
                       color: value != null
-                          ? AppColors.textPrimary
-                          : AppColors.textTertiary,
+                          ? context.colors.textPrimary
+                          : context.colors.textTertiary,
                     ),
                   ),
                 ),
@@ -143,13 +143,17 @@ class AhDateTimeField extends StatelessWidget {
           AppSpacing.spacerXs,
           Text(
             errorText!,
-            style: typography.caption.copyWith(color: AppColors.statusError),
+            style: typography.caption.copyWith(
+              color: context.colors.statusError,
+            ),
           ),
         ] else if (helperText != null) ...[
           AppSpacing.spacerXs,
           Text(
             helperText!,
-            style: typography.caption.copyWith(color: AppColors.textTertiary),
+            style: typography.caption.copyWith(
+              color: context.colors.textTertiary,
+            ),
           ),
         ],
       ],

@@ -84,15 +84,15 @@ class _CheckInScannerPageState extends ConsumerState<CheckInScannerPage> {
     final result = state.scanResult;
 
     return Scaffold(
-      backgroundColor: AppColors.textPrimary,
+      backgroundColor: context.colors.textPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.textPrimary,
-        foregroundColor: AppColors.textOnAction,
+        backgroundColor: context.colors.textPrimary,
+        foregroundColor: context.colors.textOnAction,
         elevation: 0,
         centerTitle: true,
         title: Text(
           'Scan tickets',
-          style: typography.h3.copyWith(color: AppColors.textOnAction),
+          style: typography.h3.copyWith(color: context.colors.textOnAction),
         ),
         actions: [
           IconButton(
@@ -127,9 +127,9 @@ class _CheckInScannerPageState extends ConsumerState<CheckInScannerPage> {
                     child: Center(child: CheckInConnectionPill(state: state)),
                   ),
                   if (state.isProcessingScan && result == null)
-                    const Center(
+                    Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.textOnAction,
+                        color: context.colors.textOnAction,
                       ),
                     ),
                   if (result != null)
@@ -176,7 +176,10 @@ class _ScanFrame extends StatelessWidget {
             aspectRatio: 1,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.textOnAction, width: 3),
+                border: Border.all(
+                  color: context.colors.textOnAction,
+                  width: 3,
+                ),
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
               ),
             ),
@@ -198,7 +201,7 @@ class _BottomBar extends StatelessWidget {
     final typography = Theme.of(context).extension<AppTypography>()!;
 
     return Container(
-      color: AppColors.surfaceCard,
+      color: context.colors.surfaceCard,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.gutter,
         AppSpacing.sm,
@@ -243,23 +246,25 @@ class _CameraError extends StatelessWidget {
     };
 
     return ColoredBox(
-      color: AppColors.textPrimary,
+      color: context.colors.textPrimary,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.gutter),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.no_photography_outlined,
                 size: AppSpacing.xxl,
-                color: AppColors.textOnAction,
+                color: context.colors.textOnAction,
               ),
               AppSpacing.spacerMd,
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: typography.body.copyWith(color: AppColors.textOnAction),
+                style: typography.body.copyWith(
+                  color: context.colors.textOnAction,
+                ),
               ),
               AppSpacing.spacerLg,
               AhButton(label: 'Search by name', onPressed: onSearchByName),

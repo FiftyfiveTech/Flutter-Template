@@ -16,19 +16,19 @@ class AhBadge extends StatelessWidget {
   final String label;
   final AhTone tone;
 
-  Color _colorFor(AhTone tone) => switch (tone) {
-    AhTone.trust => AppColors.trustVerified,
-    AhTone.success => AppColors.statusSuccess,
-    AhTone.warning => AppColors.statusWarning,
-    AhTone.error => AppColors.statusError,
-    AhTone.info => AppColors.statusInfo,
-    AhTone.accent => AppColors.actionPrimary,
+  Color _colorFor(AhTone tone, AppColors colors) => switch (tone) {
+    AhTone.trust => colors.trustVerified,
+    AhTone.success => colors.statusSuccess,
+    AhTone.warning => colors.statusWarning,
+    AhTone.error => colors.statusError,
+    AhTone.info => colors.statusInfo,
+    AhTone.accent => colors.actionPrimary,
   };
 
   @override
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
-    final color = _colorFor(tone);
+    final color = _colorFor(tone, context.colors);
 
     return Container(
       padding: const EdgeInsets.symmetric(

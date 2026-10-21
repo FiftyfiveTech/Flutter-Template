@@ -36,9 +36,9 @@ class HostVenuesPage extends ConsumerWidget {
     final state = ref.watch(hostVenuesControllerProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.backgroundPrimary,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: context.colors.backgroundPrimary,
         elevation: 0,
         centerTitle: true,
         title: Text('Venues', style: typography.h3),
@@ -48,9 +48,9 @@ class HostVenuesPage extends ConsumerWidget {
           children: [
             Expanded(
               child: state.isLoading && state.venues.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.actionPrimary,
+                        color: context.colors.actionPrimary,
                       ),
                     )
                   : state.errorMessage != null && state.venues.isEmpty
@@ -72,7 +72,7 @@ class HostVenuesPage extends ConsumerWidget {
                           'Saved venues fill in automatically when you '
                           'create an event there.',
                           style: typography.bodySm.copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                         AppSpacing.spacerMd,
@@ -91,8 +91,10 @@ class HostVenuesPage extends ConsumerWidget {
                     ),
             ),
             DecoratedBox(
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.borderDefault)),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: context.colors.borderDefault),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -140,7 +142,9 @@ class _LoadErrorView extends StatelessWidget {
             AppSpacing.spacerSm,
             Text(
               message,
-              style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+              style: typography.bodySm.copyWith(
+                color: context.colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             AppSpacing.spacerMd,
@@ -166,10 +170,10 @@ class _VenueRow extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.storefront_outlined,
             size: 20,
-            color: AppColors.actionPrimary,
+            color: context.colors.actionPrimary,
           ),
           AppSpacing.spacerMd,
           Expanded(
@@ -184,16 +188,16 @@ class _VenueRow extends StatelessWidget {
                 Text(
                   venue.address,
                   style: typography.bodySm.copyWith(
-                    color: AppColors.textTertiary,
+                    color: context.colors.textTertiary,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.chevron_right,
             size: 18,
-            color: AppColors.textTertiary,
+            color: context.colors.textTertiary,
           ),
         ],
       ),

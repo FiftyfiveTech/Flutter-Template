@@ -49,11 +49,11 @@ class _AhConfirmDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final typography = Theme.of(context).extension<AppTypography>()!;
     final accent = isDestructive
-        ? AppColors.statusError
-        : AppColors.actionPrimary;
+        ? context.colors.statusError
+        : context.colors.actionPrimary;
 
     return Dialog(
-      backgroundColor: AppColors.surfaceCard,
+      backgroundColor: context.colors.surfaceCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
       ),
@@ -68,13 +68,15 @@ class _AhConfirmDialog extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: typography.h3.copyWith(color: AppColors.textPrimary),
+              style: typography.h3.copyWith(color: context.colors.textPrimary),
             ),
             AppSpacing.spacerSm,
             Text(
               message,
               textAlign: TextAlign.center,
-              style: typography.bodySm.copyWith(color: AppColors.textSecondary),
+              style: typography.bodySm.copyWith(
+                color: context.colors.textSecondary,
+              ),
             ),
             AppSpacing.spacerLg,
             AhButton(
