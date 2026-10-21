@@ -276,6 +276,11 @@ class HostEventFormController extends _$HostEventFormController {
     state = state.copyWith(draft: state.draft.copyWith(description: value));
   }
 
+  /// [HostEventFormState.formatOptions] filtered by [query], for the
+  /// searchable Format field.
+  List<String> searchFormats(String query) =>
+      filterEventTypes(state.formatOptions, query);
+
   void updateFormat(String value) {
     state = state.copyWith(draft: state.draft.copyWith(format: value));
   }

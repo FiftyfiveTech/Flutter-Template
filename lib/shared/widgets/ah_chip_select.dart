@@ -13,11 +13,16 @@ class AhChipSelect extends StatelessWidget {
     required this.options,
     required this.selected,
     required this.onToggle,
+    this.showRemoveIcon = false,
   });
 
   final List<String> options;
   final List<String> selected;
   final ValueChanged<String> onToggle;
+
+  /// Adds a trailing ✕ to selected chips — for showing just the picked
+  /// values (e.g. under an `AhAsyncSearchField`), where tapping removes.
+  final bool showRemoveIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +36,7 @@ class AhChipSelect extends StatelessWidget {
           _Chip(
             label: option,
             isSelected: selected.contains(option),
+            showRemoveIcon: showRemoveIcon,
             typography: typography,
             onTap: () => onToggle(option),
           ),
@@ -43,17 +49,23 @@ class _Chip extends StatelessWidget {
   const _Chip({
     required this.label,
     required this.isSelected,
+    required this.showRemoveIcon,
     required this.typography,
     required this.onTap,
   });
 
   final String label;
   final bool isSelected;
+  final bool showRemoveIcon;
   final AppTypography typography;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final textColor = isSelected
+        ? AppColors.actionPrimary
+        : AppColors.textSecondary;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -75,14 +87,26 @@ class _Chip extends StatelessWidget {
                   : AppColors.borderDefault,
             ),
           ),
-          child: Text(
-            label,
-            style: typography.bodySm.copyWith(
-              color: isSelected
-                  ? AppColors.actionPrimary
-                  : AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: typography.bodySm.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (showRemoveIcon && isSelected) ...[
+                const SizedBox(width: AppSpacing.xs),
+                Icon(
+                  Icons.close,
+                  size: 14,
+                  color: textColor,
+                  semanticLabel: 'Remove $label',
+                ),
+              ],
+            ],
           ),
         ),
       ),

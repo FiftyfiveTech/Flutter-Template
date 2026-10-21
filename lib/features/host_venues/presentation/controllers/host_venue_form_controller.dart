@@ -6,6 +6,7 @@ import '../../../../core/di/document_compressor_providers.dart';
 import '../../../../core/files/document_compressor.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
 import '../../../host_onboarding/domain/entities/city.dart';
+import '../../../../shared/constants/event_types.dart';
 import '../../domain/entities/host_venue.dart';
 import '../../domain/entities/host_venue_photo.dart';
 import 'host_venues_api_providers.dart';
@@ -165,6 +166,22 @@ class HostVenueFormController extends _$HostVenueFormController {
 
   void updateMaxCapacity(int value) {
     state = state.copyWith(draft: state.draft.copyWith(maxCapacity: value));
+  }
+
+  /// Event types still available to add, filtered by [query] — feeds the
+  /// searchable picker, so already-picked types aren't offered twice.
+  List<String> searchEventTypes(String query) => filterEventTypes(
+    kEventTypeOptions,
+    query,
+    exclude: state.draft.allowedEventTypes,
+  );
+
+  void addEventType(String type) {
+    final current = state.draft.allowedEventTypes;
+    if (current.contains(type)) return;
+    state = state.copyWith(
+      draft: state.draft.copyWith(allowedEventTypes: [...current, type]),
+    );
   }
 
   void toggleEventType(String type) {

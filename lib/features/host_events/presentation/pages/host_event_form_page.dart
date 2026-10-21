@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_badge.dart';
+import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_card.dart';
 import '../../../../shared/widgets/ah_date_time_field.dart';
@@ -303,12 +304,16 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                             AppSpacing.spacerMd,
                             KeyedSubtree(
                               key: _fieldKeys['format'],
-                              child: AhDropdownField(
+                              child: AhAsyncSearchField<String>(
                                 label: 'Format',
                                 value: draft.format,
-                                options: state.formatOptions,
-                                onChanged: notifier.updateFormat,
-                                hint: 'Select a format',
+                                placeholder: 'Search formats',
+                                search: (query) async =>
+                                    notifier.searchFormats(query),
+                                displayStringForOption: (format) => format,
+                                onSelected: notifier.updateFormat,
+                                debounce: Duration.zero,
+                                searchOnEmptyQuery: true,
                                 errorText: fieldErrors['format'],
                               ),
                             ),

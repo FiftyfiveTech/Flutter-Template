@@ -16,3 +16,17 @@ const kEventTypeOptions = [
   'Stand up',
   'Other',
 ];
+
+/// Case-insensitive substring filter over [options], for an event-type
+/// search field. An empty [query] returns every option, minus [exclude].
+List<String> filterEventTypes(
+  List<String> options,
+  String query, {
+  List<String> exclude = const [],
+}) {
+  final q = query.trim().toLowerCase();
+  return [
+    for (final option in options)
+      if (!exclude.contains(option) && option.toLowerCase().contains(q)) option,
+  ];
+}

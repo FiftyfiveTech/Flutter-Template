@@ -6,7 +6,6 @@ import '../../../../core/di/document_picker_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../shared/constants/event_types.dart';
 import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_chip_select.dart';
@@ -243,21 +242,30 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                                 ),
                               ),
                               AppSpacing.spacerMd,
-                              Text(
-                                'Event types this venue can host',
-                                style: typography.bodySm.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              AppSpacing.spacerSm,
                               KeyedSubtree(
                                 key: _fieldKeys['eventTypes'],
-                                child: AhChipSelect(
-                                  options: kEventTypeOptions,
-                                  selected: draft.allowedEventTypes,
-                                  onToggle: notifier.toggleEventType,
+                                child: AhAsyncSearchField<String>(
+                                  label: 'Event types this venue can host',
+                                  value: '',
+                                  placeholder: 'Search event types',
+                                  search: (query) async =>
+                                      notifier.searchEventTypes(query),
+                                  displayStringForOption: (type) => type,
+                                  onSelected: notifier.addEventType,
+                                  debounce: Duration.zero,
+                                  searchOnEmptyQuery: true,
+                                  clearOnSelect: true,
                                 ),
                               ),
+                              if (draft.allowedEventTypes.isNotEmpty) ...[
+                                AppSpacing.spacerSm,
+                                AhChipSelect(
+                                  options: draft.allowedEventTypes,
+                                  selected: draft.allowedEventTypes,
+                                  onToggle: notifier.toggleEventType,
+                                  showRemoveIcon: true,
+                                ),
+                              ],
                               AppSpacing.spacerXs,
                               Text(
                                 fieldErrors['eventTypes'] ??

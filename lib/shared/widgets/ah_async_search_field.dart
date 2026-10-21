@@ -10,6 +10,12 @@ import '../../core/theme/app_typography.dart';
 /// query [search], pick one of the returned options. Use this instead of
 /// [AhSearchField] once the option list can't be enumerated up front and
 /// has to be looked up from an API (cities, venues, anything backend-owned).
+/// [search] may equally filter a local list — anything long enough that a
+/// plain dropdown is a chore to scan (e.g. event types).
+///
+/// For a multi-select, set [clearOnSelect] and render the picked values
+/// yourself (e.g. as removable `AhChipSelect` chips): each pick is
+/// reported via [onSelected] and the field resets for the next search.
 class AhAsyncSearchField<T extends Object> extends StatefulWidget {
   const AhAsyncSearchField({
     super.key,
@@ -22,6 +28,7 @@ class AhAsyncSearchField<T extends Object> extends StatefulWidget {
     this.errorText,
     this.debounce = const Duration(milliseconds: 300),
     this.searchOnEmptyQuery = false,
+    this.clearOnSelect = false,
   });
 
   final String label;
@@ -39,6 +46,10 @@ class AhAsyncSearchField<T extends Object> extends StatefulWidget {
   /// is meant to return a default/full list for an empty query.
   final bool searchOnEmptyQuery;
 
+  /// Empties the field and closes the keyboard after each pick, instead of
+  /// showing the picked option — for multi-select use.
+  final bool clearOnSelect;
+
   @override
   State<AhAsyncSearchField<T>> createState() => _AhAsyncSearchFieldState<T>();
 }
@@ -46,11 +57,36 @@ class AhAsyncSearchField<T extends Object> extends StatefulWidget {
 class _AhAsyncSearchFieldState<T extends Object>
     extends State<AhAsyncSearchField<T>> {
   Timer? _debounceTimer;
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.clearOnSelect ? '' : widget.value,
+  );
+  final _focusNode = FocusNode();
+
+  @override
+  void didUpdateWidget(covariant AhAsyncSearchField<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reflect a value set from outside (e.g. an edited record loading
+    // after the form opened) — Autocomplete only reads it once otherwise.
+    if (!widget.clearOnSelect &&
+        widget.value != oldWidget.value &&
+        _controller.text != widget.value) {
+      _controller.text = widget.value;
+    }
+  }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
+    _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  void _onSelected(T option) {
+    widget.onSelected(option);
+    if (!widget.clearOnSelect) return;
+    _controller.clear();
+    _focusNode.unfocus();
   }
 
   Future<List<T>> _debouncedSearch(String query) {
@@ -78,11 +114,12 @@ class _AhAsyncSearchFieldState<T extends Object>
         Text(widget.label, style: typography.bodySm),
         AppSpacing.spacerXs,
         Autocomplete<T>(
-          initialValue: TextEditingValue(text: widget.value),
+          textEditingController: _controller,
+          focusNode: _focusNode,
           displayStringForOption: widget.displayStringForOption,
           optionsBuilder: (textEditingValue) =>
               _debouncedSearch(textEditingValue.text),
-          onSelected: widget.onSelected,
+          onSelected: _onSelected,
           fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
             return TextField(
               controller: controller,
