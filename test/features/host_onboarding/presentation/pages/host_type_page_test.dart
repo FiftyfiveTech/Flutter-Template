@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:host_mobile_app/core/theme/app_theme.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_onboarding_progress_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_type_page.dart';
+import 'package:host_mobile_app/shared/widgets/ah_button.dart';
 
 import '../../../../support/fakes.dart';
 
@@ -52,7 +53,7 @@ void main() {
     expect(find.text('Community'), findsOneWidget);
     expect(find.text('Venue'), findsOneWidget);
     expect(find.text('Individual operator'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Continue'), findsOneWidget);
+    expect(find.widgetWithText(AhButton, 'Continue'), findsOneWidget);
   });
 
   testWidgets('shows an error when Continue is tapped with no selection', (
@@ -60,7 +61,7 @@ void main() {
   ) async {
     await tester.pumpWidget(buildSubject());
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+    await tester.tap(find.widgetWithText(AhButton, 'Continue'));
     await tester.pump();
 
     expect(find.text('Choose a host type to continue'), findsOneWidget);
@@ -73,7 +74,7 @@ void main() {
 
     await tester.tap(find.text('Venue'));
     await tester.pump();
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+    await tester.tap(find.widgetWithText(AhButton, 'Continue'));
     await tester.pumpAndSettle();
 
     expect(find.text('Choose a host type to continue'), findsNothing);

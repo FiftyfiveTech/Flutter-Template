@@ -237,24 +237,23 @@ class _AddEventButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final action = Theme.of(context).extension<AppActionColors>()!;
+
     return Material(
       color: Colors.transparent,
       shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 44,
-          height: 44,
-          decoration: const BoxDecoration(
-            color: AppColors.actionPrimary,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.add,
-            color: AppColors.actionPrimaryFg,
-            size: 24,
-          ),
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        width: AppSpacing.touchTargetMin,
+        height: AppSpacing.touchTargetMin,
+        decoration: BoxDecoration(
+          gradient: action.actionPrimaryFill,
+          shape: BoxShape.circle,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Icon(Icons.add, color: action.actionPrimaryFg, size: 24),
         ),
       ),
     );

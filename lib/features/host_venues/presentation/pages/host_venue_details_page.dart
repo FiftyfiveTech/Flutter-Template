@@ -495,7 +495,7 @@ class _DeleteVenueSheet extends StatelessWidget {
 
     return Positioned.fill(
       child: ColoredBox(
-        color: const Color(0x8C000000),
+        color: AppColors.scrim,
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Padding(

@@ -14,6 +14,7 @@ import 'package:host_mobile_app/features/host_onboarding/presentation/controller
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_onboarding_progress_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_signup_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_signup_page.dart';
+import 'package:host_mobile_app/shared/widgets/ah_button.dart';
 
 import '../../../../support/fakes.dart';
 
@@ -119,7 +120,7 @@ void main() {
     expect(find.text('Contact phone'), findsOneWidget);
     expect(find.text('Contact email'), findsOneWidget);
     expect(find.text('City'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Continue'), findsOneWidget);
+    expect(find.widgetWithText(AhButton, 'Continue'), findsOneWidget);
   });
 
   testWidgets('shows field errors when Continue is tapped with empty fields', (
@@ -127,7 +128,7 @@ void main() {
   ) async {
     await tester.pumpWidget(buildSubject());
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+    await tester.tap(find.widgetWithText(AhButton, 'Continue'));
     await tester.pump();
 
     expect(find.text('Enter a business or organiser name'), findsOneWidget);
@@ -162,7 +163,7 @@ void main() {
     await tester.tap(find.text('Chennai city'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+    await tester.tap(find.widgetWithText(AhButton, 'Continue'));
     await tester.pumpAndSettle();
 
     expect(find.text('Enter a business or organiser name'), findsNothing);
@@ -202,7 +203,7 @@ void main() {
       await tester.tap(find.text('Chennai city'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Continue'));
+      await tester.tap(find.widgetWithText(AhButton, 'Continue'));
       await tester.pumpAndSettle();
 
       expect(find.text('Signup failed.'), findsOneWidget);

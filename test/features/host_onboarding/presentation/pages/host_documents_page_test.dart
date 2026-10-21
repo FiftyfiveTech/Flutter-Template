@@ -21,6 +21,7 @@ import 'package:host_mobile_app/features/host_onboarding/presentation/controller
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_type_controller.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_verification_api_providers.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/pages/host_documents_page.dart';
+import 'package:host_mobile_app/shared/widgets/ah_button.dart';
 
 import '../../../../support/fakes.dart';
 
@@ -225,9 +226,9 @@ void main() {
     await tester.tap(find.text('We serve alcohol'));
     await tester.pump();
     await tester.ensureVisible(
-      find.widgetWithText(ElevatedButton, 'Submit for review'),
+      find.widgetWithText(AhButton, 'Submit for review'),
     );
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Submit for review'));
+    await tester.tap(find.widgetWithText(AhButton, 'Submit for review'));
     await tester.pump();
 
     expect(find.text('Required when serving alcohol'), findsWidgets);
@@ -247,9 +248,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('PAN card'));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.widgetWithText(ElevatedButton, 'Submit for review'),
-      );
+      await tester.tap(find.widgetWithText(AhButton, 'Submit for review'));
       await tester.pumpAndSettle();
 
       expect(find.text('Enter a valid UPI ID'), findsNothing);
@@ -279,9 +278,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('PAN card'));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.widgetWithText(ElevatedButton, 'Submit for review'),
-      );
+      await tester.tap(find.widgetWithText(AhButton, 'Submit for review'));
       await tester.pumpAndSettle();
 
       expect(find.text('Submission failed.'), findsOneWidget);

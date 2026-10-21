@@ -46,6 +46,8 @@ Detail state structures:
 ## 8. Theme & Design System
 * Configure tokens (colors, spacing, typography) in `lib/core/theme/`.
 * Declare `ThemeExtension` to expose these tokens safely across all pages without hardcoding color hexes or margins.
+* Raw hex values live only in `lib/core/theme/app_palette.dart`; `AppColors` maps them to semantic tokens.
+* Primary buttons (`AhButton`) paint `AppActionColors.actionPrimaryFill`. `AppTheme.buttonFill` switches every primary button between gradient and solid in one line.
 
 ## 9. Testing Strategy
 * **Unit Tests**: Target use case business rules and DTO mappers.

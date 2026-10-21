@@ -4,18 +4,39 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
+/// How primary buttons paint their background.
+enum AppButtonFill { gradient, solid }
+
 /// Assembles `AppColors`/`AppTypography` into `ThemeData`. `light` is the app's
 /// default theme — see `docs/design_systems/tokens/colors.css`'s `.theme-light`
 /// block.
 abstract final class AppTheme {
-  static ThemeData get light {
+  /// Flip to [AppButtonFill.solid] to render every primary button flat.
+  static const AppButtonFill buttonFill = AppButtonFill.gradient;
+
+  static ThemeData get light => lightWith(buttonFill);
+
+  /// [light] with an explicit button fill — lets tests exercise both modes.
+  static ThemeData lightWith(AppButtonFill fill) {
+    final action = switch (fill) {
+      AppButtonFill.gradient => AppActionColors.light,
+      AppButtonFill.solid => AppActionColors.light.copyWith(
+        actionPrimaryFill: LinearGradient(
+          colors: [
+            AppActionColors.light.actionPrimary,
+            AppActionColors.light.actionPrimary,
+          ],
+        ),
+      ),
+    };
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.backgroundPrimary,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.actionPrimary,
-        onPrimary: AppColors.actionPrimaryFg,
+      colorScheme: ColorScheme.light(
+        primary: action.actionPrimary,
+        onPrimary: action.actionPrimaryFg,
         secondary: AppColors.actionSecondary,
         onSecondary: AppColors.actionSecondaryFg,
         error: AppColors.statusError,
@@ -24,6 +45,7 @@ abstract final class AppTheme {
         onSurface: AppColors.textPrimary,
       ),
       extensions: [
+        action,
         AppTypography(
           display: GoogleFonts.bricolageGrotesque(
             fontSize: 36,
