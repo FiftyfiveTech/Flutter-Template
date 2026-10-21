@@ -19,6 +19,9 @@ abstract class HostEventsRemoteDatasource {
 
   Future<HostEventDto> cancelEvent(String eventId, {required String reason});
 
+  /// `DELETE /api/v1/host/events/{id}` — soft-deletes a draft.
+  Future<void> deleteEvent(String eventId);
+
   Future<HostEventPhotoDto> uploadEventPhoto({
     required String filePath,
     required String fileName,
@@ -85,6 +88,11 @@ class HostEventsRestDatasource implements HostEventsRemoteDatasource {
     );
     final body = response.data as Map<String, dynamic>;
     return HostEventDto.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> deleteEvent(String eventId) async {
+    await _client.delete('/api/v1/host/events/$eventId');
   }
 
   @override

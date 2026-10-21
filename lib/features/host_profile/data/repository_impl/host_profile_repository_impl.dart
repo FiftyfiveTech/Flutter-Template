@@ -103,6 +103,22 @@ class HostProfileRepositoryImpl implements HostProfileRepository {
   }
 
   @override
+  Future<Result<void>> deleteAccount() async {
+    try {
+      await _remoteDatasource.deleteAccount();
+    } on NetworkException catch (e) {
+      return Err(_failureFor(e));
+    } catch (_) {
+      return const Err(UnexpectedFailure());
+    }
+    // The account is gone server-side; a failed local wipe mustn't
+    // report the delete as failed (and invite a retry against a deleted
+    // account) — sign-out clears the session either way.
+    await clear();
+    return const Ok(null);
+  }
+
+  @override
   Future<Result<void>> clear() async {
     try {
       final existing = await _localDatasource.load();

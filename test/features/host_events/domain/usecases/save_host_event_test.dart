@@ -25,6 +25,10 @@ class _FakeHostEventsRepository implements HostEventsRepository {
   }
 
   @override
+  Future<Result<void>> deleteEvent(String eventId) =>
+      throw UnimplementedError();
+
+  @override
   Future<Result<HostEventPhoto>> uploadEventPhoto({
     required String filePath,
     required String fileName,

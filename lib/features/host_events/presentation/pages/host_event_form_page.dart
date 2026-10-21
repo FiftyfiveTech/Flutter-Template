@@ -9,6 +9,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_badge.dart';
 import '../../../../shared/widgets/ah_async_search_field.dart';
 import '../../../../shared/widgets/ah_button.dart';
+import '../../../../shared/widgets/ah_confirm_dialog.dart';
 import '../../../../shared/widgets/ah_card.dart';
 import '../../../../shared/widgets/ah_date_time_field.dart';
 import '../../../../shared/widgets/ah_dropdown_field.dart';
@@ -175,6 +176,26 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
     _showFailure();
   }
 
+  Future<void> _onDeleteDraft() async {
+    final confirmed = await showAhConfirmDialog(
+      context,
+      title: 'Delete this draft?',
+      message:
+          "The event and everything you've filled in will be removed. "
+          "This can't be undone.",
+      confirmLabel: 'Delete draft',
+      cancelLabel: 'Keep draft',
+    );
+    if (!confirmed || !mounted) return;
+    final deleted = await ref.read(_provider.notifier).deleteEvent();
+    if (!mounted) return;
+    if (deleted) {
+      _popWithMessage('Draft deleted.', AhMessageTone.success);
+      return;
+    }
+    _showFailure();
+  }
+
   void _scrollToFirstError(Map<String, String> fieldErrors) {
     scrollToFirstError(_fieldKeys, fieldErrors);
   }
@@ -216,6 +237,28 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
               : 'New event',
           style: typography.h3,
         ),
+        actions: [
+          if (state.canDelete)
+            state.isDeleting
+                ? const Padding(
+                    padding: EdgeInsets.all(AppSpacing.md),
+                    child: SizedBox.square(
+                      dimension: AppSpacing.lg - AppSpacing.xs,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.statusError,
+                      ),
+                    ),
+                  )
+                : IconButton(
+                    tooltip: 'Delete draft',
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.statusError,
+                    ),
+                    onPressed: state.isBusy ? null : _onDeleteDraft,
+                  ),
+        ],
       ),
       body: SafeArea(
         child: state.isLoadingEvent

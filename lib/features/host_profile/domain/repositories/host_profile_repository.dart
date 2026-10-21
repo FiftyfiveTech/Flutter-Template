@@ -16,6 +16,10 @@ abstract interface class HostProfileRepository {
   /// Returns the updated cached profile.
   Future<Result<HostProfile>> update(String userId, HostProfileEdit edit);
 
+  /// Deletes the host account on the server and, only once that succeeds,
+  /// wipes the cached profile and avatar.
+  Future<Result<void>> deleteAccount();
+
   /// Wipes the cached profile and its avatar file (on log out).
   Future<Result<void>> clear();
 }

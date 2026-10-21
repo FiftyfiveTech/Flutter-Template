@@ -7,8 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_avatar.dart';
-import '../../../../shared/widgets/ah_button.dart';
 import '../../../../shared/widgets/ah_card.dart';
+import '../../../../shared/widgets/ah_confirm_dialog.dart';
 import '../../../../shared/widgets/ah_segmented_control.dart';
 import '../../../../shared/widgets/ah_verification_badge.dart';
 import '../../../host_home/presentation/widgets/host_home_bottom_nav.dart';
@@ -51,59 +51,29 @@ class HostYouPage extends ConsumerWidget {
     context.go('/');
   }
 
-  Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) {
-    return showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surfaceCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusSheet),
-        ),
-      ),
-      builder: (sheetContext) {
-        final typography = Theme.of(sheetContext).extension<AppTypography>()!;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.gutter,
-            AppSpacing.lg,
-            AppSpacing.gutter,
-            AppSpacing.lg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Delete this account?', style: typography.h2),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Removes your listings and payout details. Settle events '
-                "with sold seats first. This can't be undone.",
-                style: typography.bodySm.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              AhButton(
-                label: 'Delete account',
-                variant: AhButtonVariant.destructive,
-                fullWidth: true,
-                onPressed: () {
-                  Navigator.of(sheetContext).pop();
-                  _logOut(context, ref);
-                },
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              AhButton(
-                label: 'Keep my account',
-                variant: AhButtonVariant.tertiary,
-                fullWidth: true,
-                onPressed: () => Navigator.of(sheetContext).pop(),
-              ),
-            ],
-          ),
-        );
-      },
+  /// Warns first; only a confirmed delete calls `DELETE /api/v1/host/me`.
+  /// The session ends only once the server has deleted the account — a
+  /// failure keeps the host signed in and shows the error.
+  Future<void> _confirmDeleteAccount(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final confirmed = await showAhConfirmDialog(
+      context,
+      title: 'Delete this account?',
+      message:
+          'Removes your listings and payout details. Settle events with '
+          "sold seats first. This can't be undone.",
+      confirmLabel: 'Delete account',
+      cancelLabel: 'Keep my account',
     );
+    if (!confirmed || !context.mounted) return;
+    final deleted = await ref
+        .read(hostYouControllerProvider.notifier)
+        .deleteAccount();
+    if (!deleted || !context.mounted) return;
+    ref.read(hostSessionControllerProvider.notifier).clear();
+    context.go('/');
   }
 
   @override
@@ -222,6 +192,7 @@ class HostYouPage extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.cardGap),
                         _DeleteAccountRow(
+                          isDeleting: state.isDeletingAccount,
                           onTap: () => _confirmDeleteAccount(context, ref),
                         ),
                       ],
@@ -364,8 +335,9 @@ class _AccountRow extends StatelessWidget {
 }
 
 class _DeleteAccountRow extends StatelessWidget {
-  const _DeleteAccountRow({required this.onTap});
+  const _DeleteAccountRow({required this.isDeleting, required this.onTap});
 
+  final bool isDeleting;
   final VoidCallback onTap;
 
   @override
@@ -375,7 +347,7 @@ class _DeleteAccountRow extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: isDeleting ? null : onTap,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -385,14 +357,23 @@ class _DeleteAccountRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.delete_outline,
-                size: 18,
-                color: AppColors.statusError,
-              ),
+              if (isDeleting)
+                const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.statusError,
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.delete_outline,
+                  size: 18,
+                  color: AppColors.statusError,
+                ),
               const SizedBox(width: AppSpacing.sm + 2),
               Text(
-                'Delete account',
+                isDeleting ? 'Deleting account…' : 'Delete account',
                 style: typography.body.copyWith(
                   color: AppColors.statusError,
                   fontWeight: FontWeight.w600,

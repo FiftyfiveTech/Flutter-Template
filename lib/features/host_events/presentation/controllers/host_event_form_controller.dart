@@ -64,6 +64,7 @@ class HostEventFormState {
     this.venuesLoadError,
     this.isSaving = false,
     this.isCancelling = false,
+    this.isDeleting = false,
     this.errorMessage,
     this.fieldErrors = const {},
     this.saved = false,
@@ -97,6 +98,9 @@ class HostEventFormState {
 
   /// True while `POST /api/v1/host/events/{id}/cancel` is in flight.
   final bool isCancelling;
+
+  /// True while `DELETE /api/v1/host/events/{id}` is in flight.
+  final bool isDeleting;
   final String? errorMessage;
   final Map<String, String> fieldErrors;
   final bool saved;
@@ -137,7 +141,14 @@ class HostEventFormState {
       (draft.status == HostEventLifecycleStatus.submitted ||
           draft.status == HostEventLifecycleStatus.published);
 
-  bool get isBusy => isSaving || isCancelling;
+  bool get isBusy => isSaving || isCancelling || isDeleting;
+
+  /// Only a draft that already exists on the server can be deleted — a
+  /// new, never-saved event has nothing to delete.
+  bool get canDelete =>
+      isEdit &&
+      draft.id.isNotEmpty &&
+      draft.status == HostEventLifecycleStatus.draft;
 
   HostEventFormState copyWith({
     HostEvent? draft,
@@ -149,6 +160,7 @@ class HostEventFormState {
     String? venuesLoadError,
     bool? isSaving,
     bool? isCancelling,
+    bool? isDeleting,
     String? errorMessage,
     Map<String, String>? fieldErrors,
     bool? saved,
@@ -166,6 +178,7 @@ class HostEventFormState {
       venuesLoadError: venuesLoadError,
       isSaving: isSaving ?? this.isSaving,
       isCancelling: isCancelling ?? this.isCancelling,
+      isDeleting: isDeleting ?? this.isDeleting,
       errorMessage: errorMessage,
       fieldErrors: fieldErrors ?? this.fieldErrors,
       saved: saved ?? this.saved,
@@ -661,6 +674,30 @@ class HostEventFormController extends _$HostEventFormController {
   /// Cancels a submitted/published event via
   /// `POST /api/v1/host/events/{id}/cancel`, which also initiates
   /// attendee refunds on the backend.
+  /// `DELETE /api/v1/host/events/{id}` for a draft. Returns true once
+  /// deleted; on failure [HostEventFormState.errorMessage] is set.
+  Future<bool> deleteEvent() async {
+    if (!state.canDelete || state.isBusy) return false;
+    state = state.copyWith(isDeleting: true, errorMessage: null);
+    final result = await ref.read(deleteHostEventUseCaseProvider)(
+      state.draft.id,
+    );
+    if (!ref.mounted) return false;
+    return result.when(
+      ok: (_) {
+        state = state.copyWith(isDeleting: false);
+        return true;
+      },
+      err: (failure) {
+        state = state.copyWith(
+          isDeleting: false,
+          errorMessage: failure.message,
+        );
+        return false;
+      },
+    );
+  }
+
   Future<bool> cancelEvent(String reason) async {
     if (!state.canCancel || state.isBusy) return false;
     state = state.copyWith(isCancelling: true, errorMessage: null);

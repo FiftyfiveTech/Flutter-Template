@@ -13,6 +13,9 @@ abstract interface class HostProfileRemoteDatasource {
   Future<HostProfileResponseDto> updateProfile(
     UpdateHostProfileRequestDto request,
   );
+
+  /// `DELETE /api/v1/host/me` — soft-deletes the signed-in host account.
+  Future<void> deleteAccount();
 }
 
 class HostProfileRestDatasource implements HostProfileRemoteDatasource {
@@ -51,6 +54,11 @@ class HostProfileRestDatasource implements HostProfileRemoteDatasource {
     return HostProfileResponseDto.fromJson(
       body['data'] as Map<String, dynamic>,
     );
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _client.delete('/api/v1/host/me');
   }
 
   MediaType _mediaTypeFor(String fileName) {

@@ -79,6 +79,18 @@ class HostEventsRepositoryImpl implements HostEventsRepository {
   }
 
   @override
+  Future<Result<void>> deleteEvent(String eventId) async {
+    try {
+      await _remoteDatasource.deleteEvent(eventId);
+      return const Ok(null);
+    } on NetworkException catch (e) {
+      return Err(NetworkFailure(message: e.message));
+    } catch (_) {
+      return const Err(UnexpectedFailure());
+    }
+  }
+
+  @override
   Future<Result<HostEventPhoto>> uploadEventPhoto({
     required String filePath,
     required String fileName,

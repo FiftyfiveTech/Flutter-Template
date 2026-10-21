@@ -5,6 +5,7 @@ import 'package:host_mobile_app/features/host_events/domain/entities/host_event.
 import 'package:host_mobile_app/features/host_events/domain/entities/host_event_photo.dart';
 import 'package:host_mobile_app/features/host_events/domain/repositories/host_events_repository.dart';
 import 'package:host_mobile_app/features/host_events/domain/usecases/cancel_host_event.dart';
+import 'package:host_mobile_app/features/host_events/domain/usecases/delete_host_event.dart';
 import 'package:host_mobile_app/features/host_events/domain/usecases/submit_host_event.dart';
 
 class _FakeHostEventsRepository implements HostEventsRepository {
@@ -13,6 +14,8 @@ class _FakeHostEventsRepository implements HostEventsRepository {
   String? submittedId;
   String? cancelledId;
   String? cancelReason;
+  String? deletedId;
+  Result<void> deleteResult = const Ok(null);
 
   @override
   Future<Result<HostEvent>> submitEvent(String eventId) async {
@@ -40,6 +43,12 @@ class _FakeHostEventsRepository implements HostEventsRepository {
   @override
   Future<Result<HostEvent>> saveEvent(HostEvent event) =>
       throw UnimplementedError();
+
+  @override
+  Future<Result<void>> deleteEvent(String eventId) async {
+    deletedId = eventId;
+    return deleteResult;
+  }
 
   @override
   Future<Result<HostEventPhoto>> uploadEventPhoto({
@@ -115,6 +124,28 @@ void main() {
       result.when(
         ok: (_) => fail('expected Err'),
         err: (failure) => expect(failure, isA<ValidationFailure>()),
+      );
+    });
+  });
+
+  group('DeleteHostEventUseCase', () {
+    test('deletes the given event id', () async {
+      final repository = _FakeHostEventsRepository(Ok(submitted));
+      final result = await DeleteHostEventUseCase(repository)('event-1');
+
+      expect(repository.deletedId, 'event-1');
+      expect(result.when(ok: (_) => true, err: (_) => false), isTrue);
+    });
+
+    test('surfaces a repository failure unchanged', () async {
+      const failure = NetworkFailure(message: 'Delete failed');
+      final repository = _FakeHostEventsRepository(Ok(submitted))
+        ..deleteResult = const Err(failure);
+      final result = await DeleteHostEventUseCase(repository)('event-1');
+
+      result.when(
+        ok: (_) => fail('expected Err'),
+        err: (actual) => expect(actual, failure),
       );
     });
   });

@@ -41,6 +41,9 @@ class _FakeRepository implements HostProfileRepository {
 
   @override
   Future<Result<void>> clear() async => const Ok(null);
+
+  @override
+  Future<Result<void>> deleteAccount() async => const Ok(null);
 }
 
 void main() {

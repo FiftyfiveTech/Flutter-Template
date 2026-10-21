@@ -5,6 +5,7 @@ import '../../data/datasources/host_events_remote_datasource.dart';
 import '../../data/repository_impl/host_events_repository_impl.dart';
 import '../../domain/repositories/host_events_repository.dart';
 import '../../domain/usecases/cancel_host_event.dart';
+import '../../domain/usecases/delete_host_event.dart';
 import '../../domain/usecases/get_host_event_by_id.dart';
 import '../../domain/usecases/get_host_events.dart';
 import '../../domain/usecases/save_host_event.dart';
@@ -53,4 +54,9 @@ SubmitHostEventUseCase submitHostEventUseCase(Ref ref) {
 @riverpod
 CancelHostEventUseCase cancelHostEventUseCase(Ref ref) {
   return CancelHostEventUseCase(ref.watch(hostEventsRepositoryProvider));
+}
+
+@riverpod
+DeleteHostEventUseCase deleteHostEventUseCase(Ref ref) {
+  return DeleteHostEventUseCase(ref.watch(hostEventsRepositoryProvider));
 }

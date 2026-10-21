@@ -27,6 +27,8 @@ class _FakePhotoStore implements HostProfilePhotoStore {
 class _FakeRemote implements HostProfileRemoteDatasource {
   Object? uploadError;
   Object? updateError;
+  Object? deleteError;
+  var deleteCalls = 0;
   final uploadedPaths = <String>[];
   UpdateHostProfileRequestDto? lastRequest;
 
@@ -35,6 +37,12 @@ class _FakeRemote implements HostProfileRemoteDatasource {
     if (uploadError != null) throw uploadError!;
     uploadedPaths.add(filePath);
     return const HostProfileUploadDto(id: 'upload-1');
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteCalls++;
+    if (deleteError != null) throw deleteError!;
   }
 
   @override
@@ -212,5 +220,32 @@ void main() {
 
     expect(_value(await repository.getCached('u1')), isNull);
     expect(photoStore.deleted, contains('stored_0.jpg'));
+  });
+
+  test('deleteAccount deletes on the server, then wipes the cache', () async {
+    await repository.update(
+      'u1',
+      const HostProfileEdit(photoSourcePath: '/p/a.jpg'),
+    );
+
+    _value(await repository.deleteAccount());
+
+    expect(remote.deleteCalls, 1);
+    expect(_value(await repository.getCached('u1')), isNull);
+    expect(photoStore.deleted, contains('stored_0.jpg'));
+  });
+
+  test('a failed deleteAccount keeps the cached profile', () async {
+    await repository.cache(const HostProfile(userId: 'u1', hostName: 'A'));
+    remote.deleteError = NetworkException(
+      'Settle events with sold seats first',
+      statusCode: 409,
+    );
+
+    final failure = _failure(await repository.deleteAccount());
+
+    expect(failure, isA<ServerFailure>());
+    expect(failure.message, 'Settle events with sold seats first');
+    expect(_value(await repository.getCached('u1'))?.hostName, 'A');
   });
 }

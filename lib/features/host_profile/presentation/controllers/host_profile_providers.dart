@@ -9,6 +9,7 @@ import '../../data/repository_impl/host_profile_repository_impl.dart';
 import '../../domain/repositories/host_profile_repository.dart';
 import '../../domain/usecases/cache_host_profile.dart';
 import '../../domain/usecases/clear_host_profile.dart';
+import '../../domain/usecases/delete_host_account.dart';
 import '../../domain/usecases/get_cached_host_profile.dart';
 import '../../domain/usecases/update_host_profile.dart';
 
@@ -56,4 +57,9 @@ UpdateHostProfileUseCase updateHostProfileUseCase(Ref ref) {
 @riverpod
 ClearHostProfileUseCase clearHostProfileUseCase(Ref ref) {
   return ClearHostProfileUseCase(ref.watch(hostProfileRepositoryProvider));
+}
+
+@riverpod
+DeleteHostAccountUseCase deleteHostAccountUseCase(Ref ref) {
+  return DeleteHostAccountUseCase(ref.watch(hostProfileRepositoryProvider));
 }

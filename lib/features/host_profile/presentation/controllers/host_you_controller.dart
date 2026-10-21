@@ -17,6 +17,7 @@ class HostYouState {
     this.savedVenuesCount = 0,
     this.photoPath,
     this.isLoading = false,
+    this.isDeletingAccount = false,
     this.errorMessage,
   });
 
@@ -25,6 +26,9 @@ class HostYouState {
   final int savedVenuesCount;
   final String? photoPath;
   final bool isLoading;
+
+  /// True while `DELETE /api/v1/host/me` is in flight.
+  final bool isDeletingAccount;
   final String? errorMessage;
 
   HostYouState copyWith({
@@ -33,6 +37,7 @@ class HostYouState {
     int? savedVenuesCount,
     String? photoPath,
     bool? isLoading,
+    bool? isDeletingAccount,
     String? errorMessage,
   }) {
     return HostYouState(
@@ -41,6 +46,7 @@ class HostYouState {
       savedVenuesCount: savedVenuesCount ?? this.savedVenuesCount,
       photoPath: photoPath ?? this.photoPath,
       isLoading: isLoading ?? this.isLoading,
+      isDeletingAccount: isDeletingAccount ?? this.isDeletingAccount,
       errorMessage: errorMessage,
     );
   }
@@ -129,6 +135,29 @@ class HostYouController extends _$HostYouController {
         isLoading: false,
         errorMessage: cached == null ? failure.message : null,
       ),
+    );
+  }
+
+  /// Deletes the host account. Returns true once the server has deleted
+  /// it (the local profile cache is wiped too) — the caller then ends the
+  /// session. On failure [HostYouState.errorMessage] is set.
+  Future<bool> deleteAccount() async {
+    if (state.isDeletingAccount) return false;
+    state = state.copyWith(isDeletingAccount: true, errorMessage: null);
+    final result = await ref.read(deleteHostAccountUseCaseProvider)();
+    if (!ref.mounted) return false;
+    return result.when(
+      ok: (_) {
+        state = state.copyWith(isDeletingAccount: false);
+        return true;
+      },
+      err: (failure) {
+        state = state.copyWith(
+          isDeletingAccount: false,
+          errorMessage: failure.message,
+        );
+        return false;
+      },
     );
   }
 

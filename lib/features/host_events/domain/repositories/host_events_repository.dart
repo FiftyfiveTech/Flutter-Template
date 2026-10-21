@@ -20,6 +20,9 @@ abstract class HostEventsRepository {
     required String reason,
   });
 
+  /// Soft-deletes a draft event (the backend only allows drafts).
+  Future<Result<void>> deleteEvent(String eventId);
+
   Future<Result<HostEventPhoto>> uploadEventPhoto({
     required String filePath,
     required String fileName,
