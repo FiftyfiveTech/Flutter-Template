@@ -50,11 +50,12 @@ class AppTemplate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(sessionExpiryProvider, (_, _) => _onSessionExpired());
+    final buttonFill = ref.watch(buttonFillControllerProvider);
 
     return MaterialApp.router(
       title: 'Flutter Template',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: AppTheme.lightWith(buttonFill),
+      darkTheme: AppTheme.darkWith(buttonFill),
       themeMode: ref.watch(themeModeControllerProvider),
       routerConfig: appRouter,
     );

@@ -229,7 +229,7 @@ extension AppColorsContext on BuildContext {
 
 /// Primary-action tokens exposed through `ThemeData.extensions`, so the
 /// primary button fill can be swapped (gradient vs solid, see
-/// `AppTheme.buttonFill`) without widgets branching on the mode.
+/// `buttonFillControllerProvider`) without widgets branching on the mode.
 @immutable
 class AppActionColors extends ThemeExtension<AppActionColors> {
   const AppActionColors({

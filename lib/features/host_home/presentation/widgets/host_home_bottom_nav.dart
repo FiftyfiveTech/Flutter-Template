@@ -92,13 +92,16 @@ class _NavItem extends StatelessWidget {
     final isSelected = index == currentIndex;
 
     if (isSelected) {
+      // Painted with the same fill as primary buttons, so it follows the
+      // solid/gradient button style.
+      final action = Theme.of(context).extension<AppActionColors>()!;
       return InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
           decoration: BoxDecoration(
-            color: context.colors.actionPrimary,
+            gradient: action.actionPrimaryFill,
             borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
           ),
           child: Row(

@@ -8,7 +8,7 @@ import '../../core/theme/app_typography.dart';
 enum AhButtonVariant { primary, secondary, tertiary, destructive }
 
 /// The app's standard button — primary (accent fill, gradient or solid per
-/// `AppTheme.buttonFill`), secondary (filled neutral), tertiary (text-only) or
+/// `buttonFillControllerProvider`), secondary (filled neutral), tertiary (text-only) or
 /// destructive. Used for every CTA across the app so sizing/color/radius stay
 /// consistent without re-styling per screen.
 ///

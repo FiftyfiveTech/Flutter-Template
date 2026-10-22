@@ -12,8 +12,9 @@ enum AppButtonFill { gradient, solid }
 /// `.theme-dark` blocks in `docs/design_systems/tokens/colors.css`. Which one
 /// is shown is the host's Appearance choice (`themeModeControllerProvider`).
 abstract final class AppTheme {
-  /// Flip to [AppButtonFill.solid] to render every primary button flat.
-  static const AppButtonFill buttonFill = AppButtonFill.gradient;
+  /// The default primary-button fill. Switchable at runtime for comparison
+  /// via `buttonFillControllerProvider` (the H-12 Profile test toggle).
+  static const AppButtonFill buttonFill = AppButtonFill.solid;
 
   static ThemeData get light => lightWith(buttonFill);
 

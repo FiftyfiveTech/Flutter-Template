@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../theme/app_theme.dart';
 import '../theme/theme_mode_local_datasource.dart';
 import 'database_providers.dart';
 
@@ -33,4 +34,16 @@ class ThemeModeController extends _$ThemeModeController {
     state = mode;
     unawaited(ref.read(themeModeLocalDatasourceProvider).save(mode));
   }
+}
+
+/// How primary buttons (and the bottom nav's selected tab) are filled —
+/// solid by default. Flipped from the H-12 Profile test toggle to compare
+/// against the gradient; not persisted, so a restart returns to
+/// [AppTheme.buttonFill].
+@Riverpod(keepAlive: true)
+class ButtonFillController extends _$ButtonFillController {
+  @override
+  AppButtonFill build() => AppTheme.buttonFill;
+
+  void setFill(AppButtonFill fill) => state = fill;
 }

@@ -6,6 +6,7 @@ import '../../../../core/di/session_providers.dart';
 import '../../../../core/di/theme_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_avatar.dart';
 import '../../../../shared/widgets/ah_card.dart';
@@ -29,6 +30,9 @@ class HostYouPage extends ConsumerWidget {
     ThemeMode.dark,
     ThemeMode.system,
   ];
+
+  /// Segment order of the (temporary) button-style test control.
+  static const _buttonFills = [AppButtonFill.solid, AppButtonFill.gradient];
 
   /// Reloads on return so the card reflects the saved name/photo.
   Future<void> _openEditProfile(BuildContext context, WidgetRef ref) async {
@@ -183,6 +187,21 @@ class HostYouPage extends ConsumerWidget {
                           onChanged: (index) => ref
                               .read(themeModeControllerProvider.notifier)
                               .setMode(_appearanceModes[index]),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        _SectionLabel(
+                          'BUTTON STYLE (TEST)',
+                          typography: typography,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        AhSegmentedControl(
+                          labels: const ['Solid', 'Gradient'],
+                          selectedIndex: _buttonFills.indexOf(
+                            ref.watch(buttonFillControllerProvider),
+                          ),
+                          onChanged: (index) => ref
+                              .read(buttonFillControllerProvider.notifier)
+                              .setFill(_buttonFills[index]),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         AhCard(
