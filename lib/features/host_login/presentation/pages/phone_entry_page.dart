@@ -77,8 +77,7 @@ class _PhoneEntryPageState extends ConsumerState<PhoneEntryPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Enter the phone number you signed up with. We'll text "
-                      'you a one-time code.',
+                      'Enter your registered phone number to receive a one-time code on it',
                       style: typography.body.copyWith(
                         color: context.colors.textSecondary,
                       ),
