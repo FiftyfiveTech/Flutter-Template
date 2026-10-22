@@ -242,6 +242,9 @@ class _HostVenueDetailsPageState extends ConsumerState<HostVenueDetailsPage> {
                               count: _visiblePhotoSlotCount(state),
                               slots: state.photoSlots,
                               onTapSlot: _pickPhoto,
+                              onRemoveSlot: ref
+                                  .read(_provider.notifier)
+                                  .removePhotoAt,
                             ),
                           ),
                           AppSpacing.spacerXs,

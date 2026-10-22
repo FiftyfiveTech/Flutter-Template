@@ -209,29 +209,23 @@ class HostVenueFormController extends _$HostVenueFormController {
       localPath: filePath,
     );
     state = state.copyWith(photoSlots: slots);
-    unawaited(_uploadInBackground(index, filePath, fileName));
+    unawaited(_uploadInBackground(filePath, fileName));
   }
 
-  Future<void> _uploadInBackground(
-    int index,
-    String filePath,
-    String fileName,
-  ) async {
+  Future<void> _uploadInBackground(String filePath, String fileName) async {
     try {
       final compressor = ref.read(documentCompressorProvider);
       final uploadPath = await compressor.compress(filePath, fileName);
       final useCase = ref.read(uploadVenuePhotoUseCaseProvider);
       final result = await useCase(filePath: uploadPath, fileName: fileName);
-      // A newer pick for this slot may have started (and overwritten this
-      // entry) while the upload was in flight — don't clobber it with a
-      // stale result.
-      if (index >= state.photoSlots.length ||
-          state.photoSlots[index].localPath != filePath) {
-        return;
-      }
+      // The slot may have been removed, or a newer pick may have
+      // overwritten it, while the upload was in flight — don't clobber it
+      // with a stale result.
+      final at = _pendingSlotIndex(filePath);
+      if (at == -1) return;
       result.when(
         ok: (photo) => _setSlot(
-          index,
+          at,
           AhPhotoSlotData(
             status: AhPhotoSlotStatus.uploaded,
             // Keep showing the local file rather than the presigned
@@ -246,7 +240,7 @@ class HostVenueFormController extends _$HostVenueFormController {
           photo: photo,
         ),
         err: (failure) => _setSlot(
-          index,
+          at,
           AhPhotoSlotData(
             status: AhPhotoSlotStatus.error,
             localPath: filePath,
@@ -255,12 +249,10 @@ class HostVenueFormController extends _$HostVenueFormController {
         ),
       );
     } on DocumentTooLargeException catch (e) {
-      if (index >= state.photoSlots.length ||
-          state.photoSlots[index].localPath != filePath) {
-        return;
-      }
+      final at = _pendingSlotIndex(filePath);
+      if (at == -1) return;
       _setSlot(
-        index,
+        at,
         AhPhotoSlotData(
           status: AhPhotoSlotStatus.error,
           localPath: filePath,
@@ -268,12 +260,10 @@ class HostVenueFormController extends _$HostVenueFormController {
         ),
       );
     } catch (_) {
-      if (index >= state.photoSlots.length ||
-          state.photoSlots[index].localPath != filePath) {
-        return;
-      }
+      final at = _pendingSlotIndex(filePath);
+      if (at == -1) return;
       _setSlot(
-        index,
+        at,
         AhPhotoSlotData(
           status: AhPhotoSlotStatus.error,
           localPath: filePath,
@@ -281,6 +271,31 @@ class HostVenueFormController extends _$HostVenueFormController {
         ),
       );
     }
+  }
+
+  /// Removes the photo in slot [index] — later photos shift down one slot.
+  /// An upload still in flight for it is dropped when it completes.
+  void removePhotoAt(int index) {
+    if (index < 0 || index >= state.photoSlots.length) return;
+    final slots = [...state.photoSlots]..removeAt(index);
+    // draft.photos is index-aligned with photoSlots (see [_setSlot]).
+    final photos = [...state.draft.photos];
+    if (index < photos.length) photos.removeAt(index);
+    state = state.copyWith(
+      photoSlots: slots,
+      draft: state.draft.copyWith(photos: photos),
+    );
+  }
+
+  /// The slot still waiting on the upload of [filePath], or -1 if it was
+  /// removed or re-picked meanwhile. Found by file rather than by the
+  /// original index, since removing an earlier photo shifts later slots.
+  int _pendingSlotIndex(String filePath) {
+    return state.photoSlots.indexWhere(
+      (slot) =>
+          slot.status == AhPhotoSlotStatus.uploading &&
+          slot.localPath == filePath,
+    );
   }
 
   void _setSlot(int index, AhPhotoSlotData value, {HostVenuePhoto? photo}) {

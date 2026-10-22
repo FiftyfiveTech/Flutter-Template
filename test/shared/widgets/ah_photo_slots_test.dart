@@ -46,4 +46,51 @@ void main() {
 
     expect(tapped, 0);
   });
+
+  testWidgets('filled slots show a remove button that reports the index', (
+    tester,
+  ) async {
+    int? removed;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: AhPhotoSlots(
+            count: 3,
+            slots: const [
+              AhPhotoSlotData(status: AhPhotoSlotStatus.uploading),
+              AhPhotoSlotData(status: AhPhotoSlotStatus.error),
+            ],
+            onTapSlot: (_) {},
+            onRemoveSlot: (i) => removed = i,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('ah-photo-slot-remove-0')), findsOne);
+    expect(find.byKey(const ValueKey('ah-photo-slot-remove-1')), findsOne);
+    // Empty slots have nothing to remove.
+    expect(find.byKey(const ValueKey('ah-photo-slot-remove-2')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('ah-photo-slot-remove-1')));
+    expect(removed, 1);
+  });
+
+  testWidgets('no remove buttons without onRemoveSlot', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: const Scaffold(
+          body: AhPhotoSlots(
+            count: 1,
+            slots: [AhPhotoSlotData(status: AhPhotoSlotStatus.uploading)],
+            onTapSlot: null,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byIcon(Icons.close), findsNothing);
+  });
 }

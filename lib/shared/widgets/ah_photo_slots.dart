@@ -41,17 +41,22 @@ const _slotSize = 96.0;
 ///
 /// A null [onTapSlot] makes the row read-only: slots can't be tapped, but
 /// the row still scrolls — unlike wrapping it in an `IgnorePointer`.
+///
+/// A non-null [onRemoveSlot] adds a remove (×) button to the top corner of
+/// every non-empty slot; leave it null wherever photos can't be changed.
 class AhPhotoSlots extends StatelessWidget {
   const AhPhotoSlots({
     super.key,
     required this.count,
     required this.slots,
     required this.onTapSlot,
+    this.onRemoveSlot,
   });
 
   final int count;
   final List<AhPhotoSlotData> slots;
   final ValueChanged<int>? onTapSlot;
+  final ValueChanged<int>? onRemoveSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +72,7 @@ class AhPhotoSlots extends StatelessWidget {
                 index: i,
                 data: i < slots.length ? slots[i] : const AhPhotoSlotData(),
                 onTap: onTapSlot == null ? null : () => onTapSlot!(i),
+                onRemove: onRemoveSlot == null ? null : () => onRemoveSlot!(i),
               ),
             ),
           ],
@@ -81,11 +87,13 @@ class _PhotoSlot extends StatelessWidget {
     required this.index,
     required this.data,
     required this.onTap,
+    required this.onRemove,
   });
 
   final int index;
   final AhPhotoSlotData data;
   final VoidCallback? onTap;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -97,47 +105,22 @@ class _PhotoSlot extends StatelessWidget {
         data.networkUrl != null && data.networkUrl!.isNotEmpty;
     final hasImage = hasNetworkImage || hasLocalPreview;
     final isError = data.status == AhPhotoSlotStatus.error;
+    final canRemove =
+        onRemove != null && data.status != AhPhotoSlotStatus.empty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: borderRadius,
-            child: SizedBox(
-              width: _slotSize,
-              height: _slotSize,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.colors.surfaceCard,
-                  borderRadius: borderRadius,
-                  image: hasImage
-                      ? DecorationImage(
-                          image: hasLocalPreview
-                              ? FileImage(File(data.localPath!))
-                                    as ImageProvider
-                              : NetworkImage(data.networkUrl!),
-                          fit: BoxFit.cover,
-                          onError: (_, _) {},
-                        )
-                      : null,
-                ),
-                child: hasImage
-                    ? _buildOverlay(typography, context.colors)
-                    : CustomPaint(
-                        painter: _DashedBorderPainter(
-                          color: isError
-                              ? context.colors.statusError
-                              : context.colors.borderDefault,
-                          radius: AppSpacing.radiusLg,
-                        ),
-                        child: _buildOverlay(typography, context.colors),
-                      ),
+        Stack(
+          children: [
+            _buildTile(context, typography, borderRadius, hasImage, isError),
+            if (canRemove)
+              Positioned(
+                top: AppSpacing.xs,
+                right: AppSpacing.xs,
+                child: _RemoveButton(index: index, onPressed: onRemove!),
               ),
-            ),
-          ),
+          ],
         ),
         if (isError) ...[
           AppSpacing.spacerXs,
@@ -149,6 +132,54 @@ class _PhotoSlot extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildTile(
+    BuildContext context,
+    AppTypography typography,
+    BorderRadius borderRadius,
+    bool hasImage,
+    bool isError,
+  ) {
+    final hasLocalPreview =
+        data.localPath != null && data.localPath!.isNotEmpty;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: borderRadius,
+        child: SizedBox(
+          width: _slotSize,
+          height: _slotSize,
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.colors.surfaceCard,
+              borderRadius: borderRadius,
+              image: hasImage
+                  ? DecorationImage(
+                      image: hasLocalPreview
+                          ? FileImage(File(data.localPath!)) as ImageProvider
+                          : NetworkImage(data.networkUrl!),
+                      fit: BoxFit.cover,
+                      onError: (_, _) {},
+                    )
+                  : null,
+            ),
+            child: hasImage
+                ? _buildOverlay(typography, context.colors)
+                : CustomPaint(
+                    painter: _DashedBorderPainter(
+                      color: isError
+                          ? context.colors.statusError
+                          : context.colors.borderDefault,
+                      radius: AppSpacing.radiusLg,
+                    ),
+                    child: _buildOverlay(typography, context.colors),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -217,6 +248,41 @@ class _PhotoSlot extends StatelessWidget {
           ),
         );
     }
+  }
+}
+
+/// The small × in a filled slot's top corner. Drawn on the scrim colour
+/// so it stays legible over any photo, in either theme.
+class _RemoveButton extends StatelessWidget {
+  const _RemoveButton({required this.index, required this.onPressed});
+
+  final int index;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Remove photo ${index + 1}',
+      excludeSemantics: true,
+      child: Material(
+        color: context.colors.scrim,
+        shape: const CircleBorder(),
+        child: InkWell(
+          key: ValueKey('ah-photo-slot-remove-$index'),
+          customBorder: const CircleBorder(),
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xs),
+            child: Icon(
+              Icons.close,
+              size: 14,
+              color: context.colors.textOnAction,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

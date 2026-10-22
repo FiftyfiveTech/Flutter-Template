@@ -309,6 +309,9 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                               // Read-only for non-drafts, but kept out of
                               // the IgnorePointer below so it scrolls.
                               onTapSlot: state.isEditable ? _pickPhoto : null,
+                              onRemoveSlot: state.isEditable
+                                  ? ref.read(_provider.notifier).removePhotoAt
+                                  : null,
                             ),
                           ),
                           AppSpacing.spacerXs,

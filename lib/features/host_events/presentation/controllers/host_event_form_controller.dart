@@ -421,26 +421,20 @@ class HostEventFormController extends _$HostEventFormController {
       localPath: filePath,
     );
     state = state.copyWith(photoSlots: slots);
-    unawaited(_uploadInBackground(index, filePath, fileName));
+    unawaited(_uploadInBackground(filePath, fileName));
   }
 
-  Future<void> _uploadInBackground(
-    int index,
-    String filePath,
-    String fileName,
-  ) async {
+  Future<void> _uploadInBackground(String filePath, String fileName) async {
     try {
       final compressor = ref.read(documentCompressorProvider);
       final uploadPath = await compressor.compress(filePath, fileName);
       final useCase = ref.read(uploadEventPhotoUseCaseProvider);
       final result = await useCase(filePath: uploadPath, fileName: fileName);
-      if (index >= state.photoSlots.length ||
-          state.photoSlots[index].localPath != filePath) {
-        return;
-      }
+      final at = _pendingSlotIndex(filePath);
+      if (at == -1) return;
       result.when(
         ok: (photo) => _setSlot(
-          index,
+          at,
           AhPhotoSlotData(
             status: AhPhotoSlotStatus.uploaded,
             localPath: filePath,
@@ -449,7 +443,7 @@ class HostEventFormController extends _$HostEventFormController {
           photo: photo,
         ),
         err: (failure) => _setSlot(
-          index,
+          at,
           AhPhotoSlotData(
             status: AhPhotoSlotStatus.error,
             localPath: filePath,
@@ -458,12 +452,10 @@ class HostEventFormController extends _$HostEventFormController {
         ),
       );
     } on DocumentTooLargeException catch (e) {
-      if (index >= state.photoSlots.length ||
-          state.photoSlots[index].localPath != filePath) {
-        return;
-      }
+      final at = _pendingSlotIndex(filePath);
+      if (at == -1) return;
       _setSlot(
-        index,
+        at,
         AhPhotoSlotData(
           status: AhPhotoSlotStatus.error,
           localPath: filePath,
@@ -471,12 +463,10 @@ class HostEventFormController extends _$HostEventFormController {
         ),
       );
     } catch (_) {
-      if (index >= state.photoSlots.length ||
-          state.photoSlots[index].localPath != filePath) {
-        return;
-      }
+      final at = _pendingSlotIndex(filePath);
+      if (at == -1) return;
       _setSlot(
-        index,
+        at,
         AhPhotoSlotData(
           status: AhPhotoSlotStatus.error,
           localPath: filePath,
@@ -484,6 +474,27 @@ class HostEventFormController extends _$HostEventFormController {
         ),
       );
     }
+  }
+
+  /// Removes the photo in slot [index] — later photos shift down one slot.
+  /// An upload still in flight for it is dropped when it completes.
+  void removePhotoAt(int index) {
+    if (index < 0 || index >= state.photoSlots.length) return;
+    final slots = [...state.photoSlots]..removeAt(index);
+    final uploaded = [...state.uploadedPhotos];
+    if (index < uploaded.length) uploaded.removeAt(index);
+    state = state.copyWith(photoSlots: slots, uploadedPhotos: uploaded);
+  }
+
+  /// The slot still waiting on the upload of [filePath], or -1 if it was
+  /// removed or re-picked meanwhile. Found by file rather than by the
+  /// original index, since removing an earlier photo shifts later slots.
+  int _pendingSlotIndex(String filePath) {
+    return state.photoSlots.indexWhere(
+      (slot) =>
+          slot.status == AhPhotoSlotStatus.uploading &&
+          slot.localPath == filePath,
+    );
   }
 
   void _setSlot(int index, AhPhotoSlotData value, {HostEventPhoto? photo}) {
