@@ -37,8 +37,8 @@ class ThemeModeController extends _$ThemeModeController {
 }
 
 /// How primary buttons (and the bottom nav's selected tab) are filled —
-/// solid by default. Flipped from the H-12 Profile test toggle to compare
-/// against the gradient; not persisted, so a restart returns to
+/// gradient by default. Flipped from the H-12 Profile test toggle to compare
+/// against the solid fill; not persisted, so a restart returns to
 /// [AppTheme.buttonFill].
 @Riverpod(keepAlive: true)
 class ButtonFillController extends _$ButtonFillController {

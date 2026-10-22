@@ -27,11 +27,14 @@ Gradient _selectedPillFill(WidgetTester tester) {
 }
 
 void main() {
-  test('buttons default to the solid fill', () {
+  test('buttons default to the gradient fill', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    expect(container.read(buttonFillControllerProvider), AppButtonFill.solid);
+    expect(
+      container.read(buttonFillControllerProvider),
+      AppButtonFill.gradient,
+    );
   });
 
   testWidgets('selected tab is flat in the solid style', (tester) async {

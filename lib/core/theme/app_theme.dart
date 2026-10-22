@@ -14,7 +14,7 @@ enum AppButtonFill { gradient, solid }
 abstract final class AppTheme {
   /// The default primary-button fill. Switchable at runtime for comparison
   /// via `buttonFillControllerProvider` (the H-12 Profile test toggle).
-  static const AppButtonFill buttonFill = AppButtonFill.solid;
+  static const AppButtonFill buttonFill = AppButtonFill.gradient;
 
   static ThemeData get light => lightWith(buttonFill);
 
