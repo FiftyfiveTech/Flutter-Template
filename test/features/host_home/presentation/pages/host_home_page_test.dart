@@ -17,8 +17,26 @@ import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_do
 import 'package:host_mobile_app/features/host_onboarding/domain/entities/host_document_verification_status.dart';
 import 'package:host_mobile_app/features/host_onboarding/domain/repositories/host_document_status_repository.dart';
 import 'package:host_mobile_app/features/host_onboarding/presentation/controllers/host_document_status_api_providers.dart';
+import 'package:host_mobile_app/features/host_profile/domain/entities/host_profile.dart';
+import 'package:host_mobile_app/features/host_profile/domain/usecases/load_host_profile.dart';
+import 'package:host_mobile_app/features/host_profile/presentation/controllers/host_profile_providers.dart';
 
 import '../../../../support/fakes.dart';
+
+/// Stands in for the cache-first profile load; defaults to "no profile"
+/// so the header falls back to the summary/session name.
+class _FakeLoadHostProfile implements LoadHostProfileUseCase {
+  _FakeLoadHostProfile([this.result = const Err(NetworkFailure())]);
+
+  final Result<HostProfile> result;
+  var calls = 0;
+
+  @override
+  Future<Result<HostProfile>> call(String userId) async {
+    calls++;
+    return result;
+  }
+}
 
 class _FakeHostHomeRepository implements HostHomeRepository {
   _FakeHostHomeRepository();
@@ -82,6 +100,7 @@ const _pending = HostDocumentStatus(
 void main() {
   Widget buildSubject({
     _FakeHostHomeRepository? repository,
+    _FakeLoadHostProfile? loadProfile,
     Result<List<HostDocumentStatus>> documents = const Ok([
       _approved,
       _approved,
@@ -116,6 +135,9 @@ void main() {
         ),
         hostSessionLocalDatasourceProvider.overrideWithValue(
           FakeHostSessionLocalDatasource(),
+        ),
+        loadHostProfileUseCaseProvider.overrideWithValue(
+          loadProfile ?? _FakeLoadHostProfile(),
         ),
       ],
       child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
@@ -214,6 +236,17 @@ void main() {
     await tester.pump();
 
     expect(find.text('Payouts — coming soon'), findsOneWidget);
+  });
+
+  testWidgets('header shows the profile loaded after sign-in', (tester) async {
+    final loadProfile = _FakeLoadHostProfile(
+      const Ok(HostProfile(userId: 'u1', hostName: 'Fetched Collective')),
+    );
+    await tester.pumpWidget(buildSubject(loadProfile: loadProfile));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fetched Collective'), findsOneWidget);
+    expect(loadProfile.calls, 1);
   });
 
   testWidgets('header follows a business name changed via Edit profile', (

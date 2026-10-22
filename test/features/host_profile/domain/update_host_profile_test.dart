@@ -9,6 +9,10 @@ class _FakeRepository implements HostProfileRepository {
   HostProfileEdit? lastEdit;
 
   @override
+  Future<Result<HostProfile>> fetch(String userId) =>
+      throw UnimplementedError();
+
+  @override
   Future<Result<HostProfile>> update(
     String userId,
     HostProfileEdit edit,

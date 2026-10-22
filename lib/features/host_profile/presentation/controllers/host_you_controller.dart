@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/di/session_providers.dart';
 import '../../../../core/utils/host_name_fallback.dart';
-import '../../../host_home/presentation/controllers/host_home_api_providers.dart';
 import '../../../host_onboarding/presentation/controllers/host_is_verified.dart';
 import '../../../host_venues/presentation/controllers/host_venues_api_providers.dart';
 import '../../domain/entities/host_profile.dart';
@@ -25,6 +24,7 @@ class HostYouState {
   final bool isVerified;
   final int savedVenuesCount;
   final String? photoPath;
+
   final bool isLoading;
 
   /// True while `DELETE /api/v1/host/me` is in flight.
@@ -52,14 +52,13 @@ class HostYouState {
   }
 }
 
-/// H-12 · You — reuses `host_home`'s summary use case (its domain layer,
-/// injected via provider) rather than re-fetching hostName/isVerified
-/// through a second datasource; the cross-feature boundary rule allows
-/// depending on another feature's domain layer this way.
+/// H-12 · You — profile summary, venues count and verification badge.
 ///
-/// Offline-first: the cached profile (incl. the avatar) from Drift is
-/// shown immediately, then refreshed from the network when reachable and
-/// written back to the cache. A failed refresh keeps the cached values.
+/// The profile (incl. the avatar) is read from the Drift cache — opening
+/// this tab never calls the profile API. `GET /api/v1/host` only runs on a
+/// cache miss (normally already done by Home right after sign-in) and
+/// after an Edit profile save. Venues count and verification are still
+/// refreshed live; a failed refresh keeps the cached values.
 @riverpod
 class HostYouController extends _$HostYouController {
   @override
@@ -75,30 +74,29 @@ class HostYouController extends _$HostYouController {
     final sessionBusinessName =
         ref.read(hostSessionControllerProvider)?.businessName ?? '';
 
-    final cachedResult = await ref.read(getCachedHostProfileUseCaseProvider)(
-      _userId,
-    );
-    final cached = cachedResult.when(ok: (p) => p, err: (_) => null);
-    if (!ref.mounted) return;
-    if (cached != null) {
-      state = state.copyWith(
-        hostName: resolveHostName(cached.hostName, sessionBusinessName),
-        isVerified: cached.isVerified,
-        savedVenuesCount: cached.savedVenuesCount,
-        photoPath: cached.photoPath,
-      );
-    }
-
-    // Verification comes from the real document-review status (same rule
-    // as H-04), not the home-summary placeholder's hardcoded `false`. If
-    // that fetch fails, keep the cached value instead of downgrading.
-    // The home-summary's savedVenuesCount is placeholder seed data (always
-    // 0), so the count comes from the real venues API — same as Home. A
-    // failed venues fetch keeps the cached count.
-    final summaryFuture = ref.read(getHostHomeSummaryUseCaseProvider)();
     final verifiedFuture = fetchHostIsVerified(ref);
     final venuesFuture = ref.read(getHostVenuesUseCaseProvider)();
-    final result = await summaryFuture;
+
+    final profileResult = await ref.read(loadHostProfileUseCaseProvider)(
+      _userId,
+    );
+    if (!ref.mounted) return;
+    final profile = profileResult.when(ok: (p) => p, err: (_) => null);
+    state = state.copyWith(
+      hostName: resolveHostName(profile?.hostName ?? '', sessionBusinessName),
+      isVerified: profile?.isVerified,
+      savedVenuesCount: profile?.savedVenuesCount,
+      photoPath: profile?.photoPath,
+      // No cached profile and the fetch failed — nothing real to show.
+      errorMessage: profileResult.when(
+        ok: (_) => null,
+        err: (failure) => failure.message,
+      ),
+    );
+
+    // Verification comes from the real document-review status (same rule
+    // as H-04); the count from the real venues API — same as Home. A
+    // failed fetch keeps the profile's value instead of downgrading.
     final fetchedIsVerified = await verifiedFuture;
     final venuesResult = await venuesFuture;
     if (!ref.mounted) return;
@@ -106,35 +104,23 @@ class HostYouController extends _$HostYouController {
       ok: (venues) => venues.length,
       err: (_) => null,
     );
-    state = result.when(
-      ok: (summary) {
-        final hostName = resolveHostName(summary.hostName, sessionBusinessName);
-        final isVerified =
-            fetchedIsVerified ?? cached?.isVerified ?? summary.isVerified;
-        final savedVenuesCount =
-            fetchedVenuesCount ?? cached?.savedVenuesCount ?? 0;
-        ref.read(cacheHostProfileUseCaseProvider)(
-          HostProfile(
-            userId: _userId,
-            hostName: hostName,
-            isVerified: isVerified,
-            savedVenuesCount: savedVenuesCount,
-          ),
-        );
-        return state.copyWith(
-          hostName: hostName,
+    final isVerified = fetchedIsVerified ?? state.isVerified;
+    final savedVenuesCount = fetchedVenuesCount ?? state.savedVenuesCount;
+    if (profile != null) {
+      ref.read(cacheHostProfileUseCaseProvider)(
+        HostProfile(
+          userId: _userId,
+          hostName: profile.hostName,
           isVerified: isVerified,
           savedVenuesCount: savedVenuesCount,
-          isLoading: false,
-        );
-      },
-      err: (failure) => state.copyWith(
-        // With a cached profile on screen, offline isn't an error worth
-        // surfacing — the page already shows the last-known values.
-        hostName: state.hostName ?? sessionBusinessName,
-        isLoading: false,
-        errorMessage: cached == null ? failure.message : null,
-      ),
+        ),
+      );
+    }
+    state = state.copyWith(
+      isVerified: isVerified,
+      savedVenuesCount: savedVenuesCount,
+      isLoading: false,
+      errorMessage: state.errorMessage,
     );
   }
 

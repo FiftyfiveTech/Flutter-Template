@@ -31,6 +31,31 @@ class _FakeRemote implements HostProfileRemoteDatasource {
   var deleteCalls = 0;
   final uploadedPaths = <String>[];
   UpdateHostProfileRequestDto? lastRequest;
+  Object? getError;
+  HostProfileResponseDto profile = const HostProfileResponseDto(
+    id: 'u1',
+    firstName: 'Aarav',
+    lastName: 'Shetty',
+    businessName: 'Cellar Door',
+    photoUrl: 'https://cdn/avatar.jpg',
+    verificationStatus: 'verified',
+  );
+
+  final downloadedUrls = <String>[];
+  Object? downloadError;
+
+  @override
+  Future<String> downloadPhoto(String url) async {
+    downloadedUrls.add(url);
+    if (downloadError != null) throw downloadError!;
+    return '/tmp/download.jpg';
+  }
+
+  @override
+  Future<HostProfileResponseDto> getProfile() async {
+    if (getError != null) throw getError!;
+    return profile;
+  }
 
   @override
   Future<HostProfileUploadDto> uploadPhoto(String filePath) async {
@@ -247,5 +272,87 @@ void main() {
     expect(failure, isA<ServerFailure>());
     expect(failure.message, 'Settle events with sold seats first');
     expect(_value(await repository.getCached('u1'))?.hostName, 'A');
+  });
+
+  group('fetch', () {
+    test('restores the profile after the cache was wiped', () async {
+      await repository.cache(const HostProfile(userId: 'u1', hostName: 'X'));
+      await repository.clear();
+
+      final fetched = _value(await repository.fetch('u1'));
+
+      expect(fetched.hostName, 'Cellar Door');
+      expect(fetched.firstName, 'Aarav');
+      expect(fetched.lastName, 'Shetty');
+      expect(fetched.isVerified, isTrue);
+
+      final cached = _value(await repository.getCached('u1'));
+      expect(cached?.hostName, 'Cellar Door');
+      expect(cached?.firstName, 'Aarav');
+    });
+
+    test('stores a local copy of the server avatar', () async {
+      final fetched = _value(await repository.fetch('u1'));
+
+      expect(remote.downloadedUrls, ['https://cdn/avatar.jpg']);
+      expect(fetched.photoPath, 'stored_0.jpg');
+      expect(
+        _value(await repository.getCached('u1'))?.photoPath,
+        'stored_0.jpg',
+      );
+      // The temporary download is cleaned up once stored.
+      expect(photoStore.deleted, contains('/tmp/download.jpg'));
+    });
+
+    test('a failed avatar download still returns the profile', () async {
+      remote.downloadError = Exception('unreachable');
+
+      final fetched = _value(await repository.fetch('u1'));
+
+      expect(fetched.hostName, 'Cellar Door');
+      expect(fetched.photoPath, isNull);
+    });
+
+    test("keeps the same host's cached avatar and venue count", () async {
+      await repository.update(
+        'u1',
+        const HostProfileEdit(photoSourcePath: '/p/a.jpg'),
+      );
+      await repository.cache(
+        const HostProfile(userId: 'u1', hostName: 'Old', savedVenuesCount: 4),
+      );
+
+      final fetched = _value(await repository.fetch('u1'));
+
+      expect(fetched.photoPath, 'stored_0.jpg');
+      expect(fetched.savedVenuesCount, 4);
+      // Already has a local avatar — no re-download.
+      expect(remote.downloadedUrls, isEmpty);
+    });
+
+    test("drops another host's cached values", () async {
+      await repository.cache(
+        const HostProfile(userId: 'u2', hostName: 'Other', savedVenuesCount: 9),
+      );
+
+      final fetched = _value(await repository.fetch('u1'));
+
+      expect(fetched.userId, 'u1');
+      expect(fetched.savedVenuesCount, 0);
+    });
+
+    test('maps a server error and leaves the cache untouched', () async {
+      await repository.cache(const HostProfile(userId: 'u1', hostName: 'Kept'));
+      remote.getError = NetworkException('Server down', statusCode: 500);
+
+      expect(_failure(await repository.fetch('u1')), isA<ServerFailure>());
+      expect(_value(await repository.getCached('u1'))?.hostName, 'Kept');
+    });
+
+    test('maps no connection to a NetworkFailure', () async {
+      remote.getError = NetworkException('Offline');
+
+      expect(_failure(await repository.fetch('u1')), isA<NetworkFailure>());
+    });
   });
 }

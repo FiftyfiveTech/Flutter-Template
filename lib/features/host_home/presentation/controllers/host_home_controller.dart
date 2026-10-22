@@ -10,6 +10,7 @@ import '../../../host_check_in/presentation/controllers/check_in_api_providers.d
 import '../../../host_events/domain/entities/host_event.dart';
 import '../../../host_events/presentation/controllers/host_events_api_providers.dart';
 import '../../../host_onboarding/presentation/controllers/host_is_verified.dart';
+import '../../../host_profile/presentation/controllers/host_profile_providers.dart';
 import '../../../host_venues/presentation/controllers/host_venues_api_providers.dart';
 import '../../domain/entities/host_home_event.dart';
 import '../../domain/entities/host_home_summary.dart';
@@ -88,17 +89,33 @@ class HostHomeController extends _$HostHomeController {
     // verification comes from the real document-review status (the same
     // source as H-04) — fetched alongside so the badge never flashes
     // "Pending" for a verified host.
+    //
+    // The host name comes from the cached profile. Right after sign-in the
+    // cache is empty (sign-out wipes it, OTP login returns no profile), so
+    // this is where `GET /api/v1/host` runs — once; later opens and the
+    // Profile tab read the cache.
+    final session = ref.read(hostSessionControllerProvider);
     final summaryFuture = ref.read(getHostHomeSummaryUseCaseProvider)();
     final verifiedFuture = fetchHostIsVerified(ref);
+    final profileFuture = ref.read(loadHostProfileUseCaseProvider)(
+      session?.userId ?? '',
+    );
     final result = await summaryFuture;
     final isVerified = await verifiedFuture;
+    final profileName = (await profileFuture).when(
+      ok: (profile) => profile.hostName,
+      err: (_) => '',
+    );
     if (!ref.mounted) return;
     final sessionBusinessName =
         ref.read(hostSessionControllerProvider)?.businessName ?? '';
     state = result.when(
       ok: (summary) => state.copyWith(
         summary: summary.copyWith(
-          hostName: resolveHostName(summary.hostName, sessionBusinessName),
+          hostName: resolveHostName(
+            profileName.isNotEmpty ? profileName : summary.hostName,
+            sessionBusinessName,
+          ),
           // A failed status fetch keeps the last-known value on refresh.
           isVerified:
               isVerified ?? state.summary?.isVerified ?? summary.isVerified,

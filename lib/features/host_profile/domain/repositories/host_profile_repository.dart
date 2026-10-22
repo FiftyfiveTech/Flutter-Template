@@ -7,6 +7,12 @@ abstract interface class HostProfileRepository {
   /// cache belongs to a different host).
   Future<Result<HostProfile?>> getCached(String userId);
 
+  /// Fetches the signed-in host's profile from the server and writes it to
+  /// the cache (keeping a cached avatar and venue count for the same host).
+  /// With no cached avatar, the server's photo is downloaded and stored
+  /// locally, so it survives restarts without another fetch.
+  Future<Result<HostProfile>> fetch(String userId);
+
   /// Persists [profile]'s summary fields, keeping any existing avatar and
   /// names.
   Future<Result<void>> cache(HostProfile profile);

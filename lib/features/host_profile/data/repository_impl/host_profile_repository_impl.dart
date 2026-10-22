@@ -10,8 +10,8 @@ import '../datasources/host_profile_photo_store.dart';
 import '../datasources/host_profile_remote_datasource.dart';
 import '../models/host_profile_dto.dart';
 
-/// Reads are offline-first from Drift (there's no profile GET endpoint).
-/// [update] is Strategy A (direct remote): the cache and avatar are only
+/// Reads are offline-first: [getCached] serves the Drift copy instantly and
+/// [fetch] refreshes it from `GET /api/v1/host`. [update] is Strategy A (direct remote): the cache and avatar are only
 /// replaced after `PATCH /api/v1/host/profile` succeeds.
 class HostProfileRepositoryImpl implements HostProfileRepository {
   const HostProfileRepositoryImpl(
@@ -31,6 +31,62 @@ class HostProfileRepositoryImpl implements HostProfileRepository {
       return Ok(cached?.userId == userId ? cached : null);
     } catch (_) {
       return const Err(CacheFailure());
+    }
+  }
+
+  @override
+  Future<Result<HostProfile>> fetch(String userId) async {
+    final HostProfileResponseDto remote;
+    try {
+      remote = await _remoteDatasource.getProfile();
+    } on NetworkException catch (e) {
+      return Err(_failureFor(e));
+    } catch (_) {
+      return const Err(UnexpectedFailure());
+    }
+
+    final existing = await _loadCacheQuietly();
+    final base = existing != null && existing.userId == userId
+        ? existing
+        : HostProfile(userId: userId);
+    final fetched = base.copyWith(
+      hostName: remote.businessName,
+      firstName: remote.firstName,
+      lastName: remote.lastName,
+      isVerified: remote.isVerified,
+      photoPath: base.photoPath == null
+          ? await _downloadAvatar(remote.photoUrl)
+          : null,
+    );
+    // A failed cache write mustn't hide a successful fetch — the screen
+    // still gets the fresh values, they just won't survive a restart.
+    try {
+      await _localDatasource.save(fetched);
+    } catch (_) {}
+    return Ok(fetched);
+  }
+
+  /// Stores a local copy of the server's avatar, or `null` if there is
+  /// none or it can't be downloaded — the avatar then falls back to
+  /// initials rather than failing the whole fetch.
+  Future<String?> _downloadAvatar(String? url) async {
+    if (url == null || url.isEmpty) return null;
+    String? temp;
+    try {
+      temp = await _remoteDatasource.downloadPhoto(url);
+      return await _photoStore.store(temp);
+    } catch (_) {
+      return null;
+    } finally {
+      if (temp != null) await _discard(temp);
+    }
+  }
+
+  Future<HostProfile?> _loadCacheQuietly() async {
+    try {
+      return await _localDatasource.load();
+    } catch (_) {
+      return null;
     }
   }
 

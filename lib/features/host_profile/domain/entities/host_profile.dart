@@ -1,13 +1,14 @@
 /// The signed-in host's profile as last seen on this device — cached so
 /// the You tab (H-12) renders fully offline, including the avatar.
 ///
-/// [photoPath] points at a copy of the host's chosen avatar inside the
+/// [photoPath] points at a copy of the host's avatar (picked here, or
+/// downloaded once from the server's presigned URL) inside the
 /// app's private documents directory (never the picker's original path),
 /// so it survives restarts and works without a connection. `null` when
 /// no avatar has been picked yet — the UI falls back to initials.
 ///
-/// [firstName]/[lastName] are only known once the host has saved them via
-/// Edit profile (there's no profile GET endpoint) — `null` until then.
+/// [firstName]/[lastName] come from `GET /api/v1/host` (or the last Edit
+/// profile save) — `null` until the profile has been fetched once.
 class HostProfile {
   const HostProfile({
     required this.userId,

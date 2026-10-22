@@ -134,6 +134,15 @@ class HostEditProfileController extends _$HostEditProfileController {
     );
     if (!ref.mounted) return false;
 
+    // An edit is the one time the profile is re-fetched after sign-in, so
+    // the cache mirrors what the server now holds. Best-effort: the save
+    // already succeeded and its result is cached either way.
+    final saved = result.when(ok: (_) => true, err: (_) => false);
+    if (saved) {
+      await ref.read(fetchHostProfileUseCaseProvider)(session?.userId ?? '');
+      if (!ref.mounted) return false;
+    }
+
     return result.when(
       ok: (profile) {
         // The session's business name backs the You tab's name fallback.

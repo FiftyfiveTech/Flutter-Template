@@ -37,16 +37,17 @@ class UpdateHostProfileRequestDto {
   };
 }
 
-/// The `data` object of `PATCH /api/v1/host/profile`
+/// The `data` object of `GET /api/v1/host` and `PATCH /api/v1/host/profile`
 /// (`HostProfileResponseDto`). Only the fields the app uses are mapped;
-/// `photoUrl` is a short-lived presigned URL, so it's never cached — the
-/// avatar is served from the local copy instead.
+/// [photoUrl] is a short-lived presigned URL, so it's shown but never
+/// cached — a locally stored avatar copy is preferred when there is one.
 class HostProfileResponseDto {
   const HostProfileResponseDto({
     required this.id,
     this.firstName,
     this.lastName,
     this.businessName,
+    this.photoUrl,
     this.verificationStatus,
   });
 
@@ -56,6 +57,7 @@ class HostProfileResponseDto {
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       businessName: json['businessName'] as String?,
+      photoUrl: json['photoUrl'] as String?,
       verificationStatus: json['verificationStatus'] as String?,
     );
   }
@@ -64,7 +66,10 @@ class HostProfileResponseDto {
   final String? firstName;
   final String? lastName;
   final String? businessName;
+  final String? photoUrl;
   final String? verificationStatus;
+
+  bool get isVerified => verificationStatus == 'verified';
 }
 
 /// The `data` object of `POST /api/v1/uploads` (`UploadResponseDto`).

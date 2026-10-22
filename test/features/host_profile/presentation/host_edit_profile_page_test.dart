@@ -22,6 +22,13 @@ class _FakeRepository implements HostProfileRepository {
   final HostProfile? cached;
   Failure? updateFailure;
   final edits = <HostProfileEdit>[];
+  var fetchCalls = 0;
+
+  @override
+  Future<Result<HostProfile>> fetch(String userId) async {
+    fetchCalls++;
+    return Ok(cached ?? HostProfile(userId: userId));
+  }
 
   @override
   Future<Result<HostProfile?>> getCached(String userId) async => Ok(cached);
@@ -133,6 +140,8 @@ void main() {
     expect(repository.edits.single.lastName, 'Rao');
     expect(repository.edits.single.firstName, isNull);
     expect(repository.edits.single.businessName, isNull);
+    // A successful edit re-fetches the profile once.
+    expect(repository.fetchCalls, 1);
     expect(find.text('You page'), findsOneWidget);
   });
 
@@ -148,6 +157,7 @@ void main() {
 
     expect(find.text('Enter a first name'), findsOneWidget);
     expect(repository.edits, isEmpty);
+    expect(repository.fetchCalls, 0);
     expect(find.text('You page'), findsNothing);
   });
 
