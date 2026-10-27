@@ -214,6 +214,14 @@ class HostYouPage extends ConsumerWidget {
                                 : '${state.savedVenuesCount} saved',
                           ),
                         ),
+                        const SizedBox(height: AppSpacing.cardGap),
+                        AhCard(
+                          onTap: () => context.push('/host/you/payout'),
+                          child: const _AccountRow(
+                            icon: Icons.account_balance_wallet_outlined,
+                            label: 'Payout details',
+                          ),
+                        ),
                         const SizedBox(height: AppSpacing.lg),
                         AhCard(
                           onTap: () => _logOut(context, ref),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -18,6 +19,8 @@ class AhTextField extends StatelessWidget {
     this.errorText,
     this.helperText,
     this.keyboardType,
+    this.inputFormatters,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final String label;
@@ -28,6 +31,8 @@ class AhTextField extends StatelessWidget {
   final String? errorText;
   final String? helperText;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextCapitalization textCapitalization;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +48,8 @@ class AhTextField extends StatelessWidget {
           controller: controller,
           onChanged: onChanged,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          textCapitalization: textCapitalization,
           style: typography.body.copyWith(color: context.colors.textPrimary),
           decoration: InputDecoration(
             hintText: placeholder,

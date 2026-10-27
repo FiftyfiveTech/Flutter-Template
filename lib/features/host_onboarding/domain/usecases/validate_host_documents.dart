@@ -1,5 +1,6 @@
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/result.dart';
+import '../../../../shared/validators/payout_validators.dart';
 import '../entities/host_document_type.dart';
 import '../entities/host_documents_draft.dart';
 import '../entities/host_type.dart';
@@ -13,8 +14,6 @@ class HostDocumentsValidationFailure extends ValidationFailure {
   final Map<String, String> fieldErrors;
 }
 
-final _upiPattern = RegExp(r'^[\w.\-]{2,}@[A-Za-z]{2,}$');
-
 /// Validates the H-03 documents step. Which documents are required, and
 /// whether the excise licence validity window applies, both depend on
 /// `hostType` (and, for food/alcohol, the draft's own declarations) —
@@ -27,12 +26,11 @@ class ValidateHostDocumentsUseCase {
     HostDocumentsDraft draft, {
     required HostType hostType,
   }) {
-    final upiId = draft.upiId.trim();
+    final upiId = PayoutValidators.normalizeUpi(draft.upiId);
     final errors = <String, String>{};
 
-    if (!_upiPattern.hasMatch(upiId)) {
-      errors['upiId'] = 'Enter a valid UPI ID';
-    }
+    final upiError = PayoutValidators.validateUpi(upiId);
+    if (upiError != null) errors['upiId'] = upiError;
 
     for (final type in _requiredDocuments(hostType, draft)) {
       if (!draft.documents.containsKey(type)) {
