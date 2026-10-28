@@ -9,6 +9,7 @@ class HostHomeEventDto {
     required this.status,
     required this.soldCount,
     required this.capacity,
+    this.avgRating,
   });
 
   factory HostHomeEventDto.fromJson(Map<String, dynamic> json) {
@@ -19,6 +20,7 @@ class HostHomeEventDto {
       status: json['status'] as String,
       soldCount: (json['soldCount'] as num).toInt(),
       capacity: (json['capacity'] as num).toInt(),
+      avgRating: (json['avgRating'] as num?)?.toDouble(),
     );
   }
 
@@ -28,6 +30,7 @@ class HostHomeEventDto {
   final String status;
   final int soldCount;
   final int capacity;
+  final double? avgRating;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -36,6 +39,7 @@ class HostHomeEventDto {
     'status': status,
     'soldCount': soldCount,
     'capacity': capacity,
+    'avgRating': avgRating,
   };
 
   HostHomeEvent toDomain() {
@@ -56,6 +60,7 @@ class HostHomeEventDto {
       status: domainStatus,
       soldCount: soldCount,
       capacity: capacity,
+      avgRating: avgRating,
     );
   }
 }

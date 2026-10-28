@@ -46,6 +46,7 @@ class HostEventDto {
     required this.coverPhoto,
     required this.photos,
     required this.status,
+    this.avgRating,
   });
 
   factory HostEventDto.fromJson(Map<String, dynamic> json) {
@@ -96,6 +97,7 @@ class HostEventDto {
           .map((e) => HostEventPhotoDto.fromJson(e as Map<String, dynamic>))
           .toList(),
       status: _parseStatus(json['status']),
+      avgRating: (json['avgRating'] as num?)?.toDouble(),
     );
   }
 
@@ -128,6 +130,7 @@ class HostEventDto {
           .map((p) => HostEventPhotoDto(id: p.id, url: p.url))
           .toList(),
       status: event.status,
+      avgRating: event.avgRating,
     );
   }
 
@@ -151,6 +154,7 @@ class HostEventDto {
   final HostEventPhotoDto? coverPhoto;
   final List<HostEventPhotoDto> photos;
   final HostEventLifecycleStatus status;
+  final double? avgRating;
 
   /// Write payload for `POST`/`PATCH /api/v1/host/events`. `format` is
   /// sent as the backend's lowercase/underscored slug (e.g. "Board games"
@@ -214,6 +218,7 @@ class HostEventDto {
       coverPhoto: coverPhoto?.toDomain(),
       photos: photos.map((p) => p.toDomain()).toList(),
       status: status,
+      avgRating: avgRating,
     );
   }
 }

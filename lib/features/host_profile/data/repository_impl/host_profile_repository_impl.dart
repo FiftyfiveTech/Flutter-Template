@@ -54,6 +54,7 @@ class HostProfileRepositoryImpl implements HostProfileRepository {
       firstName: remote.firstName,
       lastName: remote.lastName,
       isVerified: remote.isVerified,
+      avgRating: remote.avgRating,
       photoPath: base.photoPath == null
           ? await _downloadAvatar(remote.photoUrl)
           : null,

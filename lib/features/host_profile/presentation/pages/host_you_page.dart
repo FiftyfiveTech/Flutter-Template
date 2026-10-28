@@ -11,6 +11,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_avatar.dart';
 import '../../../../shared/widgets/ah_card.dart';
 import '../../../../shared/widgets/ah_confirm_dialog.dart';
+import '../../../../shared/widgets/ah_rating_badge.dart';
 import '../../../../shared/widgets/ah_segmented_control.dart';
 import '../../../../shared/widgets/ah_verification_badge.dart';
 import '../../../host_home/presentation/widgets/host_home_bottom_nav.dart';
@@ -158,6 +159,13 @@ class HostYouPage extends ConsumerWidget {
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
+                                    if (state.avgRating != null) ...[
+                                      const SizedBox(height: 2),
+                                      AhRatingBadge(
+                                        rating: state.avgRating,
+                                        showMax: true,
+                                      ),
+                                    ],
                                     const SizedBox(height: 2),
                                     Text(
                                       'Venue host',

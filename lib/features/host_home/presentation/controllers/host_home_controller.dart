@@ -256,6 +256,7 @@ HostHomeEvent _toHostHomeEvent(HostEvent event, DateTime now) {
     soldCount: null,
     capacity: event.capacity,
     canCheckIn: canOpenCheckIn(event, now),
+    avgRating: event.avgRating,
   );
 }
 

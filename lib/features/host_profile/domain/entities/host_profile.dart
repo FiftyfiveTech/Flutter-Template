@@ -18,6 +18,7 @@ class HostProfile {
     this.isVerified = false,
     this.savedVenuesCount = 0,
     this.photoPath,
+    this.avgRating,
   });
 
   final String userId;
@@ -28,6 +29,10 @@ class HostProfile {
   final int savedVenuesCount;
   final String? photoPath;
 
+  /// Host rating (`avgRating` from `GET /api/v1/host`). Not cached — only
+  /// set by a fresh fetch; `null` when unrated or not fetched yet.
+  final double? avgRating;
+
   HostProfile copyWith({
     String? hostName,
     String? firstName,
@@ -35,6 +40,7 @@ class HostProfile {
     bool? isVerified,
     int? savedVenuesCount,
     String? photoPath,
+    double? avgRating,
   }) {
     return HostProfile(
       userId: userId,
@@ -44,6 +50,7 @@ class HostProfile {
       isVerified: isVerified ?? this.isVerified,
       savedVenuesCount: savedVenuesCount ?? this.savedVenuesCount,
       photoPath: photoPath ?? this.photoPath,
+      avgRating: avgRating ?? this.avgRating,
     );
   }
 }

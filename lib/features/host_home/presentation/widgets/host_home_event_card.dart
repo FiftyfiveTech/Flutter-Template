@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_button.dart';
+import '../../../../shared/widgets/ah_rating_badge.dart';
 import '../../domain/entities/host_home_event.dart';
 
 class HostHomeEventCard extends StatelessWidget {
@@ -80,6 +81,14 @@ class HostHomeEventCard extends StatelessWidget {
                 event.formattedSchedule,
                 style: typography.caption.copyWith(color: secondaryText),
               ),
+              if (isEnded && event.avgRating != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                AhRatingBadge(
+                  rating: event.avgRating,
+                  showMax: true,
+                  color: secondaryText,
+                ),
+              ],
               if (!isEnded && event.canCheckIn && onCheckIn != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 AhButton(

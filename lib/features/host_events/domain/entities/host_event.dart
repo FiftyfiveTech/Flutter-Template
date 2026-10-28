@@ -52,6 +52,7 @@ class HostEvent {
     required this.coverPhoto,
     required this.photos,
     required this.status,
+    this.avgRating,
   });
 
   final String id;
@@ -137,6 +138,10 @@ class HostEvent {
   /// when reading an existing event back.
   final HostEventLifecycleStatus status;
 
+  /// Average guest rating (`avgRating` from the API) — `null` until the
+  /// event has been rated. Read-only, never sent on write.
+  final double? avgRating;
+
   String get ratioBandLabel => toleranceBandPoints <= kRatioBandMinPoints
       ? '55:45'
       : '50:50 ±$toleranceBandPoints';
@@ -162,6 +167,7 @@ class HostEvent {
     HostEventPhoto? coverPhoto,
     List<HostEventPhoto>? photos,
     HostEventLifecycleStatus? status,
+    double? avgRating,
   }) {
     return HostEvent(
       id: id ?? this.id,
@@ -185,6 +191,7 @@ class HostEvent {
       coverPhoto: coverPhoto ?? this.coverPhoto,
       photos: photos ?? this.photos,
       status: status ?? this.status,
+      avgRating: avgRating ?? this.avgRating,
     );
   }
 

@@ -49,6 +49,7 @@ class HostProfileResponseDto {
     this.businessName,
     this.photoUrl,
     this.verificationStatus,
+    this.avgRating,
   });
 
   factory HostProfileResponseDto.fromJson(Map<String, dynamic> json) {
@@ -59,6 +60,7 @@ class HostProfileResponseDto {
       businessName: json['businessName'] as String?,
       photoUrl: json['photoUrl'] as String?,
       verificationStatus: json['verificationStatus'] as String?,
+      avgRating: (json['avgRating'] as num?)?.toDouble(),
     );
   }
 
@@ -68,6 +70,7 @@ class HostProfileResponseDto {
   final String? businessName;
   final String? photoUrl;
   final String? verificationStatus;
+  final double? avgRating;
 
   bool get isVerified => verificationStatus == 'verified';
 }

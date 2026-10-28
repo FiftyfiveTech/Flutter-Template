@@ -11,6 +11,7 @@ class HostHomeEvent {
     required this.soldCount,
     required this.capacity,
     this.canCheckIn = false,
+    this.avgRating,
   });
 
   final String id;
@@ -29,6 +30,9 @@ class HostHomeEvent {
   /// live, about to start, or recently ended (so leftover offline scans
   /// can still sync and no-shows can be reviewed).
   final bool canCheckIn;
+
+  /// Average guest rating; `null` until rated. Shown only for ended events.
+  final double? avgRating;
 
   /// `"N of M sold"` when [soldCount] is known, otherwise just the
   /// capacity — never a guessed sold count.

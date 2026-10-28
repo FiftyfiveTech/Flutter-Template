@@ -14,6 +14,7 @@ import '../../../../shared/widgets/ah_card.dart';
 import '../../../../shared/widgets/ah_date_time_field.dart';
 import '../../../../shared/widgets/ah_dropdown_field.dart';
 import '../../../../shared/widgets/ah_photo_slots.dart';
+import '../../../../shared/widgets/ah_rating_badge.dart';
 import '../../../../shared/widgets/ah_ratio_meter.dart';
 import '../../../../shared/widgets/ah_slider.dart';
 import '../../../../shared/widgets/ah_stepper_input.dart';
@@ -296,6 +297,13 @@ class _HostEventFormPageState extends ConsumerState<HostEventFormPage> {
                                       HostEventLifecycleStatus.cancelled
                                   ? AhBannerTone.warning
                                   : AhBannerTone.info,
+                            ),
+                            AppSpacing.spacerMd,
+                          ],
+                          if (state.hasEnded && draft.avgRating != null) ...[
+                            AhRatingBadge(
+                              rating: draft.avgRating,
+                              label: 'Event rating',
                             ),
                             AppSpacing.spacerMd,
                           ],

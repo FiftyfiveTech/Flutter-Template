@@ -15,6 +15,7 @@ class HostYouState {
     this.isVerified = false,
     this.savedVenuesCount = 0,
     this.photoPath,
+    this.avgRating,
     this.isLoading = false,
     this.isDeletingAccount = false,
     this.errorMessage,
@@ -24,6 +25,9 @@ class HostYouState {
   final bool isVerified;
   final int savedVenuesCount;
   final String? photoPath;
+
+  /// Host rating from `GET /api/v1/host`; `null` when unrated/unfetched.
+  final double? avgRating;
 
   final bool isLoading;
 
@@ -36,6 +40,7 @@ class HostYouState {
     bool? isVerified,
     int? savedVenuesCount,
     String? photoPath,
+    double? avgRating,
     bool? isLoading,
     bool? isDeletingAccount,
     String? errorMessage,
@@ -45,6 +50,7 @@ class HostYouState {
       isVerified: isVerified ?? this.isVerified,
       savedVenuesCount: savedVenuesCount ?? this.savedVenuesCount,
       photoPath: photoPath ?? this.photoPath,
+      avgRating: avgRating ?? this.avgRating,
       isLoading: isLoading ?? this.isLoading,
       isDeletingAccount: isDeletingAccount ?? this.isDeletingAccount,
       errorMessage: errorMessage,
@@ -76,6 +82,9 @@ class HostYouController extends _$HostYouController {
 
     final verifiedFuture = fetchHostIsVerified(ref);
     final venuesFuture = ref.read(getHostVenuesUseCaseProvider)();
+    // The rating isn't cached, so it's refreshed live like verification;
+    // a failed fetch just leaves it hidden.
+    final ratingFuture = ref.read(fetchHostProfileUseCaseProvider)(_userId);
 
     final profileResult = await ref.read(loadHostProfileUseCaseProvider)(
       _userId,
@@ -99,6 +108,10 @@ class HostYouController extends _$HostYouController {
     // failed fetch keeps the profile's value instead of downgrading.
     final fetchedIsVerified = await verifiedFuture;
     final venuesResult = await venuesFuture;
+    final avgRating = (await ratingFuture).when(
+      ok: (p) => p.avgRating,
+      err: (_) => null,
+    );
     if (!ref.mounted) return;
     final fetchedVenuesCount = venuesResult.when(
       ok: (venues) => venues.length,
@@ -119,6 +132,7 @@ class HostYouController extends _$HostYouController {
     state = state.copyWith(
       isVerified: isVerified,
       savedVenuesCount: savedVenuesCount,
+      avgRating: avgRating,
       isLoading: false,
       errorMessage: state.errorMessage,
     );
