@@ -77,6 +77,7 @@ class HostPayoutController extends _$HostPayoutController {
 
   Future<bool> saveBank({
     required String holderName,
+    required String bankName,
     required String accountNumber,
     required String confirmAccountNumber,
     required String ifsc,
@@ -84,6 +85,7 @@ class HostPayoutController extends _$HostPayoutController {
     state = state.copyWith(isSaving: true, fieldErrors: const {});
     final result = await ref.read(saveHostBankUseCaseProvider)(
       holderName: holderName,
+      bankName: bankName,
       accountNumber: accountNumber,
       confirmAccountNumber: confirmAccountNumber,
       ifsc: ifsc,

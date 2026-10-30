@@ -1,8 +1,11 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/di/network_providers.dart';
+import '../../data/datasources/host_earnings_datasource.dart';
 import '../../data/datasources/host_payout_datasource.dart';
 import '../../data/repository_impl/host_payout_repository_impl.dart';
 import '../../domain/repositories/host_payout_repository.dart';
+import '../../domain/usecases/get_host_earnings.dart';
 import '../../domain/usecases/get_host_payout.dart';
 import '../../domain/usecases/save_host_bank.dart';
 import '../../domain/usecases/save_host_upi.dart';
@@ -16,8 +19,21 @@ HostPayoutDatasource hostPayoutDatasource(Ref ref) {
 }
 
 @riverpod
+HostEarningsDatasource hostEarningsDatasource(Ref ref) {
+  return HostEarningsRestDatasource(ref.watch(baseApiClientProvider));
+}
+
+@riverpod
 HostPayoutRepository hostPayoutRepository(Ref ref) {
-  return HostPayoutRepositoryImpl(ref.watch(hostPayoutDatasourceProvider));
+  return HostPayoutRepositoryImpl(
+    ref.watch(hostPayoutDatasourceProvider),
+    ref.watch(hostEarningsDatasourceProvider),
+  );
+}
+
+@riverpod
+GetHostEarningsUseCase getHostEarningsUseCase(Ref ref) {
+  return GetHostEarningsUseCase(ref.watch(hostPayoutRepositoryProvider));
 }
 
 @riverpod

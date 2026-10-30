@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:host_mobile_app/core/error/result.dart';
+import 'package:host_mobile_app/features/host_payout/data/datasources/host_earnings_datasource.dart';
 import 'package:host_mobile_app/features/host_payout/data/datasources/host_payout_datasource.dart';
+import 'package:host_mobile_app/features/host_payout/data/models/host_earnings_dto.dart';
 import 'package:host_mobile_app/features/host_payout/data/repository_impl/host_payout_repository_impl.dart';
 import 'package:host_mobile_app/features/host_payout/domain/entities/host_payout_account.dart';
 import 'package:host_mobile_app/features/host_payout/domain/usecases/save_host_bank.dart';
@@ -10,7 +12,10 @@ void main() {
   late HostPayoutRepositoryImpl repository;
 
   setUp(() {
-    repository = HostPayoutRepositoryImpl(InMemoryHostPayoutDatasource());
+    repository = HostPayoutRepositoryImpl(
+      InMemoryHostPayoutDatasource(),
+      _NoEarnings(),
+    );
   });
 
   Map<String, String> errorsOf(Result<HostPayoutAccount> result) => result.when(
@@ -37,8 +42,10 @@ void main() {
       String number = '123456789012',
       String confirm = '123456789012',
       String ifsc = 'hdfc0001234',
+      String bankName = 'HDFC Bank',
     }) => SaveHostBankUseCase(repository)(
       holderName: holder,
+      bankName: bankName,
       accountNumber: number,
       confirmAccountNumber: confirm,
       ifsc: ifsc,
@@ -57,9 +64,21 @@ void main() {
       expect(errors.keys, containsAll(['holderName', 'accountNumber', 'ifsc']));
     });
 
+    test('requires a bank and an IFSC matching it', () async {
+      expect(errorsOf(await save(bankName: '')).keys, ['bankName']);
+      expect(errorsOf(await save(bankName: 'State Bank of India')).keys, [
+        'ifsc',
+      ]);
+    });
+
     test('flags a mismatched confirmation', () async {
       final errors = errorsOf(await save(confirm: '123456789013'));
       expect(errors.keys, ['confirmAccountNumber']);
     });
   });
+}
+
+class _NoEarnings implements HostEarningsDatasource {
+  @override
+  Future<HostEarningsDto> getRevenueStats() => throw UnimplementedError();
 }

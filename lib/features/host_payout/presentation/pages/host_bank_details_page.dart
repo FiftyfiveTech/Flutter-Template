@@ -7,8 +7,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/ah_button.dart';
+import '../../../../shared/widgets/ah_dropdown_field.dart';
 import '../../../../shared/widgets/ah_message_sheet.dart';
 import '../../../../shared/widgets/ah_text_field.dart';
+import '../../domain/entities/indian_banks.dart';
 import '../controllers/host_payout_controller.dart';
 
 /// Bank account details — holder name, account number (entered twice) and
@@ -30,6 +32,7 @@ class _HostBankDetailsPageState extends ConsumerState<HostBankDetailsPage> {
   final _accountController = TextEditingController();
   final _confirmController = TextEditingController();
   final _ifscController = TextEditingController();
+  String _bankName = '';
 
   @override
   void initState() {
@@ -37,6 +40,27 @@ class _HostBankDetailsPageState extends ConsumerState<HostBankDetailsPage> {
     final bank = ref.read(hostPayoutControllerProvider).account.bank;
     _holderController.text = bank?.holderName ?? '';
     _ifscController.text = bank?.ifsc ?? '';
+    _bankName = bank?.bankName ?? '';
+  }
+
+  /// Picking a bank prefills the IFSC with its bank code, unless the host
+  /// has already typed an IFSC beyond a previous bank's prefix.
+  void _onBankChanged(String name) {
+    final previous = indianBankByName(_bankName);
+    final bank = indianBankByName(name);
+    setState(() => _bankName = name);
+    _clear('bankName');
+    if (bank == null) return;
+    final current = _ifscController.text;
+    final untouched =
+        current.isEmpty || (previous != null && current == previous.ifscPrefix);
+    if (untouched) {
+      _ifscController.value = TextEditingValue(
+        text: bank.ifscPrefix,
+        selection: TextSelection.collapsed(offset: bank.ifscPrefix.length),
+      );
+      _clear('ifsc');
+    }
   }
 
   @override
@@ -54,6 +78,7 @@ class _HostBankDetailsPageState extends ConsumerState<HostBankDetailsPage> {
         .read(hostPayoutControllerProvider.notifier)
         .saveBank(
           holderName: _holderController.text,
+          bankName: _bankName,
           accountNumber: _accountController.text,
           confirmAccountNumber: _confirmController.text,
           ifsc: _ifscController.text,
@@ -123,6 +148,15 @@ class _HostBankDetailsPageState extends ConsumerState<HostBankDetailsPage> {
                       ],
                       errorText: errors['holderName'],
                       onChanged: (_) => _clear('holderName'),
+                    ),
+                    AppSpacing.spacerMd,
+                    AhDropdownField(
+                      label: 'Bank',
+                      hint: 'Select your bank',
+                      value: _bankName,
+                      options: [for (final bank in indianBanks) bank.name],
+                      errorText: errors['bankName'],
+                      onChanged: _onBankChanged,
                     ),
                     AppSpacing.spacerMd,
                     AhTextField(

@@ -129,7 +129,7 @@ class _HostPayoutPageState extends ConsumerState<HostPayoutPage> {
                           if (bank != null) ...[
                             AppSpacing.spacerXs,
                             Text(
-                              'Bank account saved · ${bank.maskedAccountNumber}'
+                              '${bank.bankName} · ${bank.maskedAccountNumber}'
                               ' · ${bank.ifsc}',
                               textAlign: TextAlign.right,
                               style: typography.caption.copyWith(

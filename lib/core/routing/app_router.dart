@@ -13,6 +13,7 @@ import '../../features/host_onboarding/presentation/pages/host_signup_page.dart'
 import '../../features/host_onboarding/presentation/pages/host_type_page.dart';
 import '../../features/host_onboarding/presentation/pages/host_verification_page.dart';
 import '../../features/host_payout/presentation/pages/host_bank_details_page.dart';
+import '../../features/host_payout/presentation/pages/host_earnings_page.dart';
 import '../../features/host_payout/presentation/pages/host_payout_page.dart';
 import '../../features/host_profile/presentation/pages/host_edit_profile_page.dart';
 import '../../features/host_profile/presentation/pages/host_you_page.dart';
@@ -119,6 +120,11 @@ final appRouter = GoRouter(
       path: '/host/you/edit',
       name: 'hostEditProfile',
       builder: (context, state) => const HostEditProfilePage(),
+    ),
+    GoRoute(
+      path: '/host/you/earnings',
+      name: 'hostEarnings',
+      builder: (context, state) => const HostEarningsPage(),
     ),
     GoRoute(
       path: '/host/you/payout',

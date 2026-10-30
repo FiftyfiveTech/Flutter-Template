@@ -230,6 +230,14 @@ class HostYouPage extends ConsumerWidget {
                             label: 'Payout details',
                           ),
                         ),
+                        const SizedBox(height: AppSpacing.cardGap),
+                        AhCard(
+                          onTap: () => context.push('/host/you/earnings'),
+                          child: const _AccountRow(
+                            icon: Icons.payments_outlined,
+                            label: 'Earnings & payouts',
+                          ),
+                        ),
                         const SizedBox(height: AppSpacing.lg),
                         AhCard(
                           onTap: () => _logOut(context, ref),
